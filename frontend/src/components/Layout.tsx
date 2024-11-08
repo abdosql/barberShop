@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import BookingForm from './BookingForm';
+import Footer from './Footer';
 
 export default function Layout() {
   const images = [
@@ -10,24 +11,23 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen relative bg-zinc-900">
-      {/* Background Image */}
-      <div className="fixed inset-0 z-0">
-        <img
-          src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=2074"
-          alt="Barber Shop Background"
-          className="w-full h-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/90 via-zinc-900/80 to-zinc-900/90" />
-      </div>
+    <div className="min-h-screen flex flex-col bg-zinc-900">
+      <Navbar />
+      <main className="flex-1 pt-16">
+        {/* Background Image */}
+        <div className="fixed inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=2074"
+            alt="Barber Shop Background"
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/90 via-zinc-900/80 to-zinc-900/90" />
+        </div>
 
-      {/* Content */}
-      <div className="relative z-10">
-        <Navbar />
-        
-        <main className="pt-16">
+        {/* Content */}
+        <div className="relative z-10">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] gap-8 py-8">
+            <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] gap-8 py-12">
               {/* Left Section - Title and Images */}
               <div className="w-full lg:w-1/2 flex flex-col justify-center">
                 {/* Title Section - Always visible */}
@@ -85,8 +85,9 @@ export default function Layout() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 } 
