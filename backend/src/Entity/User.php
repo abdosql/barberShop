@@ -25,6 +25,13 @@ use App\State\UserStateProcessor;
             processor: UserStateProcessor::class
         ),
         new Get(security: "is_granted('ROLE_USER')"),
+        new Get(
+            name: 'me',
+            uriTemplate: '/users/me',
+            security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => ['user:read']],
+            provider: UserStateProvider::class
+        ),
         new Put(security: "is_granted('ROLE_USER')"),
         new Delete(security: "is_granted('ROLE_USER')")
     ],
@@ -54,6 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::JSON)]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
     #[ORM\Column]
