@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import enTranslations from '../locales/en.json';
 import frTranslations from '../locales/fr.json';
+import arTranslations from '../locales/ar.json';
 
-type Language = 'en' | 'fr';
+type Language = 'en' | 'fr' | 'ar';
 type Translations = typeof enTranslations;
 
 interface LanguageContextType {
   language: Language;
   translations: Translations;
-  toggleLanguage: () => void;
+  setLanguage: (lang: Language) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -20,20 +21,24 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [translations, setTranslations] = useState<Translations>(
-    language === 'en' ? enTranslations : frTranslations
+    language === 'en' ? enTranslations : 
+    language === 'fr' ? frTranslations : 
+    arTranslations
   );
 
   useEffect(() => {
     localStorage.setItem('language', language);
-    setTranslations(language === 'en' ? enTranslations : frTranslations);
+    setTranslations(
+      language === 'en' ? enTranslations : 
+      language === 'fr' ? frTranslations : 
+      arTranslations
+    );
+    // Set RTL direction for Arabic
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'fr' : 'en');
-  };
-
   return (
-    <LanguageContext.Provider value={{ language, translations, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, translations, setLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
