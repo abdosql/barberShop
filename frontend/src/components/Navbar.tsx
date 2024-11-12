@@ -1,35 +1,40 @@
-import React, { useState } from 'react';
-import { Scissors, Phone } from 'lucide-react';
-import SocialLinks from './SocialLinks';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Scissors } from 'lucide-react';
+import LanguageToggle from './LanguageToggle';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Navbar() {
-  const [showSocial, setShowSocial] = useState(false);
+  const { translations } = useLanguage();
 
   return (
-    <>
-      <nav className="fixed w-full z-50 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <Scissors className="w-6 h-6 text-blue-500" />
-              <span className="text-white font-bold text-lg sm:text-xl">Jalal</span>
+    <nav className="fixed w-full z-50 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+              <Scissors className="w-4 h-4 text-blue-500" />
             </div>
-            
-            <button 
-              onClick={() => setShowSocial(true)}
-              className="inline-flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
+            <span className="text-white font-bold">Barbershop</span>
+          </Link>
+          
+          <div className="flex items-center gap-4">
+            <LanguageToggle />
+            <Link
+              to="/login"
+              className="text-zinc-400 hover:text-white transition-colors"
             >
-              <Phone className="w-5 h-5" />
-              <span className="hidden sm:inline">Contact</span>
-            </button>
+              {translations.navbar.login}
+            </Link>
+            <Link
+              to="/register"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition-colors"
+            >
+              {translations.navbar.register}
+            </Link>
           </div>
         </div>
-      </nav>
-
-      <SocialLinks 
-        isOpen={showSocial} 
-        onClose={() => setShowSocial(false)} 
-      />
-    </>
+      </div>
+    </nav>
   );
 }

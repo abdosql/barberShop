@@ -1,5 +1,6 @@
 import React from 'react';
 import Footer from '../Footer';
+import AdminNavbar from './AdminNavbar';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -8,7 +9,8 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-zinc-900">
-      <main className="flex-1">
+      <AdminNavbar />
+      <main className="flex-1 pt-16">
         {children}
       </main>
       <Footer />
