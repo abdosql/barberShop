@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Lock, Scissors, User, Phone } from 'lucide-react';
 import Footer from '../Footer';
+import LanguageToggle from '../LanguageToggle';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -14,6 +15,10 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
+
       <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background elements remain the same */}
         <div className="fixed inset-0 z-0">

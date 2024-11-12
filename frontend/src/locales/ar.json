@@ -1,0 +1,96 @@
+{
+  "common": {
+    "close": "سد",
+    "delete": "مسح",
+    "cancel": "لغي",
+    "confirm": "أكد",
+    "back": "رجع",
+    "next": "زيد"
+  },
+  "navbar": {
+    "adminPanel": "لوحة المسؤول",
+    "login": "دخل",
+    "register": "سجل"
+  },
+  "home": {
+    "hero": {
+      "title": "حلاقة محترفة",
+      "subtitle": "غير بكليك وحدة",
+      "description": "حجز قصة شعرك و تشويرة ديال اللحية ديالك مع الحلايقية المحترفين"
+    },
+    "booking": {
+      "selectServices": "ختار الخدمات",
+      "selectDate": "ختار التاريخ",
+      "selectTime": "ختار الوقت",
+      "totalDuration": "الوقت الكلي",
+      "totalPrice": "الثمن الكلي",
+      "bookAppointment": "حجز موعد",
+      "chooseTime": "ختار شي وقت"
+    },
+    "services": {
+      "haircut": "قص الشعر",
+      "beardTrim": "تشويرة اللحية",
+      "hairStyling": "تصفيف الشعر",
+      "cleanShave": "حلاقة نقية",
+      "kidsHaircut": "حلاقة الدراري",
+      "hairColor": "صباغة",
+      "facial": "تنظيف الوجه",
+      "headMassage": "تدليك الراس"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "addService": "زيد خدمة",
+      "manageServices": "تدبير الخدمات",
+      "pendingAppointments": "المواعيد المعلقة",
+      "acceptedAppointments": "المواعيد المقبولة",
+      "overview": "نظرة عامة",
+      "pending": "معلق",
+      "today": "اليوم"
+    },
+    "stats": {
+      "totalClients": "مجموع الزبناء",
+      "todayAppointments": "مواعيد اليوم",
+      "pendingRequests": "الطلبات المعلقة",
+      "monthlyRevenue": "المدخول الشهري",
+      "vsLastMonth": "مقارنة مع الشهر اللي فات"
+    },
+    "services": {
+      "title": "تدبير الخدمات",
+      "confirmDelete": "واش متأكد بغيتي تمسح هاد الخدمة؟",
+      "serviceName": "سمية الخدمة",
+      "price": "الثمن",
+      "description": "الوصف",
+      "duration": "المدة"
+    }
+  },
+  "auth": {
+    "login": {
+      "welcomeBack": "مرحبا بيك من جديد",
+      "signInAccount": "دخل لحسابك",
+      "phoneNumber": "نمرة التيليفون",
+      "password": "كلمة السر",
+      "rememberMe": "عقل عليا",
+      "forgot": "نسيتي؟",
+      "signIn": "دخل",
+      "newHere": "جديد هنا؟",
+      "createAccount": "دير حساب",
+      "enterPhone": "دخل النمرة ديالك",
+      "enterPassword": "دخل كلمة السر"
+    },
+    "register": {
+      "joinBarber": "نضم معانا للصالون",
+      "createToStart": "دير حساب باش تبدا",
+      "fullName": "السمية الكاملة",
+      "phoneNumber": "نمرة التيليفون",
+      "password": "كلمة السر",
+      "createPassword": "دير كلمة السر",
+      "enterName": "دخل سميتك الكاملة",
+      "enterPhone": "دخل النمرة ديالك",
+      "createBtn": "دير حساب",
+      "haveAccount": "عندك حساب بالعاني؟",
+      "signIn": "دخل"
+    }
+  }
+}
