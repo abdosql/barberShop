@@ -2,8 +2,11 @@ import React from 'react';
 import Navbar from './Navbar';
 import BookingForm from './BookingForm';
 import Footer from './Footer';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Layout() {
+  const { translations } = useLanguage();
+  
   const images = [
     "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=2070",
     "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=2070",
@@ -33,11 +36,11 @@ export default function Layout() {
                 {/* Title Section - Always visible */}
                 <div className="text-center lg:text-left mb-8 lg:mb-12">
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
-                    Professional Grooming
-                    <span className="block text-blue-500">Just a Click Away</span>
+                    {translations.home.hero.title}
+                    <span className="block text-blue-500">{translations.home.hero.subtitle}</span>
                   </h1>
                   <p className="text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 mb-8 lg:mb-16">
-                    Book your next premium haircut and beard trim with our expert barbers
+                    {translations.home.hero.description}
                   </p>
                 </div>
 

@@ -1,0 +1,96 @@
+{
+  "common": {
+    "close": "Close",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next"
+  },
+  "navbar": {
+    "adminPanel": "Admin Panel",
+    "login": "Login",
+    "register": "Register"
+  },
+  "home": {
+    "hero": {
+      "title": "Professional Grooming",
+      "subtitle": "Just a Click Away",
+      "description": "Book your next premium haircut and beard trim with our expert barbers"
+    },
+    "booking": {
+      "selectServices": "Select Services",
+      "selectDate": "Select Date",
+      "selectTime": "Select Time",
+      "totalDuration": "Total Duration",
+      "totalPrice": "Total Price",
+      "bookAppointment": "Book Appointment",
+      "chooseTime": "Choose a time"
+    },
+    "services": {
+      "haircut": "Haircut",
+      "beardTrim": "Beard Trim",
+      "hairStyling": "Hair Styling",
+      "cleanShave": "Clean Shave",
+      "kidsHaircut": "Kids Haircut",
+      "hairColor": "Hair Color",
+      "facial": "Facial",
+      "headMassage": "Head Massage"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "addService": "Add Service",
+      "manageServices": "Manage Services",
+      "pendingAppointments": "Pending Appointments",
+      "acceptedAppointments": "Accepted Appointments",
+      "overview": "Overview",
+      "pending": "pending",
+      "today": "today"
+    },
+    "stats": {
+      "totalClients": "Total Clients",
+      "todayAppointments": "Today's Appointments",
+      "pendingRequests": "Pending Requests",
+      "monthlyRevenue": "Monthly Revenue",
+      "vsLastMonth": "vs last month"
+    },
+    "services": {
+      "title": "Manage Services",
+      "confirmDelete": "Are you sure you want to delete this service?",
+      "serviceName": "Service Name",
+      "price": "Price",
+      "description": "Description",
+      "duration": "Duration"
+    }
+  },
+  "auth": {
+    "login": {
+      "welcomeBack": "Welcome Back",
+      "signInAccount": "Sign in to your account",
+      "phoneNumber": "Phone Number",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgot": "Forgot?",
+      "signIn": "Sign in",
+      "newHere": "New here?",
+      "createAccount": "Create account",
+      "enterPhone": "Enter your phone number",
+      "enterPassword": "Enter your password"
+    },
+    "register": {
+      "joinBarber": "Join Our Barbershop",
+      "createToStart": "Create an account to get started",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "password": "Password",
+      "createPassword": "Create a password",
+      "enterName": "Enter your full name",
+      "enterPhone": "Enter your phone number",
+      "createBtn": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    }
+  }
+} 

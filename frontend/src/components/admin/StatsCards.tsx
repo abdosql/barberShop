@@ -1,31 +1,34 @@
 import React from 'react';
 import { Users, Calendar, Clock, TrendingUp } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function StatsCards() {
+  const { translations } = useLanguage();
+
   const stats = [
     {
-      title: "Total Clients",
+      title: translations.admin.stats.totalClients,
       value: "124",
       icon: Users,
       change: "+12%",
       color: "blue"
     },
     {
-      title: "Today's Appointments",
+      title: translations.admin.stats.todayAppointments,
       value: "8",
       icon: Calendar,
       change: "+3",
       color: "amber"
     },
     {
-      title: "Pending Requests",
+      title: translations.admin.stats.pendingRequests,
       value: "5",
       icon: Clock,
       change: "-2",
       color: "rose"
     },
     {
-      title: "Monthly Revenue",
+      title: translations.admin.stats.monthlyRevenue,
       value: "4,250 DH",
       icon: TrendingUp,
       change: "+18%",
@@ -51,7 +54,9 @@ export default function StatsCards() {
           </div>
           <div className="mt-4 flex items-center">
             <span className={`text-${stat.color}-500 text-sm`}>{stat.change}</span>
-            <span className="text-zinc-400 text-sm ml-2">vs last month</span>
+            <span className="text-zinc-400 text-sm ml-2">
+              {translations.admin.stats.vsLastMonth}
+            </span>
           </div>
         </div>
       ))}

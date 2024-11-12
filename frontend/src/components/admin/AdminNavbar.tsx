@@ -1,5 +1,6 @@
 import React from 'react';
 import { User } from 'lucide-react';
+import LanguageToggle from '../LanguageToggle';
 
 export default function AdminNavbar() {
   return (
@@ -11,6 +12,7 @@ export default function AdminNavbar() {
           </div>
           
           <div className="flex items-center gap-4">
+            <LanguageToggle />
             <span className="text-zinc-400">Admin</span>
             <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-blue-500" />
