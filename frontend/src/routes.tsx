@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AdminLayout from './components/admin/AdminLayout';
 import Dashboard from './components/admin/Dashboard';
@@ -10,23 +10,18 @@ import { useAuth } from './contexts/AuthContext';
 
 export default function AppRoutes() {
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // Add navigation effect when auth state changes
-  React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
 
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={
-        isAuthenticated ? <Navigate to="/" /> : <Login />
+        isAuthenticated ? <Navigate to="/" replace /> : <Login />
       } />
       <Route path="/register" element={
-        isAuthenticated ? <Navigate to="/" /> : <Register />
+        isAuthenticated ? <Navigate to="/" replace /> : <Register />
       } />
+
+      {/* Protected routes */}
       <Route path="/" element={
         <ProtectedRoute>
           <Layout />
@@ -38,6 +33,11 @@ export default function AppRoutes() {
             <Dashboard />
           </AdminLayout>
         </ProtectedRoute>
+      } />
+
+      {/* Catch all route - redirect to login if not authenticated, home if authenticated */}
+      <Route path="*" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <Navigate to="/login" replace />
       } />
     </Routes>
   );

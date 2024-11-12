@@ -1,8 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
+
+interface UserInfo {
+  id: number;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  roles: string[];
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  userRole: string | null;
+  userInfo: UserInfo | null;
   login: (phoneNumber: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -19,13 +28,19 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true);
-      // You might want to validate the token here
+      try {
+        const decoded = jwtDecode<UserInfo>(token);
+        setUserInfo(decoded);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Invalid token:', error);
+        localStorage.removeItem('token');
+      }
     }
   }, []);
 
@@ -45,11 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       localStorage.setItem('token', data.token);
-      setIsAuthenticated(true);
       
-      // You might want to decode the JWT token to get the user role
-      // For now, we'll assume a default role
-      setUserRole('ROLE_USER');
+      // Decode and store user info
+      const decoded = jwtDecode<UserInfo>(data.token);
+      setUserInfo(decoded);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -59,11 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
-    setUserRole(null);
+    setUserInfo(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userInfo, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

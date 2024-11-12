@@ -7,13 +7,13 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, userRole } = useAuth();
+  const { isAuthenticated, userInfo } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
-  if (requireAdmin && userRole !== 'ROLE_ADMIN') {
+  if (requireAdmin && !userInfo?.roles.includes('ROLE_ADMIN')) {
     return <Navigate to="/" />;
   }
 
