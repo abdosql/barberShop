@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Scissors, Phone } from 'lucide-react';
 import Footer from '../Footer';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
+    try {
+      await login(phone, password);
+      navigate('/'); // Redirect to home page after successful login
+    } catch (err) {
+      setError('Invalid credentials. Please try again.');
+    }
   };
 
   return (
@@ -37,6 +49,12 @@ export default function Login() {
 
           {/* Compact Form Section */}
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-500 text-sm">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               {/* Phone Input */}
               <div>

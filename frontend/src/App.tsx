@@ -1,28 +1,18 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import AdminLayout from './components/admin/AdminLayout';
-import Dashboard from './components/admin/Dashboard';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
+import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import AppRoutes from './routes';
 
 function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={
-            <AdminLayout>
-              <Dashboard />
-            </AdminLayout>
-          } />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
