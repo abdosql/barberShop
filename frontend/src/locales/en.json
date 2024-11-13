@@ -6,7 +6,9 @@
     "confirm": "Confirm",
     "back": "Back",
     "next": "Next",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "showing": "Showing",
+    "of": "of"
   },
   "navbar": {
     "adminPanel": "Admin Panel",
