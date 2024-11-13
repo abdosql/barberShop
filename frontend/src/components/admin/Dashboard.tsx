@@ -11,6 +11,11 @@ export default function Dashboard() {
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
 
+  const handleServiceAdded = () => {
+    setIsAddServiceModalOpen(false);
+    setIsManageServicesModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-900">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -74,6 +79,7 @@ export default function Dashboard() {
         <AddServiceModal 
           isOpen={isAddServiceModalOpen}
           onClose={() => setIsAddServiceModalOpen(false)}
+          onServiceAdded={handleServiceAdded}
         />
         <ManageServicesModal
           isOpen={isManageServicesModalOpen}

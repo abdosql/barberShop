@@ -5,7 +5,8 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "loading": "Loading..."
   },
   "navbar": {
     "adminPanel": "Admin Panel",
@@ -62,7 +63,13 @@
       "serviceName": "Service Name",
       "price": "Price",
       "description": "Description",
-      "duration": "Duration"
+      "duration": "Duration",
+      "addNew": "Add New Service",
+      "serviceNamePlaceholder": "e.g., Haircut",
+      "descriptionPlaceholder": "Enter service description...",
+      "addButton": "Add Service",
+      "errorCreating": "Failed to create service. Please try again.",
+      "successCreating": "Service created successfully!"
     }
   },
   "auth": {

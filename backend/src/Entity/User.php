@@ -45,7 +45,7 @@ use App\State\UserStateProcessor;
             processor: UserStateProcessor::class
         ),
         new Delete(
-            security: "is_granted('ROLE_USER') and object == user",
+            security: "is_granted('ROLE_USER') ancd object == user",
             securityMessage: "You can only delete your own profile."
         )
     ],
