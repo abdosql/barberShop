@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, User, Scissors, Phone } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import ServiceCard from './ServiceCard';
 import SocialLinks from './SocialLinks';
 
@@ -11,70 +12,71 @@ interface Service {
   icon: typeof Scissors;
 }
 
-const services: Service[] = [
-  {
-    id: 'haircut',
-    name: 'Haircut',
-    price: 30,
-    duration: 30,
-    icon: Scissors
-  },
-  {
-    id: 'beard-trim',
-    name: 'Beard Trim',
-    price: 20,
-    duration: 20,
-    icon: Scissors
-  },
-  {
-    id: 'hair-styling',
-    name: 'Hair Styling',
-    price: 25,
-    duration: 25,
-    icon: Scissors
-  },
-  {
-    id: 'clean-shave',
-    name: 'Clean Shave',
-    price: 25,
-    duration: 25,
-    icon: Scissors
-  },
-  {
-    id: 'kids-haircut',
-    name: 'Kids Haircut',
-    price: 25,
-    duration: 30,
-    icon: Scissors
-  },
-  {
-    id: 'hair-color',
-    name: 'Hair Color',
-    price: 50,
-    duration: 60,
-    icon: Scissors
-  },
-  {
-    id: 'facial',
-    name: 'Facial',
-    price: 40,
-    duration: 45,
-    icon: Scissors
-  },
-  {
-    id: 'head-massage',
-    name: 'Head Massage',
-    price: 20,
-    duration: 20,
-    icon: Scissors
-  }
-];
-
 export default function BookingForm() {
+  const { translations } = useLanguage();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [showSocial, setShowSocial] = useState(false);
+
+  const services: Service[] = [
+    {
+      id: 'haircut',
+      name: translations.home.services.haircut,
+      price: 30,
+      duration: 30,
+      icon: Scissors
+    },
+    {
+      id: 'beard-trim',
+      name: translations.home.services.beardTrim,
+      price: 20,
+      duration: 20,
+      icon: Scissors
+    },
+    {
+      id: 'hair-styling',
+      name: translations.home.services.hairStyling,
+      price: 25,
+      duration: 25,
+      icon: Scissors
+    },
+    {
+      id: 'clean-shave',
+      name: translations.home.services.cleanShave,
+      price: 25,
+      duration: 25,
+      icon: Scissors
+    },
+    {
+      id: 'kids-haircut',
+      name: translations.home.services.kidsHaircut,
+      price: 25,
+      duration: 30,
+      icon: Scissors
+    },
+    {
+      id: 'hair-color',
+      name: translations.home.services.hairColor,
+      price: 50,
+      duration: 60,
+      icon: Scissors
+    },
+    {
+      id: 'facial',
+      name: translations.home.services.facial,
+      price: 40,
+      duration: 45,
+      icon: Scissors
+    },
+    {
+      id: 'head-massage',
+      name: translations.home.services.headMassage,
+      price: 20,
+      duration: 20,
+      icon: Scissors
+    }
+  ];
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>
@@ -117,7 +119,9 @@ export default function BookingForm() {
     <div className="bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-zinc-800 shadow-xl p-4 sm:p-6 md:p-8 w-full">
       <div className="space-y-4 sm:space-y-6">
         <div>
-          <label className="block text-sm font-medium mb-4 text-white">Select Services</label>
+          <label className="block text-sm font-medium mb-4 text-white">
+            {translations.home.booking.selectServices}
+          </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {services.map((service) => (
               <ServiceCard
@@ -135,11 +139,11 @@ export default function BookingForm() {
           {selectedServices.length > 0 && (
             <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-zinc-400">Total Duration:</span>
+                <span className="text-zinc-400">{translations.home.booking.totalDuration}:</span>
                 <span className="font-medium text-blue-500">{formatDuration(totalDuration)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Total Price:</span>
+                <span className="text-zinc-400">{translations.home.booking.totalPrice}:</span>
                 <span className="font-medium text-blue-500">{totalPrice} DH</span>
               </div>
             </div>
@@ -147,7 +151,9 @@ export default function BookingForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2 text-white">Select Date</label>
+          <label className="block text-sm font-medium mb-2 text-white">
+            {translations.home.booking.selectDate}
+          </label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <input
@@ -161,7 +167,9 @@ export default function BookingForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2 text-white">Select Time</label>
+          <label className="block text-sm font-medium mb-2 text-white">
+            {translations.home.booking.selectTime}
+          </label>
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <select
@@ -184,10 +192,11 @@ export default function BookingForm() {
 
         <button
           disabled={selectedServices.length === 0 || !date || !time}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
+                   transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <User className="h-5 w-5" />
-          Book Appointment
+          {translations.home.booking.bookAppointment}
         </button>
       </div>
 

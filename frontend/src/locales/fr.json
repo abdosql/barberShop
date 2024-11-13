@@ -1,0 +1,96 @@
+{
+  "common": {
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant"
+  },
+  "navbar": {
+    "adminPanel": "Panneau d'administration",
+    "login": "Connexion",
+    "register": "S'inscrire"
+  },
+  "home": {
+    "hero": {
+      "title": "Coiffure Professionnelle",
+      "subtitle": "À un clic",
+      "description": "Réservez votre prochaine coupe de cheveux et taille de barbe avec nos barbiers experts"
+    },
+    "booking": {
+      "selectServices": "Sélectionner les services",
+      "selectDate": "Sélectionner la date",
+      "selectTime": "Sélectionner l'heure",
+      "totalDuration": "Durée totale",
+      "totalPrice": "Prix total",
+      "bookAppointment": "Réserver un rendez-vous",
+      "chooseTime": "Choisir une heure"
+    },
+    "services": {
+      "haircut": "Coupe de cheveux",
+      "beardTrim": "Taille de barbe",
+      "hairStyling": "Coiffage",
+      "cleanShave": "Rasage",
+      "kidsHaircut": "Coupe enfant",
+      "hairColor": "Coloration",
+      "facial": "Soin du visage",
+      "headMassage": "Massage de la tête"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "addService": "Ajouter un service",
+      "manageServices": "Gérer les services",
+      "pendingAppointments": "Rendez-vous en attente",
+      "acceptedAppointments": "Rendez-vous acceptés",
+      "overview": "Aperçu",
+      "pending": "en attente",
+      "today": "aujourd'hui"
+    },
+    "stats": {
+      "totalClients": "Total clients",
+      "todayAppointments": "Rendez-vous du jour",
+      "pendingRequests": "Demandes en attente",
+      "monthlyRevenue": "Revenu mensuel",
+      "vsLastMonth": "vs mois dernier"
+    },
+    "services": {
+      "title": "Gérer les services",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce service ?",
+      "serviceName": "Nom du service",
+      "price": "Prix",
+      "description": "Description",
+      "duration": "Durée"
+    }
+  },
+  "auth": {
+    "login": {
+      "welcomeBack": "Bon Retour",
+      "signInAccount": "Connectez-vous à votre compte",
+      "phoneNumber": "Numéro de téléphone",
+      "password": "Mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgot": "Oublié ?",
+      "signIn": "Se connecter",
+      "newHere": "Nouveau ici ?",
+      "createAccount": "Créer un compte",
+      "enterPhone": "Entrez votre numéro de téléphone",
+      "enterPassword": "Entrez votre mot de passe"
+    },
+    "register": {
+      "joinBarber": "Rejoignez Notre Barbier",
+      "createToStart": "Créez un compte pour commencer",
+      "fullName": "Nom complet",
+      "phoneNumber": "Numéro de téléphone",
+      "password": "Mot de passe",
+      "createPassword": "Créez un mot de passe",
+      "enterName": "Entrez votre nom complet",
+      "enterPhone": "Entrez votre numéro de téléphone",
+      "createBtn": "Créer un compte",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "signIn": "Se connecter"
+    }
+  }
+} 
