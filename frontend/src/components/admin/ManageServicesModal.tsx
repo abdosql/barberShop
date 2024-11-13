@@ -71,23 +71,37 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
 
   const handleDelete = async (serviceId: number) => {
     if (window.confirm(translations.admin.services.confirmDelete)) {
+      setIsLoading(true);
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services/${serviceId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Accept': '*/*',
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to delete service');
+          const errorData = await response.json().catch(() => null);
+          throw new Error(
+            errorData?.['hydra:description'] || 
+            errorData?.detail || 
+            'Failed to delete service'
+          );
         }
 
-        // Refresh the services list
-        fetchServices(currentPage);
+        // Remove the deleted service from the state
+        setServices(prevServices => 
+          prevServices.filter(service => service.id !== serviceId)
+        );
+
+        // Show success message (you can add a toast notification here)
+        console.log('Service deleted successfully');
       } catch (err) {
         console.error('Error deleting service:', err);
         setError(translations.admin.services.errorDeleting || 'Failed to delete service');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
