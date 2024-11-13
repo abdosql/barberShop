@@ -5,7 +5,10 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "loading": "Loading...",
+    "showing": "Showing",
+    "of": "of"
   },
   "navbar": {
     "adminPanel": "Admin Panel",
@@ -62,7 +65,15 @@
       "serviceName": "Service Name",
       "price": "Price",
       "description": "Description",
-      "duration": "Duration"
+      "duration": "Duration",
+      "addNew": "Add New Service",
+      "serviceNamePlaceholder": "e.g., Haircut",
+      "descriptionPlaceholder": "Enter service description...",
+      "addButton": "Add Service",
+      "errorCreating": "Failed to create service. Please try again.",
+      "successCreating": "Service created successfully!",
+      "errorFetching": "Failed to fetch services. Please try again.",
+      "errorDeleting": "Failed to delete service. Please try again."
     }
   },
   "auth": {

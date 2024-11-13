@@ -9,40 +9,43 @@ import Register from './components/auth/Register';
 import AdminLayout from './components/admin/AdminLayout';
 import Dashboard from './components/admin/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+            <BrowserRouter>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-              {/* Protected routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/admin" element={
-                <ProtectedRoute requireAdmin>
-                  <AdminLayout>
-                    <Dashboard />
-                  </AdminLayout>
-                </ProtectedRoute>
-              } />
+                {/* Protected routes */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminLayout>
+                      <Dashboard />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                } />
 
-              {/* Catch all route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                {/* Catch all route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
           </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>
-    </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
