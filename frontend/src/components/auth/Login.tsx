@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Scissors, Phone } from 'lucide-react';
 import Footer from '../Footer';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,8 +11,19 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the redirect path from location state, or default to home
+  const from = (location.state as any)?.from?.pathname || '/';
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +31,7 @@ export default function Login() {
     
     try {
       await login(phone, password);
-      navigate('/'); // Redirect to home page after successful login
+      // Navigation will happen automatically due to the effect above
     } catch (err) {
       setError('Invalid credentials. Please try again.');
     }

@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\UserRepository;
+use App\State\UserStateProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -24,16 +25,29 @@ use App\State\UserStateProcessor;
             security: "is_granted('PUBLIC_ACCESS')",
             processor: UserStateProcessor::class
         ),
-        new Get(security: "is_granted('ROLE_USER')"),
         new Get(
-            name: 'me',
-            uriTemplate: '/users/me',
-            security: "is_granted('ROLE_USER')",
+            security: "is_granted('ROLE_USER') and object == user",
+            securityMessage: "You can only view your own profile."
+        ),
+        new Get(
+            uriTemplate: '/me',
+            defaults: [
+                '_api_receive' => false
+            ],
             normalizationContext: ['groups' => ['user:read']],
+            security: "is_granted('ROLE_USER')",
+            name: 'me',
             provider: UserStateProvider::class
         ),
-        new Put(security: "is_granted('ROLE_USER')"),
-        new Delete(security: "is_granted('ROLE_USER')")
+        new Put(
+            security: "is_granted('ROLE_USER') and object == user",
+            securityMessage: "You can only edit your own profile.",
+            processor: UserStateProcessor::class
+        ),
+        new Delete(
+            security: "is_granted('ROLE_USER') and object == user",
+            securityMessage: "You can only delete your own profile."
+        )
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']]
@@ -61,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::JSON)]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'user:update'])]
     private array $roles = [];
 
     #[ORM\Column]

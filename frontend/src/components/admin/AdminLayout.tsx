@@ -1,6 +1,6 @@
 import React from 'react';
-import Footer from '../Footer';
 import AdminNavbar from './AdminNavbar';
+import Footer from '../Footer';
 
 interface AdminLayoutProps {
   children: React.ReactNode;

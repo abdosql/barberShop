@@ -38,13 +38,18 @@ export default function Navbar() {
                     <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-blue-500" />
                     </div>
-                    <span className="text-zinc-300 hidden sm:inline">
-                      {userInfo.firstName} {userInfo.lastName}
-                    </span>
+                    <div className="hidden sm:block">
+                      <p className="text-sm font-medium text-white">
+                        {userInfo.firstName} {userInfo.lastName}
+                      </p>
+                      <p className="text-xs text-zinc-400">
+                        {userInfo.phoneNumber}
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="text-zinc-400 hover:text-white transition"
+                    className="p-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
                   >
                     <LogOut className="w-5 h-5" />
                   </button>
