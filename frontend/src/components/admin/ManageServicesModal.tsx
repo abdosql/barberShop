@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Trash2, Loader2 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ManageServicesModalProps {
   isOpen: boolean;
@@ -8,24 +9,86 @@ interface ManageServicesModalProps {
 }
 
 interface Service {
+  "@id": string;
+  "@type": string;
   id: number;
   name: string;
-  price: number;
+  price: string;
   description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ServiceResponse {
+  "@context": string;
+  "@id": string;
+  "@type": string;
+  "totalItems": number;
+  "member": Service[];
 }
 
 export default function ManageServicesModal({ isOpen, onClose }: ManageServicesModalProps) {
   const { translations } = useLanguage();
-  const [services, setServices] = useState<Service[]>([
-    // Temporary mock data - replace with API call
-    { id: 1, name: translations.home.services.haircut, price: 30, description: 'Classic haircut service' },
-    { id: 2, name: translations.home.services.beardTrim, price: 20, description: 'Professional beard trimming' },
-  ]);
+  const { token } = useAuth();
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const handleDelete = (serviceId: number) => {
+  const fetchServices = async (page: number) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/ld+json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch services');
+      }
+
+      const data: ServiceResponse = await response.json();
+      setServices(data.member);
+      setTotalPages(Math.ceil(data.totalItems / 30)); // Assuming 30 items per page
+    } catch (err) {
+      console.error('Error fetching services:', err);
+      setError(translations.admin.services.errorFetching || 'Failed to fetch services');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchServices(currentPage);
+    }
+  }, [isOpen, currentPage]);
+
+  const handleDelete = async (serviceId: number) => {
     if (window.confirm(translations.admin.services.confirmDelete)) {
-      // TODO: Implement API call to delete service
-      setServices(services.filter(service => service.id !== serviceId));
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services/${serviceId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete service');
+        }
+
+        // Refresh the services list
+        fetchServices(currentPage);
+      } catch (err) {
+        console.error('Error deleting service:', err);
+        setError(translations.admin.services.errorDeleting || 'Failed to delete service');
+      }
     }
   };
 
@@ -52,29 +115,58 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
 
         {/* Services List */}
         <div className="p-4">
-          <div className="space-y-4">
-            {services.map(service => (
-              <div 
-                key={service.id}
-                className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-white font-medium">{service.name}</h4>
-                    <p className="text-zinc-400 text-sm mt-1">{service.description}</p>
-                    <p className="text-blue-500 mt-2">{service.price} DH</p>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="text-rose-500 text-center py-4">{error}</div>
+          ) : services.length === 0 ? (
+            <div className="text-zinc-400 text-center py-4">No services found</div>
+          ) : (
+            <div className="space-y-4">
+              {services.map(service => (
+                <div 
+                  key={service.id}
+                  className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">{service.name}</h4>
+                      <p className="text-zinc-400 text-sm mt-1">{service.description}</p>
+                      <p className="text-blue-500 mt-2">{service.price} DH</p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(service.id)}
+                      className="p-2 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"
+                      title={translations.common.delete}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDelete(service.id)}
-                    className="p-2 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors"
-                    title={translations.common.delete}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 rounded-md text-sm font-medium ${
+                    currentPage === page
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
