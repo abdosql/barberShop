@@ -79,6 +79,7 @@ class Service
     private Collection $appointmentServices;
 
     #[ORM\Column]
+    #[Groups(['service:read', 'service:create', 'service:update'])]
     private ?int $duration = null;
 
     public function __construct()

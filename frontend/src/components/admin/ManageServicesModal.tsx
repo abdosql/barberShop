@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Trash2, Loader2, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -15,6 +15,7 @@ interface Service {
   name: string;
   price: string;
   description: string;
+  duration: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,13 +26,13 @@ interface ServiceResponse {
   "@type": string;
   "totalItems": number;
   "member": Service[];
-  "hydra:view"?: {
+  "view": {
     "@id": string;
     "@type": string;
-    "hydra:first": string;
-    "hydra:last": string;
-    "hydra:next"?: string;
-    "hydra:previous"?: string;
+    "first": string;
+    "last": string;
+    "next"?: string;
+    "previous"?: string;
   };
 }
 
@@ -71,9 +72,17 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
       setServices(data.member);
       setTotalItems(data.totalItems);
       
-      // Update pagination state based on hydra:view
-      setHasNextPage(!!data['hydra:view']?.['hydra:next']);
-      setHasPrevPage(!!data['hydra:view']?.['hydra:previous']);
+      // Update pagination state based on view
+      setHasNextPage(!!data.view?.next);
+      setHasPrevPage(!!data.view?.previous);
+
+      // Log pagination info for debugging
+      console.log('Pagination info:', {
+        totalItems: data.totalItems,
+        currentPage,
+        hasNext: !!data.view?.next,
+        hasPrev: !!data.view?.previous
+      });
     } catch (err) {
       console.error('Error fetching services:', err);
       setError(translations.admin.services.errorFetching || 'Failed to fetch services');
@@ -86,7 +95,7 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
     if (isOpen) {
       fetchServices(currentPage);
     }
-  }, [isOpen, currentPage]);
+  }, [isOpen, currentPage, token]);
 
   const handleNextPage = () => {
     if (hasNextPage) {
@@ -95,7 +104,7 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
   };
 
   const handlePrevPage = () => {
-    if (hasPrevPage) {
+    if (hasPrevPage && currentPage > 1) {
       setCurrentPage(prev => prev - 1);
     }
   };
@@ -174,7 +183,14 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
                     <div>
                       <h4 className="text-white font-medium">{service.name}</h4>
                       <p className="text-zinc-400 text-sm mt-1">{service.description}</p>
-                      <p className="text-blue-500 mt-2">{service.price} DH</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <p className="text-blue-500">{service.price} DH</p>
+                        <span className="text-zinc-500">•</span>
+                        <p className="text-zinc-400 text-sm flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {service.duration} min
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDelete(service.id)}
@@ -201,17 +217,23 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
               <div className="flex gap-2">
                 <button
                   onClick={handlePrevPage}
-                  disabled={!hasPrevPage}
-                  className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-50 
-                           disabled:cursor-not-allowed transition-colors"
+                  disabled={!hasPrevPage || currentPage === 1}
+                  className={`p-2 rounded-lg ${
+                    !hasPrevPage || currentPage === 1
+                      ? 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+                      : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                  } transition-colors`}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleNextPage}
                   disabled={!hasNextPage}
-                  className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-50 
-                           disabled:cursor-not-allowed transition-colors"
+                  className={`p-2 rounded-lg ${
+                    !hasNextPage
+                      ? 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+                      : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                  } transition-colors`}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

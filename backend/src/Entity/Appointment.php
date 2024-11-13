@@ -3,6 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\AppointmentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,7 +15,34 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['appointment:read']],
+            security: "is_granted('ROLE_USER')"
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['appointment:create']],
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can create appointments."
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['appointment:read']],
+            security: "is_granted('ROLE_USER')"
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['appointment:update']],
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can edit appointments."
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can delete appointments."
+        )
+    ],
+    normalizationContext: ['groups' => ['appointment:read']],
+    denormalizationContext: ['groups' => ['appointment:create', 'appointment:update']]
+)]
 class Appointment
 {
     #[ORM\Id]
