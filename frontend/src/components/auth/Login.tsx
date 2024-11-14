@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Scissors, Phone } from 'lucide-react';
+import { Lock, Scissors, Phone, CheckCircle } from 'lucide-react';
 import Footer from '../Footer';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageToggle from '../LanguageToggle';
@@ -14,6 +14,9 @@ export default function Login() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const registrationSuccess = location.state?.registrationSuccess;
+  const userName = location.state?.name;
+  const [showSuccess, setShowSuccess] = useState(false);
   
   // Get the redirect path from location state, or default to home
   const from = (location.state as any)?.from?.pathname || '/';
@@ -24,6 +27,24 @@ export default function Login() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
+
+  // Update the success message visibility when registration is successful
+  useEffect(() => {
+    if (registrationSuccess) {
+      setShowSuccess(true);
+      
+      // Set a timeout to hide the message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+        // Clean up location state after animation
+        setTimeout(() => {
+          window.history.replaceState({}, document.title);
+        }, 300); // Wait for fade out animation
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [registrationSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +65,32 @@ export default function Login() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Success Message - Updated with animation */}
+        {registrationSuccess && (
+          <div
+            className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md
+                       transition-all duration-300 ease-in-out
+                       ${showSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
+          >
+            <div className="bg-zinc-900/90 backdrop-blur-xl border border-green-500/20 rounded-lg p-4 
+                          shadow-lg shadow-green-500/10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                </div>
+                <div>
+                  <h3 className="text-green-500 font-medium text-sm">
+                    Registration Successful!
+                  </h3>
+                  <p className="text-zinc-400 text-xs mt-0.5">
+                    Welcome {userName}! Please login to continue.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Background elements */}
         <div className="fixed inset-0 z-0">
           <div className="absolute inset-0 bg-[#0A0A0B]" />
