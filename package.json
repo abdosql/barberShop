@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@types/react-router-dom": "^5.3.3",
-    "lucide-react": "^0.456.0",
-    "react-hot-toast": "^2.4.1",
-    "react-router-dom": "^6.28.0"
-  }
-}
