@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Lock, Scissors, User, Phone } from 'lucide-react';
+import { Lock, Scissors, User, Phone, Loader2 } from 'lucide-react';
 import Footer from '../Footer';
 import LanguageToggle from '../LanguageToggle';
+import { Button } from '../ui/Button';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function Register() {
         },
         body: JSON.stringify({
           firstName,
-          lastName: lastName || firstName, // Use firstName as lastName if no lastName provided
+          lastName: lastName || firstName,
           phoneNumber: phone,
           password,
           roles: ["ROLE_USER"]
@@ -42,8 +43,9 @@ export default function Register() {
         throw new Error(errorData?.['hydra:description'] || 'Registration failed');
       }
 
-      // On success, navigate to login with state
+      // After successful registration, navigate to login page with success state
       navigate('/login', { 
+        replace: true, // This ensures the user can't go back to the registration page
         state: { 
           registrationSuccess: true,
           name: firstName
@@ -165,18 +167,13 @@ export default function Register() {
               </div>
 
               {/* Submit Button */}
-              <button
+              <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white 
-                         py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium 
-                         hover:from-blue-600 hover:to-blue-700 transition-all
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
-                         focus:ring-offset-zinc-900
-                         disabled:opacity-50 disabled:cursor-not-allowed"
+                isLoading={isLoading}
+                loadingText="Creating Account..."
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
-              </button>
+                Create Account
+              </Button>
             </form>
 
             {/* Sign in Link */}

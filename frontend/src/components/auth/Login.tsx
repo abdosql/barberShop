@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Scissors, Phone, CheckCircle } from 'lucide-react';
+import { Lock, Scissors, Phone, CheckCircle, Loader2 } from 'lucide-react';
 import Footer from '../Footer';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageToggle from '../LanguageToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { Button } from '../ui/Button';
 
 export default function Login() {
   const { translations } = useLanguage();
@@ -17,6 +18,7 @@ export default function Login() {
   const registrationSuccess = location.state?.registrationSuccess;
   const userName = location.state?.name;
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Get the redirect path from location state, or default to home
   const from = (location.state as any)?.from?.pathname || '/';
@@ -49,12 +51,15 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     
     try {
       await login(phone, password);
       // Navigation will happen automatically due to the effect above
     } catch (err) {
       setError('Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -190,12 +195,13 @@ export default function Login() {
               </div>
 
               {/* Submit Button */}
-              <button
+              <Button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 transition"
+                isLoading={isLoading}
+                loadingText="Signing in..."
               >
                 {translations.auth.login.signIn}
-              </button>
+              </Button>
             </form>
 
             {/* Register Link */}
