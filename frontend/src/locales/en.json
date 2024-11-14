@@ -73,7 +73,9 @@
       "errorCreating": "Failed to create service. Please try again.",
       "successCreating": "Service created successfully!",
       "errorFetching": "Failed to fetch services. Please try again.",
-      "errorDeleting": "Failed to delete service. Please try again."
+      "errorDeleting": "Failed to delete service. Please try again.",
+      "duration": "Duration",
+      "durationPlaceholder": "Enter duration in minutes"
     }
   },
   "auth": {

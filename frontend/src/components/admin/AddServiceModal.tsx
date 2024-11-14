@@ -15,6 +15,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
   const [serviceName, setServiceName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [duration, setDuration] = useState('30'); // Default duration of 30 minutes
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,6 +38,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
           name: serviceName,
           price: price.toString(),
           description: description,
+          duration: parseInt(duration), // Add duration field
         }),
       });
 
@@ -49,6 +51,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
       setServiceName('');
       setPrice('');
       setDescription('');
+      setDuration('30');
       
       // Notify parent component
       onServiceAdded?.();
@@ -136,6 +139,34 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
                 min="0"
                 step="0.01"
               />
+            </div>
+          </div>
+
+          {/* Duration Input */}
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-zinc-400 mb-1">
+              {translations.admin.services.duration}
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Clock className="h-4 w-4 text-zinc-500" />
+              </div>
+              <input
+                type="number"
+                id="duration"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg
+                        text-white placeholder-zinc-500 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="30"
+                required
+                min="5"
+                step="5"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span className="text-zinc-500 text-sm">min</span>
+              </div>
             </div>
           </div>
 
