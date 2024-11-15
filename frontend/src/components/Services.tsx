@@ -1,5 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Scissors, ScissorsSquare, Brush, Sparkles } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface Service {
+  "@id": string;
+  "@type": string;
+  id: number;
+  name: string;
+  price: string;
+  description: string;
+  duration: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface ServicesProps {
   selectedServices: string[];
@@ -7,37 +20,86 @@ interface ServicesProps {
   onNext: () => void;
 }
 
-export default function Services({ selectedServices, onSelect, onNext }: ServicesProps) {
-  const services = [
-    { id: 'haircut', name: 'Haircut', price: 30, duration: 30, icon: Scissors },
-    { id: 'beardTrim', name: 'Beard Trim', price: 20, duration: 20, icon: ScissorsSquare },
-    { id: 'styling', name: 'Hair Styling', price: 25, duration: 25, icon: Brush },
-    { id: 'shave', name: 'Clean Shave', price: 25, duration: 25, icon: Sparkles },
-  ];
+// Map of service names to their respective icons
+const serviceIcons = {
+  'Haircut': Scissors,
+  'Beard Trim': ScissorsSquare,
+  'Hair Styling': Brush,
+  'Clean Shave': Sparkles,
+  // Add more mappings as needed
+};
 
-  const handleServiceToggle = (serviceId: string) => {
-    const newSelection = selectedServices.includes(serviceId)
-      ? selectedServices.filter(id => id !== serviceId)
-      : [...selectedServices, serviceId];
+export default function Services({ selectedServices, onSelect, onNext }: ServicesProps) {
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
+          headers: {
+            'Accept': 'application/ld+json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+
+        const data = await response.json();
+        setServices(data.member);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError('Failed to load services');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [token]);
+
+  const handleServiceToggle = (serviceId: number) => {
+    const newSelection = selectedServices.includes(serviceId.toString())
+      ? selectedServices.filter(id => id !== serviceId.toString())
+      : [...selectedServices, serviceId.toString()];
     onSelect(newSelection);
   };
 
   const totalPrice = selectedServices.reduce((sum, id) => 
-    sum + (services.find(s => s.id === id)?.price || 0), 0
+    sum + Number(services.find(s => s.id.toString() === id)?.price || 0), 0
   );
 
   const totalDuration = selectedServices.reduce((sum, id) => 
-    sum + (services.find(s => s.id === id)?.duration || 0), 0
+    sum + (services.find(s => s.id.toString() === id)?.duration || 0), 0
   );
+
+  // Helper function to determine grid columns based on service count
+  const getGridClass = (serviceCount: number) => {
+    if (serviceCount <= 2) return "grid md:grid-cols-1 gap-4 mb-8 max-w-md mx-auto";
+    if (serviceCount <= 4) return "grid md:grid-cols-2 gap-4 mb-8";
+    return "grid md:grid-cols-3 gap-4 mb-8"; // For 5 or more services
+  };
+
+  if (isLoading) {
+    return <div className="text-center text-zinc-400">Loading services...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-rose-500">{error}</div>;
+  }
 
   return (
     <div className="text-white">
       <h2 className="text-2xl font-bold mb-6 text-center">Select Your Services</h2>
       
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className={getGridClass(services.length)}>
         {services.map(service => {
-          const Icon = service.icon;
-          const isSelected = selectedServices.includes(service.id);
+          const Icon = serviceIcons[service.name as keyof typeof serviceIcons] || Scissors;
+          const isSelected = selectedServices.includes(service.id.toString());
           
           return (
             <button
@@ -72,7 +134,7 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
               <span className="text-zinc-400">Selected Services:</span>
               <span className="font-medium">
                 {selectedServices.map(id => 
-                  services.find(s => s.id === id)?.name
+                  services.find(s => s.id.toString() === id)?.name
                 ).join(', ')}
               </span>
             </div>
