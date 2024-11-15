@@ -90,7 +90,8 @@
       "newHere": "New here?",
       "createAccount": "Create account",
       "enterPhone": "Enter your phone number",
-      "enterPassword": "Enter your password"
+      "enterPassword": "Enter your password",
+      "signInToBook": "Sign in to book an appointment"
     },
     "register": {
       "joinBarber": "Join Our Barbershop",

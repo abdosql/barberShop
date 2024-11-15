@@ -12,7 +12,11 @@ interface Service {
   icon: typeof Scissors;
 }
 
-export default function BookingForm() {
+interface BookingFormProps {
+  readOnly?: boolean;
+}
+
+export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
@@ -115,9 +119,17 @@ export default function BookingForm() {
     return `${hours}H:${remainingMinutes}min`;
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (readOnly) {
+      return;
+    }
+    // ... existing submit logic ...
+  };
+
   return (
-    <div className="bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-zinc-800 shadow-xl p-4 sm:p-6 md:p-8 w-full">
-      <div className="space-y-4 sm:space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-4 text-white">
             {translations.home.booking.selectServices}
@@ -190,20 +202,22 @@ export default function BookingForm() {
           </div>
         </div>
 
-        <button
-          disabled={selectedServices.length === 0 || !date || !time}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
-                   transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <User className="h-5 w-5" />
-          {translations.home.booking.bookAppointment}
-        </button>
+        {!readOnly && (
+          <button
+            disabled={selectedServices.length === 0 || !date || !time}
+            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
+                     transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <User className="h-5 w-5" />
+            {translations.home.booking.bookAppointment}
+          </button>
+        )}
       </div>
 
       <SocialLinks 
         isOpen={showSocial} 
         onClose={() => setShowSocial(false)} 
       />
-    </div>
+    </form>
   );
 }

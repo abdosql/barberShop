@@ -10,6 +10,10 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   const { isAuthenticated, userInfo } = useAuth();
   const location = useLocation();
 
+  if (location.pathname === '/') {
+    return <>{children}</>;
+  }
+
   if (!isAuthenticated) {
     // Redirect to login while saving the attempted URL
     return <Navigate to="/login" state={{ from: location }} replace />;

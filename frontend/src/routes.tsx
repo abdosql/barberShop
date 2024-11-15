@@ -20,13 +20,11 @@ export default function AppRoutes() {
       <Route path="/register" element={
         isAuthenticated ? <Navigate to="/" replace /> : <Register />
       } />
+      
+      {/* Home route - now public */}
+      <Route path="/" element={<Layout />} />
 
       {/* Protected routes */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      } />
       <Route path="/admin" element={
         <ProtectedRoute requireAdmin>
           <AdminLayout>
@@ -35,10 +33,8 @@ export default function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* Catch all route - redirect to login if not authenticated, home if authenticated */}
-      <Route path="*" element={
-        isAuthenticated ? <Navigate to="/" replace /> : <Navigate to="/login" replace />
-      } />
+      {/* Catch all route - redirect to home instead of login */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 } 
