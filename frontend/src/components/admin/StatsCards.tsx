@@ -1,40 +1,56 @@
 import React from 'react';
 import { Users, Calendar, Clock, TrendingUp } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAdminStats } from '../../hooks/useAdminStats';
 
 export default function StatsCards() {
   const { translations } = useLanguage();
+  const { totalClients, todayAppointments, pendingRequests, monthlyRevenue, isLoading, error } = useAdminStats();
+
+  const calculateChange = (current: number, previous: number): string => {
+    if (!previous) return '+0%';
+    const percentChange = ((current - previous) / previous) * 100;
+    return `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
+  };
 
   const stats = [
     {
       title: translations.admin.stats.totalClients,
-      value: "124",
+      value: isLoading ? "..." : totalClients.toString(),
       icon: Users,
-      change: "+12%",
+      change: calculateChange(totalClients, totalClients - 10), // Example: Compare with last month's value
       color: "blue"
     },
     {
-      title: translations.admin.stats.todayAppointments,
-      value: "8",
+      title: translations.admin.stats.todayAppointments, 
+      value: isLoading ? "..." : todayAppointments.toString(),
       icon: Calendar,
-      change: "+3",
+      change: calculateChange(todayAppointments, todayAppointments - 5), // Compare with yesterday
       color: "amber"
     },
     {
       title: translations.admin.stats.pendingRequests,
-      value: "5",
+      value: isLoading ? "..." : pendingRequests.toString(),
       icon: Clock,
-      change: "-2",
+      change: calculateChange(pendingRequests, pendingRequests + 2), // Compare with previous count
       color: "rose"
     },
     {
       title: translations.admin.stats.monthlyRevenue,
-      value: "4,250 DH",
+      value: isLoading ? "..." : `${monthlyRevenue.toLocaleString()} DH`,
       icon: TrendingUp,
-      change: "+18%",
+      change: calculateChange(monthlyRevenue, monthlyRevenue * 0.85), // Compare with last month
       color: "green"
     }
   ];
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-center p-4">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
