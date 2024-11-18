@@ -41,11 +41,11 @@ export default function Footer() {
             )}
           </div>
 
-          {/* Center - Decorative Dots */}
-          <div className="hidden md:flex gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-blue-500/50"></div>
-            <div className="w-1 h-1 rounded-full bg-blue-400/50"></div>
-            <div className="w-1 h-1 rounded-full bg-blue-300/50"></div>
+          {/* Center - Decorative Line with Dot */}
+          <div className="flex items-center gap-1.5 mb-2 md:mb-0 group">
+            <div className="w-8 h-px bg-blue-400/30 transition-all duration-300 group-hover:bg-blue-400/60 group-hover:w-12"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400/50 transition-all duration-300 group-hover:bg-blue-400/80 group-hover:scale-125"></div>
+            <div className="w-8 h-px bg-blue-400/30 transition-all duration-300 group-hover:bg-blue-400/60 group-hover:w-12"></div>
           </div>
 
           {/* Right side - Copyright */}
