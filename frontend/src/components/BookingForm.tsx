@@ -1,98 +1,80 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, User, Scissors, Phone } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import ServiceCard from './ServiceCard';
 import SocialLinks from './SocialLinks';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Service {
-  id: string;
+  "@id": string;
+  "@type": string;
+  id: number;
   name: string;
-  price: number;
+  price: string;
+  description: string;
   duration: number;
-  icon: typeof Scissors;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export default function BookingForm() {
+interface BookingFormProps {
+  readOnly?: boolean;
+}
+
+export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
+  const { token } = useAuth();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [showSocial, setShowSocial] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const services: Service[] = [
-    {
-      id: 'haircut',
-      name: translations.home.services.haircut,
-      price: 30,
-      duration: 30,
-      icon: Scissors
-    },
-    {
-      id: 'beard-trim',
-      name: translations.home.services.beardTrim,
-      price: 20,
-      duration: 20,
-      icon: Scissors
-    },
-    {
-      id: 'hair-styling',
-      name: translations.home.services.hairStyling,
-      price: 25,
-      duration: 25,
-      icon: Scissors
-    },
-    {
-      id: 'clean-shave',
-      name: translations.home.services.cleanShave,
-      price: 25,
-      duration: 25,
-      icon: Scissors
-    },
-    {
-      id: 'kids-haircut',
-      name: translations.home.services.kidsHaircut,
-      price: 25,
-      duration: 30,
-      icon: Scissors
-    },
-    {
-      id: 'hair-color',
-      name: translations.home.services.hairColor,
-      price: 50,
-      duration: 60,
-      icon: Scissors
-    },
-    {
-      id: 'facial',
-      name: translations.home.services.facial,
-      price: 40,
-      duration: 45,
-      icon: Scissors
-    },
-    {
-      id: 'head-massage',
-      name: translations.home.services.headMassage,
-      price: 20,
-      duration: 20,
-      icon: Scissors
-    }
-  ];
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
+          headers: {
+            'Accept': 'application/ld+json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
 
-  const toggleService = (serviceId: string) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+
+        const data = await response.json();
+        setServices(data.member);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError('Failed to load services');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [token]);
+
+  const toggleService = (serviceId: number) => {
     setSelectedServices(prev =>
-      prev.includes(serviceId)
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
+      prev.includes(serviceId.toString())
+        ? prev.filter(id => id !== serviceId.toString())
+        : [...prev, serviceId.toString()]
     );
   };
 
   const { totalPrice, totalDuration } = useMemo(() => {
     return selectedServices.reduce(
       (acc, serviceId) => {
-        const service = services.find(s => s.id === serviceId);
+        const service = services.find(s => s.id.toString() === serviceId);
         if (service) {
           return {
-            totalPrice: acc.totalPrice + service.price,
+            totalPrice: acc.totalPrice + Number(service.price),
             totalDuration: acc.totalDuration + service.duration
           };
         }
@@ -100,7 +82,7 @@ export default function BookingForm() {
       },
       { totalPrice: 0, totalDuration: 0 }
     );
-  }, [selectedServices]);
+  }, [selectedServices, services]);
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) {
@@ -115,22 +97,45 @@ export default function BookingForm() {
     return `${hours}H:${remainingMinutes}min`;
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (readOnly) {
+      return;
+    }
+    // ... existing submit logic ...
+  };
+
+  // Helper function to determine grid columns based on service count
+  const getGridClass = (serviceCount: number) => {
+    if (serviceCount <= 2) return "grid grid-cols-1 gap-3 max-w-md mx-auto";
+    if (serviceCount <= 4) return "grid grid-cols-1 sm:grid-cols-2 gap-3";
+    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"; // For 5 or more services
+  };
+
+  if (isLoading) {
+    return <div className="text-center text-zinc-400">Loading services...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-rose-500">{error}</div>;
+  }
+
   return (
-    <div className="bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-zinc-800 shadow-xl p-4 sm:p-6 md:p-8 w-full">
-      <div className="space-y-4 sm:space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-4 text-white">
             {translations.home.booking.selectServices}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className={getGridClass(services.length)}>
             {services.map((service) => (
               <ServiceCard
                 key={service.id}
                 name={service.name}
-                price={service.price}
+                price={Number(service.price)}
                 duration={service.duration}
-                icon={service.icon}
-                isSelected={selectedServices.includes(service.id)}
+                icon={Scissors}
+                isSelected={selectedServices.includes(service.id.toString())}
                 onClick={() => toggleService(service.id)}
               />
             ))}
@@ -190,20 +195,22 @@ export default function BookingForm() {
           </div>
         </div>
 
-        <button
-          disabled={selectedServices.length === 0 || !date || !time}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
-                   transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <User className="h-5 w-5" />
-          {translations.home.booking.bookAppointment}
-        </button>
+        {!readOnly && (
+          <button
+            disabled={selectedServices.length === 0 || !date || !time}
+            className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
+                     transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <User className="h-5 w-5" />
+            {translations.home.booking.bookAppointment}
+          </button>
+        )}
       </div>
 
       <SocialLinks 
         isOpen={showSocial} 
         onClose={() => setShowSocial(false)} 
       />
-    </div>
+    </form>
   );
 }
