@@ -19,8 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['service:read']],
-            security: "is_granted('ROLE_USER')"
-        ),
+         ),
         new Post(
             denormalizationContext: ['groups' => ['service:create']],
             security: "is_granted('ROLE_ADMIN')",
