@@ -1,69 +1,55 @@
 import React from 'react';
-import { ExternalLink, Scissors } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Footer() {
   const { language } = useLanguage();
-
-  // Add RTL-specific classes when Arabic is selected
   const directionClass = language === 'ar' ? 'flex-row-reverse' : 'flex-row';
-  const marginClass = language === 'ar' ? 'ml-2' : 'mr-2';
 
   return (
-    <footer className="w-full py-6 px-4 border-t border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm">
+    <footer className="w-full py-4 px-4 bg-gradient-to-b from-zinc-900/80 to-zinc-900/95 backdrop-blur-sm border-t border-zinc-800/30">
       <div className="max-w-7xl mx-auto">
-        {/* Logo and Brand Section */}
-        <div className={`flex items-center justify-center mb-6 ${directionClass}`}>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left side - Credits */}
           <div className={`flex items-center gap-2 ${directionClass}`}>
-            <Scissors className="w-5 h-5 text-blue-500" />
-            <span className="text-white font-bold">Barbershop</span>
-          </div>
-        </div>
-
-        {/* Decorative Line */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-800"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <div className="px-4 bg-zinc-900/50 backdrop-blur-sm">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Credits Section */}
-        <div className="mt-6 flex flex-col items-center justify-center gap-4">
-          <p className={`text-zinc-400 text-sm flex items-center gap-2 ${directionClass}`}>
             {language === 'ar' ? (
               <>
                 <a
                   href="...."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-blue-500 hover:text-blue-400 transition-colors inline-flex items-center gap-1 font-medium ${directionClass}`}
+                  className={`group text-blue-400 hover:text-blue-300 transition-all duration-300 inline-flex items-center gap-1 font-medium ${directionClass}`}
                 >
                   Abdelilah
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
                 </a>
-                <span>بناه</span>
+                <span className="text-zinc-400">بناه</span>
               </>
             ) : (
               <>
-                <span>Built by</span>
+                <span className="text-zinc-400">Built by</span>
                 <a
                   href="...."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-blue-500 hover:text-blue-400 transition-colors inline-flex items-center gap-1 font-medium ${directionClass}`}
+                  className={`group text-blue-400 hover:text-blue-300 transition-all duration-300 inline-flex items-center gap-1 font-medium ${directionClass}`}
                 >
                   Abdelilah
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
                 </a>
               </>
             )}
-          </p>
-          <p className="text-zinc-500 text-xs">
+          </div>
+
+          {/* Center - Decorative Line with Dot */}
+          <div className="flex items-center gap-1.5 mb-2 md:mb-0 group">
+            <div className="w-8 h-px bg-blue-400/30 transition-all duration-300 group-hover:bg-blue-400/60 group-hover:w-12"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400/50 transition-all duration-300 group-hover:bg-blue-400/80 group-hover:scale-125"></div>
+            <div className="w-8 h-px bg-blue-400/30 transition-all duration-300 group-hover:bg-blue-400/60 group-hover:w-12"></div>
+          </div>
+
+          {/* Right side - Copyright */}
+          <p className="text-zinc-500 text-sm">
             © {new Date().getFullYear()} All rights reserved
           </p>
         </div>

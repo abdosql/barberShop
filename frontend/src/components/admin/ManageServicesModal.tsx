@@ -48,6 +48,14 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
   const [totalItems, setTotalItems] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    serviceId: number | null;
+  }>({
+    isOpen: false,
+    serviceId: null
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchServices = async (page: number) => {
     setIsLoading(true);
@@ -110,32 +118,42 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
   };
 
   const handleDelete = async (serviceId: number) => {
-    if (window.confirm(translations.admin.services.confirmDelete)) {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services/${serviceId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': '*/*',
-          },
-        });
+    setDeleteConfirmation({
+      isOpen: true,
+      serviceId: serviceId
+    });
+  };
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(
-            errorData?.['hydra:description'] || 
-            errorData?.detail || 
-            'Failed to delete service'
-          );
-        }
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.serviceId) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services/${deleteConfirmation.serviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': '*/*',
+        },
+      });
 
-        // Refresh current page
-        fetchServices(currentPage);
-      } catch (err) {
-        console.error('Error deleting service:', err);
-        setError(translations.admin.services.errorDeleting || 'Failed to delete service');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.['hydra:description'] || 
+          errorData?.detail || 
+          'Failed to delete service'
+        );
       }
+
+      // Refresh current page
+      fetchServices(currentPage);
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      setError(translations.admin.services.errorDeleting || 'Failed to delete service');
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirmation({ isOpen: false, serviceId: null });
     }
   };
 
@@ -252,6 +270,63 @@ export default function ManageServicesModal({ isOpen, onClose }: ManageServicesM
             {translations.common.close}
           </button>
         </div>
+
+        {/* Add Delete Confirmation Modal */}
+        {deleteConfirmation.isOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+            <div 
+              className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md p-6 space-y-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="p-3 bg-rose-500/10 rounded-full">
+                  <Trash2 className="w-6 h-6 text-rose-500" />
+                </div>
+                <h3 className="text-lg font-medium text-white">
+                  {translations.admin.services.confirmDeleteTitle || 'Delete Service'}
+                </h3>
+                <p className="text-zinc-400 text-sm">
+                  {translations.admin.services.confirmDeleteMessage || 'Are you sure you want to delete this service? This action cannot be undone.'}
+                </p>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+                <button
+                  onClick={() => setDeleteConfirmation({ isOpen: false, serviceId: null })}
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium border border-zinc-700 
+                           text-zinc-300 hover:bg-zinc-800 hover:border-zinc-600 
+                           transition-colors focus:outline-none focus:ring-2 
+                           focus:ring-blue-500/60 focus:ring-offset-2 focus:ring-offset-zinc-900"
+                >
+                  {translations.common.cancel}
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium 
+                             ${isDeleting 
+                               ? 'bg-rose-500/50 cursor-not-allowed' 
+                               : 'bg-rose-500 hover:bg-rose-600'} 
+                             text-white transition-colors 
+                             focus:outline-none focus:ring-2 focus:ring-rose-500/60 
+                             focus:ring-offset-2 focus:ring-offset-zinc-900
+                             disabled:opacity-70`}
+                >
+                  <span className="flex items-center gap-2">
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {translations.common.deleting || 'Deleting...'}
+                      </>
+                    ) : (
+                      translations.common.delete
+                    )}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
