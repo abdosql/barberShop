@@ -31,9 +31,16 @@ interface BookingFormProps {
   readOnly?: boolean;
 }
 
+interface UserInfo {
+  id: number;
+  email: string;
+  roles: string[];
+  // add other fields that exist in your userInfo
+}
+
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -42,6 +49,12 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get userInfo from session storage
+  const getUserInfo = (): UserInfo | null => {
+    const userInfoStr = sessionStorage.getItem('userInfo');
+    return userInfoStr ? JSON.parse(userInfoStr) : null;
+  };
 
   // Fetch services from API
   useEffect(() => {
@@ -117,6 +130,13 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       return;
     }
 
+    // Get userInfo from session
+    const userInfo = getUserInfo();
+    if (!userInfo) {
+      setError('User information not found. Please log in again.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Calculate start and end times based on selected date and time
@@ -127,7 +147,18 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + totalDuration);
 
-      // First create the time slot
+      const now = new Date().toISOString();
+
+      // Create time slot first
+      const timeSlotBody = {
+        date: startDateTime.toISOString(),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        createdAt: now,
+        updatedAt: now,
+        available: true
+      };
+
       const timeSlotResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots`, {
         method: 'POST',
         headers: {
@@ -135,12 +166,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
           'Content-Type': 'application/ld+json',
           'Accept': 'application/ld+json',
         },
-        body: JSON.stringify({
-          date: date, // Use selected date
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
-          available: false,
-        }),
+        body: JSON.stringify(timeSlotBody),
       });
 
       if (!timeSlotResponse.ok) {
@@ -148,9 +174,23 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         throw new Error(errorData.message || 'Failed to create time slot');
       }
 
-      const timeSlot = await timeSlotResponse.json();
+      const timeSlotData = await timeSlotResponse.json();
+      
+      // Create appointment without services field
+      const appointmentBody = {
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        status: "pending",
+        totalDuration: totalDuration,
+        totalPrice: totalPrice.toString(),
+        user_: `${import.meta.env.VITE_API_URL}/api/users/${userInfo.id}`,
+        timeSlot: `${import.meta.env.VITE_API_URL}/api/time_slots/${timeSlotData.id}`,
+        createdAt: now,
+        updatedAt: now
+      };
 
-      // Then create the appointment with the time slot reference
+      console.log('Appointment Request Body:', appointmentBody);
+
       const appointmentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
         method: 'POST',
         headers: {
@@ -158,22 +198,18 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
           'Content-Type': 'application/ld+json',
           'Accept': 'application/ld+json',
         },
-        body: JSON.stringify({
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
-          status: 'pending',
-          totalDuration,
-          totalPrice: totalPrice.toString(),
-          user_: `/api/users/${user.id}`,
-          timeSlot: timeSlot['@id'],
-          services: selectedServices.map(id => `/api/services/${id}`),
-        }),
+        body: JSON.stringify(appointmentBody),
       });
 
       if (!appointmentResponse.ok) {
         const errorData = await appointmentResponse.json();
-        // If appointment creation fails, we should probably delete the time slot
-        // You might want to add this cleanup logic
+        // If appointment creation fails, we should delete the time slot
+        await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots/${timeSlotData.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         throw new Error(errorData.message || 'Failed to create appointment');
       }
 
