@@ -21,10 +21,10 @@ interface TimeSlot {
   "@id": string;
   "@type": string;
   id: number;
-  date: string;
   startTime: string;
   endTime: string;
-  available: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface BookingFormProps {
@@ -49,6 +49,8 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(true);
 
   // Get userInfo from session storage
   const getUserInfo = (): UserInfo | null => {
@@ -81,6 +83,35 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     };
 
     fetchServices();
+  }, [token]);
+
+  // Add effect to fetch time slots
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      setIsLoadingTimeSlots(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
+          headers: {
+            'Accept': 'application/ld+json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch time slots');
+        }
+
+        const data = await response.json();
+        setTimeSlots(data['member']);
+      } catch (err) {
+        console.error('Error fetching time slots:', err);
+        setError('Failed to load time slots');
+      } finally {
+        setIsLoadingTimeSlots(false);
+      }
+    };
+
+    fetchTimeSlots();
   }, [token]);
 
   const toggleService = (serviceId: number) => {
@@ -119,6 +150,22 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     }
     return `${hours}H:${remainingMinutes}min`;
   };
+
+  // Format time from ISO string to display time (HH:mm)
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
+  // Filter time slots for selected date
+  const filteredTimeSlots = timeSlots.filter(slot => {
+    const slotDate = new Date(slot.startTime).toISOString().split('T')[0];
+    return slotDate === date;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,17 +352,26 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none"
             >
               <option value="">Choose a time</option>
-              <option value="09:00">9:00 AM ({formatDuration(totalDuration)})</option>
-              <option value="10:00">10:00 AM ({formatDuration(totalDuration)})</option>
-              <option value="11:00">11:00 AM ({formatDuration(totalDuration)})</option>
-              <option value="12:00">12:00 PM ({formatDuration(totalDuration)})</option>
-              <option value="13:00">1:00 PM ({formatDuration(totalDuration)})</option>
-              <option value="14:00">2:00 PM ({formatDuration(totalDuration)})</option>
-              <option value="15:00">3:00 PM ({formatDuration(totalDuration)})</option>
-              <option value="16:00">4:00 PM ({formatDuration(totalDuration)})</option>
+              {filteredTimeSlots.map((slot) => (
+                <option key={slot.id} value={formatTime(slot.startTime)}>
+                  {formatTime(slot.startTime)} ({formatDuration(totalDuration)})
+                </option>
+              ))}
             </select>
           </div>
         </div>
+
+        {/* Show loading state for time slots */}
+        {isLoadingTimeSlots && (
+          <div className="text-center text-zinc-400">Loading available time slots...</div>
+        )}
+
+        {/* Show message when no time slots available */}
+        {!isLoadingTimeSlots && filteredTimeSlots.length === 0 && (
+          <div className="text-center text-zinc-400 mt-2">
+            No available time slots for this date
+          </div>
+        )}
 
         {!readOnly && (
           <button

@@ -1,5 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, Calendar } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface TimeSlot {
+  "@id": string;
+  "@type": string;
+  id: number;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface TimeSlotsProps {
   onSelect: (timeData: { date: string; time: string }) => void;
@@ -8,52 +19,12 @@ interface TimeSlotsProps {
 }
 
 export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSlotsProps) {
-  // Initialize with today's date
+  const { token } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState('');
-
-  // Service definitions with durations
-  const services = {
-    haircut: { duration: 30 },
-    beardTrim: { duration: 20 },
-    styling: { duration: 25 },
-    shave: { duration: 25 }
-  };
-
-  // Calculate total duration of selected services
-  const totalDuration = selectedServices.reduce((total, serviceId) => 
-    total + (services[serviceId as keyof typeof services]?.duration || 0), 0
-  );
-
-  // Generate appropriate time slots based on selected services
-  const generateTimeSlots = () => {
-    const baseSlots = [
-      '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', 
-      '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-      '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
-    ];
-    
-    // If only haircut is selected
-    if (selectedServices.length === 1 && selectedServices.includes('haircut')) {
-      return ['11:00', '11:30', '12:00', '12:30', '13:00', '13:30', 
-              '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-              '17:00', '17:30', '18:00', '18:30', '19:00'];
-    }
-
-    // If haircut and beard trim are selected
-    if (selectedServices.length === 2 && 
-        selectedServices.includes('haircut') && 
-        selectedServices.includes('beardTrim')) {
-      // Return slots that accommodate the combined duration (50 minutes)
-      return ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', 
-              '17:00', '18:00', '19:00'];
-    }
-
-    // For other combinations, filter slots based on total duration
-    return baseSlots.filter((_, index) => index % Math.ceil(totalDuration / 30) === 0);
-  };
-
-  const timeSlots = generateTimeSlots();
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Get today's date in YYYY-MM-DD format for min date
   const today = new Date().toISOString().split('T')[0];
@@ -63,22 +34,40 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
   maxDate.setDate(maxDate.getDate() + 30);
   const maxDateString = maxDate.toISOString().split('T')[0];
 
+  // Fetch time slots from API
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
+          headers: {
+            'Accept': 'application/ld+json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch time slots');
+        }
+
+        const data = await response.json();
+        setTimeSlots(data['member']);
+      } catch (err) {
+        console.error('Error fetching time slots:', err);
+        setError('Failed to load available time slots');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTimeSlots();
+  }, [token]);
+
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
-    // Calculate end time based on total duration
-    const [hours, minutes] = time.split(':').map(Number);
-    const endDate = new Date();
-    endDate.setHours(hours);
-    endDate.setMinutes(minutes + totalDuration);
-    const endTime = endDate.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: false 
-    });
-
     onSelect({
       date: selectedDate,
-      time: `${time}-${endTime}`
+      time: time
     });
   };
 
@@ -93,18 +82,29 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
     });
   };
 
-  // Check if the selected time slot would end after business hours (20:00)
-  const isValidTimeSlot = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const endTime = new Date();
-    endTime.setHours(hours);
-    endTime.setMinutes(minutes + totalDuration);
-    return endTime.getHours() < 20 || (endTime.getHours() === 20 && endTime.getMinutes() === 0);
+  // Format time from ISO string to display time (HH:mm)
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
-  const handleTimeSelection = (date: string, time: string) => {
-    onSelect({ date, time });
-  };
+  // Filter time slots for selected date
+  const filteredTimeSlots = timeSlots.filter(slot => {
+    const slotDate = new Date(slot.startTime).toISOString().split('T')[0];
+    return slotDate === selectedDate;
+  });
+
+  if (isLoading) {
+    return <div className="text-center text-zinc-400">Loading available time slots...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-rose-500">{error}</div>;
+  }
 
   return (
     <div className="text-white">
@@ -137,48 +137,35 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
       {selectedDate && (
         <div>
           <label className="block text-sm font-medium mb-2 text-zinc-400">
-            Select Time (Duration: {totalDuration} min)
+            Select Time
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {timeSlots.filter(isValidTimeSlot).map((time) => {
-              // Calculate end time for display
-              const [hours, minutes] = time.split(':').map(Number);
-              const endDate = new Date();
-              endDate.setHours(hours);
-              endDate.setMinutes(minutes + totalDuration);
-              const endTime = endDate.toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                hour12: true 
-              });
-
-              return (
-                <button
-                  key={time}
-                  onClick={() => handleTimeSelect(time)}
-                  className={`p-4 rounded-xl border ${
-                    selectedTime === time
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                      : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
-                  } transition-all duration-200`}
-                >
-                  <Clock className="h-5 w-5 mx-auto mb-1" />
-                  <div className="text-sm">{time}</div>
-                  <div className="text-xs text-zinc-500">to {endTime}</div>
-                </button>
-              )}
-            )}
+            {filteredTimeSlots.map((slot) => (
+              <button
+                key={slot.id}
+                onClick={() => handleTimeSelect(formatTime(slot.startTime))}
+                className={`p-4 rounded-xl border ${
+                  selectedTime === formatTime(slot.startTime)
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-500'
+                    : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
+                } transition-all duration-200`}
+              >
+                <Clock className="h-5 w-5 mx-auto mb-1" />
+                <div className="text-sm">{formatTime(slot.startTime)}</div>
+                <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
+              </button>
+            ))}
           </div>
+          
+          {filteredTimeSlots.length === 0 && (
+            <p className="text-center text-zinc-400 mt-4">
+              No available time slots for this date
+            </p>
+          )}
         </div>
       )}
 
-      {!selectedDate && (
-        <div className="text-center text-zinc-400 mt-4">
-          Please select a date first
-        </div>
-      )}
-
-      {/* Add a Next button */}
+      {/* Next button */}
       <button
         onClick={onNext}
         disabled={!selectedTime || !selectedDate}
