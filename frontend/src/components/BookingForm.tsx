@@ -188,26 +188,48 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
     setIsSubmitting(true);
     try {
-      // Find the selected time slot
-      const selectedTimeSlot = timeSlots.find(slot => formatTime(slot.startTime) === time);
+      // Find the initial selected time slot
+      const initialTimeSlot = timeSlots.find(slot => formatTime(slot.startTime) === time);
       
-      if (!selectedTimeSlot) {
+      if (!initialTimeSlot) {
         throw new Error('Selected time slot not found');
+      }
+
+      // Calculate how many 30-minute slots we need
+      const slotsNeeded = Math.ceil(totalDuration / 30);
+
+      // Find the index of the initial slot
+      const initialSlotIndex = timeSlots.findIndex(slot => slot.id === initialTimeSlot.id);
+      
+      // Get the required consecutive slots
+      const requiredSlots = timeSlots.slice(initialSlotIndex, initialSlotIndex + slotsNeeded);
+
+      // Verify we have enough consecutive available slots
+      if (requiredSlots.length < slotsNeeded) {
+        throw new Error('Not enough consecutive time slots available for this service duration');
+      }
+
+      // Check if all required slots are available
+      const allSlotsAvailable = requiredSlots.every(slot => slot.isAvailable);
+      if (!allSlotsAvailable) {
+        throw new Error('Some required time slots are not available');
       }
 
       const now = new Date().toISOString();
 
-      // Create appointment with the selected time slot
+      // Create appointment with all required time slots
       const appointmentBody = {
-        startTime: selectedTimeSlot.startTime,
-        endTime: selectedTimeSlot.endTime,
+        startTime: initialTimeSlot.startTime,
+        endTime: requiredSlots[requiredSlots.length - 1].endTime,
         status: "pending",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
         createdAt: now,
         updatedAt: now,
         user_: `${import.meta.env.VITE_API_URL}/api/users/${userInfo.id}`,
-        timeSlots: [`${import.meta.env.VITE_API_URL}/api/time_slots/${selectedTimeSlot.id}`]
+        timeSlots: requiredSlots.map(slot => 
+          `${import.meta.env.VITE_API_URL}/api/time_slots/${slot.id}`
+        )
       };
 
       console.log('Appointment Request Body:', appointmentBody);
