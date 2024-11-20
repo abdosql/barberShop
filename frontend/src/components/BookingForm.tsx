@@ -23,6 +23,7 @@ interface TimeSlot {
   id: number;
   startTime: string;
   endTime: string;
+  isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,7 +91,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     const fetchTimeSlots = async () => {
       setIsLoadingTimeSlots(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?pagination=false`, {
           headers: {
             'Accept': 'application/ld+json',
             'Authorization': `Bearer ${token}`
@@ -102,7 +103,16 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         }
 
         const data = await response.json();
-        setTimeSlots(data['member']);
+        const slots = data['member'] || [];
+
+        // Sort time slots by time only
+        const sortedSlots = slots.sort((a: TimeSlot, b: TimeSlot) => {
+          const timeA = new Date(a.startTime).getHours() * 60 + new Date(a.startTime).getMinutes();
+          const timeB = new Date(b.startTime).getHours() * 60 + new Date(b.startTime).getMinutes();
+          return timeA - timeB;
+        });
+
+        setTimeSlots(sortedSlots);
       } catch (err) {
         console.error('Error fetching time slots:', err);
         setError('Failed to load time slots');
@@ -154,18 +164,10 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   // Format time from ISO string to display time (HH:mm)
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
-
-  // Filter time slots for selected date
-  const filteredTimeSlots = timeSlots.filter(slot => {
-    const slotDate = new Date(slot.startTime).toISOString().split('T')[0];
-    return slotDate === date;
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,8 +354,12 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none"
             >
               <option value="">Choose a time</option>
-              {filteredTimeSlots.map((slot) => (
-                <option key={slot.id} value={formatTime(slot.startTime)}>
+              {timeSlots.map((slot) => (
+                <option 
+                  key={slot.id} 
+                  value={formatTime(slot.startTime)}
+                  disabled={!slot.isAvailable}
+                >
                   {formatTime(slot.startTime)} ({formatDuration(totalDuration)})
                 </option>
               ))}
@@ -367,7 +373,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         )}
 
         {/* Show message when no time slots available */}
-        {!isLoadingTimeSlots && filteredTimeSlots.length === 0 && (
+        {!isLoadingTimeSlots && timeSlots.length === 0 && (
           <div className="text-center text-zinc-400 mt-2">
             No available time slots for this date
           </div>

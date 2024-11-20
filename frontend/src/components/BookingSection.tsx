@@ -4,21 +4,32 @@ import TimeSlots from './TimeSlots';
 import Summary from './Summary';
 import { ArrowLeft } from 'lucide-react';
 
+interface BookingState {
+  services: string[];
+  time: string;
+  selectedTimeSlot?: {
+    id: number;
+    startTime: string;
+    endTime: string;
+  };
+}
+
 export default function BookingSection() {
   const [step, setStep] = useState(1);
-  const [booking, setBooking] = useState({
-    services: [] as string[],
+  const [booking, setBooking] = useState<BookingState>({
+    services: [],
     time: '',
-    date: new Date().toISOString().split('T')[0]
+    selectedTimeSlot: undefined
   });
 
-  const updateBooking = (field: keyof typeof booking, value: any) => {
+  const updateBooking = (field: keyof BookingState, value: any) => {
     if (field === 'time') {
       setBooking(prev => ({
         ...prev,
-        date: value.date,
-        time: value.time
+        time: value.time,
+        selectedTimeSlot: value.timeSlot
       }));
+      setStep(prev => Math.min(prev + 1, 3));
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
@@ -100,7 +111,10 @@ export default function BookingSection() {
               )}
               {step === 2 && (
                 <TimeSlots 
-                  onSelect={(timeData) => updateBooking('time', timeData)} 
+                  onSelect={(timeData) => updateBooking('time', {
+                    time: timeData.time,
+                    timeSlot: timeData.timeSlot
+                  })} 
                   selectedServices={booking.services}
                   onNext={handleNext}
                 />
