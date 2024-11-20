@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Clock, Calendar } from 'lucide-react';
 
 interface TimeSlotsProps {
-  onSelect: (time: string) => void;
+  onSelect: (timeData: { date: string; time: string }) => void;
   selectedServices: string[];
+  onNext?: () => void;
 }
 
-export default function TimeSlots({ onSelect, selectedServices }: TimeSlotsProps) {
+export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSlotsProps) {
   // Initialize with today's date
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState('');
@@ -101,6 +102,10 @@ export default function TimeSlots({ onSelect, selectedServices }: TimeSlotsProps
     return endTime.getHours() < 20 || (endTime.getHours() === 20 && endTime.getMinutes() === 0);
   };
 
+  const handleTimeSelection = (date: string, time: string) => {
+    onSelect({ date, time });
+  };
+
   return (
     <div className="text-white">
       <h2 className="text-2xl font-bold mb-6 text-center">Select Date & Time</h2>
@@ -172,6 +177,16 @@ export default function TimeSlots({ onSelect, selectedServices }: TimeSlotsProps
           Please select a date first
         </div>
       )}
+
+      {/* Add a Next button */}
+      <button
+        onClick={onNext}
+        disabled={!selectedTime || !selectedDate}
+        className="mt-4 w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium 
+                 hover:bg-blue-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
     </div>
   );
 }

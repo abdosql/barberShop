@@ -17,13 +17,23 @@ interface Service {
   updatedAt: string;
 }
 
+interface TimeSlot {
+  "@id": string;
+  "@type": string;
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+}
+
 interface BookingFormProps {
   readOnly?: boolean;
 }
 
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -31,6 +41,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch services from API
   useEffect(() => {
@@ -39,7 +50,6 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
           headers: {
             'Accept': 'application/ld+json',
-            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -97,12 +107,88 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     return `${hours}H:${remainingMinutes}min`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (readOnly) {
+    if (readOnly || !date || !time || selectedServices.length === 0) {
       return;
     }
-    // ... existing submit logic ...
+
+    if (e.type !== 'submit') {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Calculate start and end times based on selected date and time
+      const [hours, minutes] = time.split(':').map(Number);
+      const startDateTime = new Date(date);
+      startDateTime.setHours(hours, minutes, 0, 0);
+
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setMinutes(endDateTime.getMinutes() + totalDuration);
+
+      // First create the time slot
+      const timeSlotResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/ld+json',
+          'Accept': 'application/ld+json',
+        },
+        body: JSON.stringify({
+          date: date, // Use selected date
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          available: false,
+        }),
+      });
+
+      if (!timeSlotResponse.ok) {
+        const errorData = await timeSlotResponse.json();
+        throw new Error(errorData.message || 'Failed to create time slot');
+      }
+
+      const timeSlot = await timeSlotResponse.json();
+
+      // Then create the appointment with the time slot reference
+      const appointmentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/ld+json',
+          'Accept': 'application/ld+json',
+        },
+        body: JSON.stringify({
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          status: 'pending',
+          totalDuration,
+          totalPrice: totalPrice.toString(),
+          user_: `/api/users/${user.id}`,
+          timeSlot: timeSlot['@id'],
+          services: selectedServices.map(id => `/api/services/${id}`),
+        }),
+      });
+
+      if (!appointmentResponse.ok) {
+        const errorData = await appointmentResponse.json();
+        // If appointment creation fails, we should probably delete the time slot
+        // You might want to add this cleanup logic
+        throw new Error(errorData.message || 'Failed to create appointment');
+      }
+
+      // Success! Reset form
+      setSelectedServices([]);
+      setTime('');
+      setDate(new Date().toISOString().split('T')[0]);
+      setShowSocial(true);
+
+    } catch (err) {
+      console.error('Error creating appointment:', err);
+      setError(err instanceof Error ? err.message : 'Failed to book appointment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Helper function to determine grid columns based on service count
@@ -197,12 +283,24 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
         {!readOnly && (
           <button
-            disabled={selectedServices.length === 0 || !date || !time}
+            disabled={selectedServices.length === 0 || !date || !time || isSubmitting}
             className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
                      transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <User className="h-5 w-5" />
-            {translations.home.booking.bookAppointment}
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Booking...
+              </span>
+            ) : (
+              <>
+                <User className="h-5 w-5" />
+                {translations.home.booking.bookAppointment}
+              </>
+            )}
           </button>
         )}
       </div>

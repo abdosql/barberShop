@@ -3,31 +3,69 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\AppointmentServiceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AppointmentServiceRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['appointmentService:read']],
+            security: "is_granted('ROLE_USER')"
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['appointmentService:create']],
+            security: "is_granted('ROLE_USER')",
+            securityMessage: "Only users with the correct role can create appointment services."
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['appointmentService:read']],
+            security: "is_granted('ROLE_USER')"
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['appointmentService:update']],
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can edit appointment services."
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can delete appointment services."
+        )
+    ],
+    normalizationContext: ['groups' => ['appointmentService:read']],
+    denormalizationContext: ['groups' => ['appointmentService:create', 'appointmentService:update']]
+)]
 class AppointmentService
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['appointmentService:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['appointmentService:read', 'appointmentService:create', 'appointmentService:update'])]
     private ?int $quantity = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['appointmentService:read', 'appointmentService:create', 'appointmentService:update'])]
     private ?string $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointmentServices')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointmentService:read', 'appointmentService:create', 'appointmentService:update'])]
     private ?Appointment $appointment = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointmentServices')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointmentService:read', 'appointmentService:create', 'appointmentService:update'])]
     private ?Service $Service = null;
 
     public function getId(): ?int

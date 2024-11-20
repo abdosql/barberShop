@@ -19,7 +19,6 @@ export default function BookingSection() {
         date: value.date,
         time: value.time
       }));
-      setStep(prev => Math.min(prev + 1, 3));
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
@@ -103,6 +102,7 @@ export default function BookingSection() {
                 <TimeSlots 
                   onSelect={(timeData) => updateBooking('time', timeData)} 
                   selectedServices={booking.services}
+                  onNext={handleNext}
                 />
               )}
               {step === 3 && <Summary booking={booking} onBack={goBack} />}

@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
 #[ApiResource(
@@ -23,7 +24,7 @@ use Doctrine\ORM\Mapping as ORM;
         ),
         new Post(
             denormalizationContext: ['groups' => ['appointment:create']],
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('ROLE_USER')",
             securityMessage: "Only admins can create appointments."
         ),
         new Get(
@@ -48,40 +49,51 @@ class Appointment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?\DateTimeImmutable $startTime = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?int $totalDuration = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?string $totalPrice = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['appointment:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?User $user_ = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?TimeSlot $timeSlot = null;
 
     /**
      * @var Collection<int, AppointmentService>
      */
     #[ORM\OneToMany(targetEntity: AppointmentService::class, mappedBy: 'appointment')]
+    #[Groups(['appointment:read'])]
     private Collection $appointmentServices;
 
     public function __construct()
