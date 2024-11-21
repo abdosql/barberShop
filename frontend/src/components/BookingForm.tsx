@@ -232,8 +232,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         )
       };
 
-      console.log('Appointment Request Body:', appointmentBody);
-
+      // Create the appointment
       const appointmentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
         method: 'POST',
         headers: {
@@ -249,6 +248,42 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         throw new Error(errorData.message || 'Failed to create appointment');
       }
 
+      // Update all selected time slots to be unavailable
+      try {
+        await Promise.all(requiredSlots.map(async (slot) => {
+          const updateResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots/${slot.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/merge-patch+json',
+              'Accept': 'application/ld+json',
+            },
+            body: JSON.stringify({
+              isAvailable: false,
+              updatedAt: new Date().toISOString()
+            }),
+          });
+
+          if (!updateResponse.ok) {
+            const errorData = await updateResponse.json();
+            throw new Error(`Failed to update time slot ${slot.id}: ${errorData.message || 'Unknown error'}`);
+          }
+
+          const updatedSlot = await updateResponse.json();
+          console.log(`Successfully updated time slot ${slot.id}:`, updatedSlot);
+        }));
+
+        console.log('All time slots updated successfully');
+      } catch (updateError) {
+        console.error('Error updating time slots:', updateError);
+        // Even if the update fails, we don't throw here since the appointment was created
+        // But we should show a warning to the user
+        setError('Appointment created but some time slots could not be updated. Please contact support.');
+      }
+
+      // Refresh the time slots list
+      fetchTimeSlots();
+
       // Success! Reset form
       setSelectedServices([]);
       setTime('');
@@ -260,6 +295,40 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       setError(err instanceof Error ? err.message : 'Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Add this function to handle time slots refresh
+  const fetchTimeSlots = async () => {
+    setIsLoadingTimeSlots(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?pagination=false`, {
+        headers: {
+          'Accept': 'application/ld+json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch time slots');
+      }
+
+      const data = await response.json();
+      const slots = data['member'] || [];
+
+      // Sort time slots by time only
+      const sortedSlots = slots.sort((a: TimeSlot, b: TimeSlot) => {
+        const timeA = new Date(a.startTime).getHours() * 60 + new Date(a.startTime).getMinutes();
+        const timeB = new Date(b.startTime).getHours() * 60 + new Date(b.startTime).getMinutes();
+        return timeA - timeB;
+      });
+
+      setTimeSlots(sortedSlots);
+    } catch (err) {
+      console.error('Error fetching time slots:', err);
+      setError('Failed to load time slots');
+    } finally {
+      setIsLoadingTimeSlots(false);
     }
   };
 

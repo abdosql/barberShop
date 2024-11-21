@@ -73,21 +73,16 @@ class Appointment
     private ?string $totalPrice = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read'])]
+    #[Groups(['appointment:read', 'appointment:create'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read'])]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
     #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
     private ?User $user_ = null;
-
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
-    private ?TimeSlot $timeSlot = null;
 
     /**
      * @var Collection<int, AppointmentService>
@@ -96,9 +91,17 @@ class Appointment
     #[Groups(['appointment:read'])]
     private Collection $appointmentServices;
 
+    /**
+     * @var Collection<int, TimeSlot>
+     */
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[ORM\OneToMany(targetEntity: TimeSlot::class, mappedBy: 'appointment')]
+    private Collection $timeSlots;
+
     public function __construct()
     {
         $this->appointmentServices = new ArrayCollection();
+        $this->timeSlots = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -202,18 +205,6 @@ class Appointment
         return $this;
     }
 
-    public function getTimeSlot(): ?TimeSlot
-    {
-        return $this->timeSlot;
-    }
-
-    public function setTimeSlot(TimeSlot $timeSlot): static
-    {
-        $this->timeSlot = $timeSlot;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, AppointmentService>
      */
@@ -238,6 +229,36 @@ class Appointment
             // set the owning side to null (unless already changed)
             if ($appointmentService->getAppointment() === $this) {
                 $appointmentService->setAppointment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TimeSlot>
+     */
+    public function getTimeSlots(): Collection
+    {
+        return $this->timeSlots;
+    }
+
+    public function addTimeSlot(TimeSlot $timeSlot): static
+    {
+        if (!$this->timeSlots->contains($timeSlot)) {
+            $this->timeSlots->add($timeSlot);
+            $timeSlot->setAppointment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTimeSlot(TimeSlot $timeSlot): static
+    {
+        if ($this->timeSlots->removeElement($timeSlot)) {
+            // set the owning side to null (unless already changed)
+            if ($timeSlot->getAppointment() === $this) {
+                $timeSlot->setAppointment(null);
             }
         }
 
