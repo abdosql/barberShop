@@ -27,7 +27,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ),
         new Get(
             normalizationContext: ['groups' => ['timeslot:read']],
-            security: "is_granted('ROLE_ADMIN')"
+            security: "is_granted('ROLE_USER')"
         ),
         new Put(
             denormalizationContext: ['groups' => ['timeslot:update']],
