@@ -16,3 +16,7 @@ api_platform:
         contact:
             name: API Support
             url: https://api-platform.com
+    cache:
+        enabled: true
+        invalidation:
+            enabled: true

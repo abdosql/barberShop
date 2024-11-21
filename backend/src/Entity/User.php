@@ -28,7 +28,7 @@ use App\State\UserStateProcessor;
             processor: UserStateProcessor::class
         ),
         new Get(
-            security: "is_granted('ROLE_USER') and object == user",
+            security: "is_granted('ROLE_USER')",
             securityMessage: "You can only view your own profile."
         ),
         new Get(

@@ -91,10 +91,9 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     const fetchTimeSlots = async () => {
       setIsLoadingTimeSlots(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?pagination=false`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
-            'Accept': 'application/ld+json',
-            'Authorization': `Bearer ${token}`
+            'Accept': 'application/ld+json'
           },
         });
 
@@ -122,7 +121,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     };
 
     fetchTimeSlots();
-  }, [token]);
+  }, []);
 
   const toggleService = (serviceId: number) => {
     setSelectedServices(prev =>
@@ -295,40 +294,6 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       setError(err instanceof Error ? err.message : 'Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Add this function to handle time slots refresh
-  const fetchTimeSlots = async () => {
-    setIsLoadingTimeSlots(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?pagination=false`, {
-        headers: {
-          'Accept': 'application/ld+json',
-          'Authorization': `Bearer ${token}`
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch time slots');
-      }
-
-      const data = await response.json();
-      const slots = data['member'] || [];
-
-      // Sort time slots by time only
-      const sortedSlots = slots.sort((a: TimeSlot, b: TimeSlot) => {
-        const timeA = new Date(a.startTime).getHours() * 60 + new Date(a.startTime).getMinutes();
-        const timeB = new Date(b.startTime).getHours() * 60 + new Date(b.startTime).getMinutes();
-        return timeA - timeB;
-      });
-
-      setTimeSlots(sortedSlots);
-    } catch (err) {
-      console.error('Error fetching time slots:', err);
-      setError('Failed to load time slots');
-    } finally {
-      setIsLoadingTimeSlots(false);
     }
   };
 

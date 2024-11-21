@@ -20,7 +20,6 @@ interface TimeSlotsProps {
 }
 
 export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSlotsProps) {
-  const { token } = useAuth();
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,11 +29,10 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
     const fetchTimeSlots = async () => {
       setIsLoading(true);
       try {
-        // Fetch all time slots without any date filtering
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?pagination=false`, {
+        // Fetch all time slots without any date filtering and without auth
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
-            'Accept': 'application/ld+json',
-            'Authorization': `Bearer ${token}`
+            'Accept': 'application/ld+json'
           },
         });
 
@@ -62,7 +60,7 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
     };
 
     fetchTimeSlots();
-  }, [token]);
+  }, []);
 
   const handleTimeSelect = (slot: TimeSlot) => {
     setSelectedTime(formatTime(slot.startTime));

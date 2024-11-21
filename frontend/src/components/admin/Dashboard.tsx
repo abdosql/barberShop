@@ -10,6 +10,8 @@ export default function Dashboard() {
   const { translations } = useLanguage();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [acceptedCount, setAcceptedCount] = useState(0);
 
   const handleServiceAdded = () => {
     setIsAddServiceModalOpen(false);
@@ -52,10 +54,13 @@ export default function Dashboard() {
                 {translations.admin.dashboard.pendingAppointments}
               </h2>
               <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
-                5 pending
+                {pendingCount} pending
               </span>
             </div>
-            <AppointmentList status="pending" />
+            <AppointmentList 
+              status="pending" 
+              onCountChange={setPendingCount}
+            />
           </div>
           
           <div>
@@ -64,10 +69,13 @@ export default function Dashboard() {
                 {translations.admin.dashboard.acceptedAppointments}
               </h2>
               <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-sm">
-                8 today
+                {acceptedCount} today
               </span>
             </div>
-            <AppointmentList status="accepted" />
+            <AppointmentList 
+              status="accepted"
+              onCountChange={setAcceptedCount}
+            />
           </div>
         </div>
 

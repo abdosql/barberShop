@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\AppointmentRepository;
@@ -36,13 +37,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
             security: "is_granted('ROLE_ADMIN')",
             securityMessage: "Only admins can edit appointments."
         ),
+        new Patch(
+            denormalizationContext: ['groups' => ['appointment:patch']],
+            security: "is_granted('ROLE_ADMIN')",
+            securityMessage: "Only admins can edit appointments."
+        ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')",
             securityMessage: "Only admins can delete appointments."
         )
     ],
     normalizationContext: ['groups' => ['appointment:read']],
-    denormalizationContext: ['groups' => ['appointment:create', 'appointment:update']]
+    denormalizationContext: ['groups' => ['appointment:create', 'appointment:update', 'appointment:patch']]
 )]
 class Appointment
 {
@@ -61,7 +67,7 @@ class Appointment
     private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update', 'appointment:patch'])]
     private ?string $status = null;
 
     #[ORM\Column]
