@@ -19,7 +19,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['timeslot:read']],
-            security: "is_granted('ROLE_USER')"
         ),
         new Post(
             denormalizationContext: ['groups' => ['timeslot:create']],
