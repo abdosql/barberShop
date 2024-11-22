@@ -35,6 +35,8 @@ export default function Dashboard() {
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [cachedAppointments, setCachedAppointments] = useState<{
     data: Appointment[];
     timestamp: number;
@@ -50,6 +52,12 @@ export default function Dashboard() {
     };
   }, [cachedAppointments]);
 
+  const showNotification = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
     setCachedAppointments(current => {
       if (!current) return null;
@@ -58,6 +66,10 @@ export default function Dashboard() {
           ? { ...apt, status: 'accepted' }
           : apt
       );
+      
+      const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
+      showNotification(`Appointment for ${clientName} has been confirmed successfully.`);
+
       return {
         data: newData,
         timestamp: Date.now()
@@ -125,6 +137,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg 
+                      transform transition-all duration-500 ease-in-out z-50">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">

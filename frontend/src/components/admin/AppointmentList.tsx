@@ -104,6 +104,36 @@ export default function AppointmentList({
     return <div className="text-center py-4 text-rose-500">{error}</div>;
   }
 
+  if (appointments.length === 0) {
+    return (
+      <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-8">
+        <div className="text-center">
+          {status === 'pending' ? (
+            <>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 mb-4">
+                <Clock className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">No Pending Appointments</h3>
+              <p className="text-zinc-400 max-w-sm mx-auto">
+                There are currently no appointments waiting for approval. New appointments will appear here when clients make bookings.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 text-green-500 mb-4">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">No Accepted Appointments</h3>
+              <p className="text-zinc-400 max-w-sm mx-auto">
+                There are no accepted appointments yet. Appointments will appear here after you approve them from the pending list.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl overflow-hidden">
       {/* Desktop View - Hidden on mobile */}
