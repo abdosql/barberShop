@@ -15,8 +15,9 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        api_docs:
-            pattern: ^/api$
+        # Public API endpoints
+        public_api:
+            pattern: ^/api($|/docs$|/login$)
             security: false
 
         login:
