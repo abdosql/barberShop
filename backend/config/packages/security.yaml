@@ -15,6 +15,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+        api_docs:
+            pattern: ^/api$
+            security: false
+
         login:
             pattern: ^/api/login
             stateless: true
@@ -33,10 +37,10 @@ security:
                 provider: app_user_provider
 
     access_control:
+        - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/me, roles: ROLE_USER }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/users, methods: [POST], roles: PUBLIC_ACCESS }
         - { path: ^/api/services, methods: [GET], roles: PUBLIC_ACCESS }
         - { path: ^/api/time_slots, methods: [GET], roles: PUBLIC_ACCESS }
