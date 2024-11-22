@@ -17,8 +17,9 @@ security:
 
         # Public API endpoints
         public_api:
-            pattern: ^/api($|/docs$|/login$)
+            pattern: ^/api/?$
             security: false
+            methods: [GET]
 
         login:
             pattern: ^/api/login
