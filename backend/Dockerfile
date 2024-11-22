@@ -15,23 +15,26 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath
 
-# Install Symfony CLI
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
-RUN apt-get install symfony-cli
-
-# Get latest Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy existing application directory
+# Copy docker configuration files
+COPY docker/scripts/generate-jwt-keys.sh /usr/local/bin/
+COPY docker/scripts/docker-entrypoint.sh /usr/local/bin/
+
+# Make scripts executable
+RUN chmod +x /usr/local/bin/generate-jwt-keys.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Copy application files
 COPY . .
 
 RUN composer install
 
-COPY generate-jwt-keys.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/generate-jwt-keys.sh
+# Create jwt directory
+RUN mkdir -p config/jwt
 
-EXPOSE 8000
-
-CMD ["/bin/sh", "-c", "generate-jwt-keys.sh && symfony server:start --no-tls --port=8000 --allow-http --allow-all-ip"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["php-fpm"]

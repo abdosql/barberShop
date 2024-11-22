@@ -8,8 +8,7 @@ services:
     container_name: symfony_api
     volumes:
       - ./backend:/var/www/html
-    ports:
-      - "8000:8000"
+      - /var/www/html/docker
     environment:
       - APP_ENV=dev
       - CORS_ALLOW_ORIGIN=http://localhost:5173
@@ -23,7 +22,22 @@ services:
       - database
     networks:
       - app_network
-    command: php -S 0.0.0.0:8000 -t public
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy_server
+    ports:
+      - "8000:80"
+      - "443:443"
+    volumes:
+      - ./backend:/var/www/html
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - app_network
 
   frontend:
     build:
@@ -62,3 +76,5 @@ networks:
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
