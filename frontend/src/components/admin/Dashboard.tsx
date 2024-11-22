@@ -1,22 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Clock, CheckCircle, XCircle, Plus, Settings } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import AppointmentList from './AppointmentList';
 import StatsCards from './StatsCards';
 import AddServiceModal from './AddServiceModal';
 import ManageServicesModal from './ManageServicesModal';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface Appointment {
+  "@id": string;
+  "@type": string;
+  id: number;
+  startTime: string;
+  endTime: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  totalDuration: number;
+  totalPrice: string;
+  createdAt: string;
+  updatedAt: string;
+  user_: {
+    "@id": string;
+    "@type": string;
+    phoneNumber: string;
+    firstName: string;
+    lastName: string;
+  };
+  appointmentServices: string[];
+  timeSlots: string[];
+}
 
 export default function Dashboard() {
   const { translations } = useLanguage();
+  const { token } = useAuth();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
+    setAppointments(currentAppointments => 
+      currentAppointments.map(apt => 
+        apt.id === acceptedAppointment.id 
+          ? { ...apt, status: 'accepted' } 
+          : apt
+      )
+    );
+  };
+
+  const fetchAppointments = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments?page=1`, {
+        headers: {
+          'Accept': 'application/ld+json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch appointments');
+      }
+
+      const data = await response.json();
+      setAppointments(data.member);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [token]);
 
   const handleServiceAdded = () => {
     setIsAddServiceModalOpen(false);
     setIsManageServicesModalOpen(true);
   };
+
+  const pendingAppointments = appointments.filter(apt => apt.status === 'pending');
+  const acceptedAppointments = appointments.filter(apt => apt.status === 'accepted');
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -54,12 +118,14 @@ export default function Dashboard() {
                 {translations.admin.dashboard.pendingAppointments}
               </h2>
               <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
-                {pendingCount} pending
+                {pendingAppointments.length} pending
               </span>
             </div>
             <AppointmentList 
-              status="pending" 
-              onCountChange={setPendingCount}
+              appointments={pendingAppointments}
+              status="pending"
+              onAppointmentUpdated={handleAppointmentAccepted}
+              isLoading={isLoading}
             />
           </div>
           
@@ -69,12 +135,14 @@ export default function Dashboard() {
                 {translations.admin.dashboard.acceptedAppointments}
               </h2>
               <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-sm">
-                {acceptedCount} today
+                {acceptedAppointments.length} today
               </span>
             </div>
             <AppointmentList 
+              appointments={acceptedAppointments}
               status="accepted"
-              onCountChange={setAcceptedCount}
+              onAppointmentUpdated={fetchAppointments}
+              isLoading={isLoading}
             />
           </div>
         </div>

@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, Calendar, DollarSign } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface User {
   "@id": string;
   "@type": string;
-  id: number;
   phoneNumber: string;
   firstName: string;
   lastName: string;
-  roles: string[];
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface Appointment {
@@ -25,121 +21,27 @@ interface Appointment {
   totalPrice: string;
   createdAt: string;
   updatedAt: string;
-  user_: string;
+  user_: User;
   appointmentServices: string[];
-}
-
-interface AppointmentWithUser extends Appointment {
-  userDetails?: User;
+  timeSlots: string[];
 }
 
 interface AppointmentListProps {
+  appointments: Appointment[];
   status: 'pending' | 'accepted';
-  onCountChange?: (count: number) => void;
+  onAppointmentUpdated: (appointment: Appointment) => void;
+  isLoading: boolean;
 }
 
-export default function AppointmentList({ status, onCountChange }: AppointmentListProps) {
+export default function AppointmentList({ 
+  appointments, 
+  status, 
+  onAppointmentUpdated,
+  isLoading 
+}: AppointmentListProps) {
   const { token } = useAuth();
-  const [appointments, setAppointments] = useState<AppointmentWithUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
-
-  // Cache for user details to avoid duplicate requests
-  const userCache = useMemo(() => new Map<string, User>(), []);
-
-  const fetchUserDetails = async (userUrl: string) => {
-    // Check cache first
-    if (userCache.has(userUrl)) {
-      return userCache.get(userUrl);
-    }
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}${userUrl}`, {
-        headers: {
-          'Accept': 'application/ld+json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user details');
-      }
-
-      const userData = await response.json();
-      // Store in cache
-      userCache.set(userUrl, userData);
-      return userData;
-    } catch (err) {
-      console.error('Error fetching user details:', err);
-      return null;
-    }
-  };
-
-  const fetchAppointments = async () => {
-    setIsLoading(true);
-    try {
-      // Fetch appointments and users in parallel
-      const appointmentsPromise = fetch(`${import.meta.env.VITE_API_URL}/api/appointments?page=1`, {
-        headers: {
-          'Accept': 'application/ld+json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const [appointmentsResponse] = await Promise.all([appointmentsPromise]);
-
-      if (!appointmentsResponse.ok) {
-        throw new Error('Failed to fetch appointments');
-      }
-
-      const data = await appointmentsResponse.json();
-      const filteredAppointments = data.member.filter((apt: Appointment) => apt.status === status);
-
-      // Get unique user URLs
-      const uniqueUserUrls = [...new Set(filteredAppointments.map(apt => apt.user_))];
-
-      // Fetch all unique users in parallel
-      const userPromises = uniqueUserUrls.map(url => fetchUserDetails(url));
-      const users = await Promise.all(userPromises);
-
-      // Create a map of user URLs to user details
-      const userMap = new Map(uniqueUserUrls.map((url, index) => [url, users[index]]));
-
-      // Combine appointments with user details
-      const appointmentsWithUsers = filteredAppointments.map(appointment => ({
-        ...appointment,
-        userDetails: userMap.get(appointment.user_)
-      }));
-
-      setAppointments(appointmentsWithUsers);
-      onCountChange?.(appointmentsWithUsers.length);
-    } catch (err) {
-      console.error('Error fetching appointments:', err);
-      setError('Failed to load appointments');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Debounced refresh function to prevent too frequent updates
-  const debouncedRefresh = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    return () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        fetchAppointments();
-      }, 300);
-    };
-  }, []);
-
-  useEffect(() => {
-    fetchAppointments();
-    return () => {
-      // Clear user cache when component unmounts
-      userCache.clear();
-    };
-  }, [status, token]);
 
   const handleAccept = async (appointmentId: number) => {
     setIsUpdating(appointmentId);
@@ -161,8 +63,8 @@ export default function AppointmentList({ status, onCountChange }: AppointmentLi
         throw new Error(errorData.message || 'Failed to update appointment');
       }
 
-      // Use debounced refresh
-      debouncedRefresh();
+      const updatedAppointment = await response.json();
+      onAppointmentUpdated(updatedAppointment);
     } catch (err) {
       console.error('Error accepting appointment:', err);
       setError('Failed to accept appointment. Please try again.');
@@ -171,7 +73,6 @@ export default function AppointmentList({ status, onCountChange }: AppointmentLi
     }
   };
 
-  // Format date to be more readable
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -181,26 +82,17 @@ export default function AppointmentList({ status, onCountChange }: AppointmentLi
     });
   };
 
-  // Format time to be more readable
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
-  const getClientName = (appointment: AppointmentWithUser) => {
-    if (appointment.userDetails) {
-      return {
-        fullName: `${appointment.userDetails.firstName} ${appointment.userDetails.lastName}`,
-        phone: appointment.userDetails.phoneNumber
-      };
-    }
+  const getClientName = (appointment: Appointment) => {
     return {
-      fullName: `Client ${appointment.user_.split('/').pop()}`,
-      phone: 'N/A'
+      fullName: `${appointment.user_.firstName} ${appointment.user_.lastName}`,
+      phone: appointment.user_.phoneNumber
     };
   };
 

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Processor\AppointmentProcessor;
 use App\Repository\AppointmentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -26,7 +27,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(
             denormalizationContext: ['groups' => ['appointment:create']],
             security: "is_granted('ROLE_USER')",
-            securityMessage: "Only admins can create appointments."
+            securityMessage: "Only admins can create appointments.",
+            processor: AppointmentProcessor::class
         ),
         new Get(
             normalizationContext: ['groups' => ['appointment:read']],
@@ -79,15 +81,15 @@ class Appointment
     private ?string $totalPrice = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read', 'appointment:create'])]
+    #[Groups(['appointment:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read', 'appointment:update'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'appointments')]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read'])]
     private ?User $user_ = null;
 
     /**

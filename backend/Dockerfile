@@ -32,7 +32,6 @@ RUN chmod +x /usr/local/bin/generate-jwt-keys.sh \
 COPY . .
 
 RUN composer install
-
 # Create jwt directory
 RUN mkdir -p config/jwt
 

@@ -174,17 +174,6 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       return;
     }
 
-    if (e.type !== 'submit') {
-      return;
-    }
-
-    // Get userInfo from session
-    const userInfo = getUserInfo();
-    if (!userInfo) {
-      setError('User information not found. Please log in again.');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       // Find the initial selected time slot
@@ -208,31 +197,20 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         throw new Error('Not enough consecutive time slots available for this service duration');
       }
 
-      // Check if all required slots are available
-      const allSlotsAvailable = requiredSlots.every(slot => slot.isAvailable);
-      if (!allSlotsAvailable) {
-        throw new Error('Some required time slots are not available');
-      }
-
-      const now = new Date().toISOString();
-
-      // Create appointment with all required time slots
+      // Create simplified appointment body
       const appointmentBody = {
         startTime: initialTimeSlot.startTime,
         endTime: requiredSlots[requiredSlots.length - 1].endTime,
         status: "pending",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
-        createdAt: now,
-        updatedAt: now,
-        user_: `${import.meta.env.VITE_API_URL}/api/users/${userInfo.id}`,
         timeSlots: requiredSlots.map(slot => 
           `${import.meta.env.VITE_API_URL}/api/time_slots/${slot.id}`
         )
       };
 
       // Create the appointment
-      const appointmentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -242,46 +220,10 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         body: JSON.stringify(appointmentBody),
       });
 
-      if (!appointmentResponse.ok) {
-        const errorData = await appointmentResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to create appointment');
       }
-
-      // Update all selected time slots to be unavailable
-      try {
-        await Promise.all(requiredSlots.map(async (slot) => {
-          const updateResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots/${slot.id}`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/merge-patch+json',
-              'Accept': 'application/ld+json',
-            },
-            body: JSON.stringify({
-              isAvailable: false,
-              updatedAt: new Date().toISOString()
-            }),
-          });
-
-          if (!updateResponse.ok) {
-            const errorData = await updateResponse.json();
-            throw new Error(`Failed to update time slot ${slot.id}: ${errorData.message || 'Unknown error'}`);
-          }
-
-          const updatedSlot = await updateResponse.json();
-          console.log(`Successfully updated time slot ${slot.id}:`, updatedSlot);
-        }));
-
-        console.log('All time slots updated successfully');
-      } catch (updateError) {
-        console.error('Error updating time slots:', updateError);
-        // Even if the update fails, we don't throw here since the appointment was created
-        // But we should show a warning to the user
-        setError('Appointment created but some time slots could not be updated. Please contact support.');
-      }
-
-      // Refresh the time slots list
-      fetchTimeSlots();
 
       // Success! Reset form
       setSelectedServices([]);
