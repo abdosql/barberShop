@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Clock, CheckCircle, XCircle, Plus, Settings } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Calendar, Users, Clock, CheckCircle, XCircle, Plus, Settings, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import AppointmentList from './AppointmentList';
 import StatsCards from './StatsCards';
@@ -34,20 +34,45 @@ export default function Dashboard() {
   const { token } = useAuth();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const [cachedAppointments, setCachedAppointments] = useState<{
+    data: Appointment[];
+    timestamp: number;
+  } | null>(null);
+  const CACHE_DURATION = 30000; // 30 seconds cache
   const [isLoading, setIsLoading] = useState(true);
 
+  const { pendingAppointments, acceptedAppointments } = useMemo(() => {
+    const appointments = cachedAppointments?.data || [];
+    return {
+      pendingAppointments: appointments.filter(apt => apt.status === 'pending'),
+      acceptedAppointments: appointments.filter(apt => apt.status === 'accepted')
+    };
+  }, [cachedAppointments]);
+
   const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
-    setAppointments(currentAppointments => 
-      currentAppointments.map(apt => 
+    setCachedAppointments(current => {
+      if (!current) return null;
+      const newData = current.data.map(apt => 
         apt.id === acceptedAppointment.id 
-          ? { ...apt, status: 'accepted' } 
+          ? { ...apt, status: 'accepted' }
           : apt
-      )
-    );
+      );
+      return {
+        data: newData,
+        timestamp: Date.now()
+      };
+    });
   };
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async (force: boolean = false) => {
+    const now = Date.now();
+    
+    if (!force && cachedAppointments && (now - cachedAppointments.timestamp < CACHE_DURATION)) {
+      console.log('Using cached data');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments?page=1`, {
@@ -57,30 +82,46 @@ export default function Dashboard() {
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch appointments');
-      }
+      if (!response.ok) throw new Error('Failed to fetch appointments');
 
       const data = await response.json();
-      setAppointments(data.member);
+      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => 
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      );
+      
+      setCachedAppointments({
+        data: sortedAppointments,
+        timestamp: now
+      });
+      console.log('Cache updated at:', new Date(now).toLocaleTimeString());
     } catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
       setIsLoading(false);
     }
+  }, [token]);
+
+  const forceRefresh = () => {
+    setIsLoading(true);
+    fetchAppointments(true);
   };
 
   useEffect(() => {
     fetchAppointments();
-  }, [token]);
+
+    const intervalId = setInterval(() => {
+      fetchAppointments(true);
+    }, CACHE_DURATION);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchAppointments]);
 
   const handleServiceAdded = () => {
     setIsAddServiceModalOpen(false);
     setIsManageServicesModalOpen(true);
   };
-
-  const pendingAppointments = appointments.filter(apt => apt.status === 'pending');
-  const acceptedAppointments = appointments.filter(apt => apt.status === 'accepted');
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -117,9 +158,18 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold text-white">
                 {translations.admin.dashboard.pendingAppointments}
               </h2>
-              <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
-                {pendingAppointments.length} pending
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
+                  {pendingAppointments.length} pending
+                </span>
+                <button
+                  onClick={forceRefresh}
+                  className="p-2 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 transition-colors"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-4 h-4 text-zinc-400" />
+                </button>
+              </div>
             </div>
             <AppointmentList 
               appointments={pendingAppointments}
