@@ -19,10 +19,13 @@
         respond "{http.error.status_code} {http.error.status_text}"
     }
 
-    # Logging
+    # Logging with more details
     log {
         output stdout
-        format console
-        level INFO
+        format json
+        level DEBUG
     }
+
+    # Try files directive to ensure proper routing
+    try_files {path} /index.php?{query}
 } 
