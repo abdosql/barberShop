@@ -4,28 +4,39 @@
     file_server
     encode gzip
     
-    # Basic security headers
+    # Add CORS headers for all routes
     header {
-        # Enable HTTP Strict Transport Security (HSTS)
+        # Security headers
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        # Disable clients from sniffing the media type
         X-Content-Type-Options "nosniff"
-        # Keep referrer data off of HTTP connections
         Referrer-Policy "no-referrer-when-downgrade"
+        
+        # CORS headers
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        Access-Control-Allow-Headers "Accept, Authorization, Content-Type, X-Requested-With"
+        Access-Control-Expose-Headers "Link"
+        Access-Control-Max-Age "3600"
     }
+
+    # Handle OPTIONS preflight requests
+    @options {
+        method OPTIONS
+    }
+    respond @options 204
 
     # Handle errors
     handle_errors {
         respond "{http.error.status_code} {http.error.status_text}"
     }
 
-    # Logging with more details
+    # Logging
     log {
         output stdout
         format json
         level DEBUG
     }
 
-    # Try files directive to ensure proper routing
+    # Try files directive
     try_files {path} /index.php?{query}
 } 

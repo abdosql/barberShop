@@ -11,7 +11,7 @@ services:
       - /var/www/html/docker
     environment:
       - APP_ENV=prod
-      - CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$
+      - CORS_ALLOW_ORIGIN=*
       - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
       - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
       - JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3
