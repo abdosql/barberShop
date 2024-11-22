@@ -12,6 +12,7 @@ interface BookingState {
     startTime: string;
     endTime: string;
   };
+  totalDuration: number;
 }
 
 export default function BookingSection() {
@@ -19,7 +20,8 @@ export default function BookingSection() {
   const [booking, setBooking] = useState<BookingState>({
     services: [],
     time: '',
-    selectedTimeSlot: undefined
+    selectedTimeSlot: undefined,
+    totalDuration: 0
   });
 
   const updateBooking = (field: keyof BookingState, value: any) => {
@@ -30,6 +32,12 @@ export default function BookingSection() {
         selectedTimeSlot: value.timeSlot
       }));
       setStep(prev => Math.min(prev + 1, 3));
+    } else if (field === 'services') {
+      setBooking(prev => ({ 
+        ...prev, 
+        services: value.services,
+        totalDuration: value.totalDuration
+      }));
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
@@ -116,6 +124,7 @@ export default function BookingSection() {
                     timeSlot: timeData.timeSlot
                   })} 
                   selectedServices={booking.services}
+                  totalDuration={booking.totalDuration}
                   onNext={handleNext}
                 />
               )}

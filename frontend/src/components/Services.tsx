@@ -66,7 +66,15 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
     const newSelection = selectedServices.includes(serviceId.toString())
       ? selectedServices.filter(id => id !== serviceId.toString())
       : [...selectedServices, serviceId.toString()];
-    onSelect(newSelection);
+
+    const totalDuration = newSelection.reduce((sum, id) => 
+      sum + (services.find(s => s.id.toString() === id)?.duration || 0), 0
+    );
+
+    onSelect({
+      services: newSelection,
+      totalDuration
+    });
   };
 
   const totalPrice = selectedServices.reduce((sum, id) => 

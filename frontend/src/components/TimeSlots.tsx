@@ -16,20 +16,86 @@ interface TimeSlot {
 interface TimeSlotsProps {
   onSelect: (timeData: { time: string; timeSlot: TimeSlot }) => void;
   selectedServices: string[];
+  totalDuration: number;
   onNext?: () => void;
 }
 
-export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSlotsProps) {
+export default function TimeSlots({ onSelect, selectedServices, totalDuration, onNext }: TimeSlotsProps) {
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Calculate required slots based on total duration
+  const calculateRequiredSlots = (duration: number) => {
+    return Math.ceil(duration / 30); // 30 minutes per slot
+  };
+
+  // Function to check if there are enough consecutive available slots
+  const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number) => {
+    if (!timeSlots[startIndex]?.isAvailable) return false;
+    if (startIndex + slotsNeeded > timeSlots.length) return false;
+    
+    // Check all required slots
+    for (let i = startIndex; i < startIndex + slotsNeeded; i++) {
+      if (!timeSlots[i] || !timeSlots[i].isAvailable) {
+        return false;
+      }
+      
+      // Check if slots are consecutive by comparing times
+      if (i > startIndex) {
+        const currentSlotTime = new Date(timeSlots[i].startTime);
+        const previousSlotTime = new Date(timeSlots[i-1].startTime);
+        const timeDiff = (currentSlotTime.getTime() - previousSlotTime.getTime()) / (1000 * 60); // diff in minutes
+        if (timeDiff !== 30) { // slots must be 30 minutes apart
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  // Check if a slot should be disabled
+  const isSlotDisabled = (slot: TimeSlot, index: number) => {
+    if (!slot.isAvailable) return true;
+    if (totalDuration <= 0) return false;
+
+    const slotsNeeded = Math.ceil(totalDuration / 30);
+    let availableConsecutiveSlots = 0;
+
+    // Check consecutive slots starting from this index
+    for (let i = index; i < timeSlots.length && availableConsecutiveSlots < slotsNeeded; i++) {
+      if (!timeSlots[i].isAvailable) break;
+      
+      if (i > index) {
+        const currentStart = new Date(timeSlots[i].startTime).getTime();
+        const prevEnd = new Date(timeSlots[i - 1].endTime).getTime();
+        if (currentStart !== prevEnd) break;
+      }
+      
+      availableConsecutiveSlots++;
+    }
+
+    return availableConsecutiveSlots < slotsNeeded;
+  };
+
+  // Reset selection if the duration changes and current selection becomes invalid
+  useEffect(() => {
+    if (selectedTime && timeSlots.length > 0) {
+      const selectedSlotIndex = timeSlots.findIndex(
+        slot => formatTime(slot.startTime) === selectedTime
+      );
+      
+      if (selectedSlotIndex !== -1 && isSlotDisabled(timeSlots[selectedSlotIndex], selectedSlotIndex)) {
+        setSelectedTime(''); // Reset selection if it becomes invalid
+      }
+    }
+  }, [totalDuration, timeSlots]);
+
   useEffect(() => {
     const fetchTimeSlots = async () => {
       setIsLoading(true);
       try {
-        // Fetch all time slots without any date filtering and without auth
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
             'Accept': 'application/ld+json'
@@ -93,31 +159,36 @@ export default function TimeSlots({ onSelect, selectedServices, onNext }: TimeSl
   return (
     <div className="text-white">
       <h2 className="text-2xl font-bold mb-6 text-center">Select Time</h2>
+      {totalDuration > 0 && (
+        <div className="mb-4 text-center text-sm text-zinc-400">
+          Selected duration: {Math.floor(totalDuration / 60)}h{totalDuration % 60 > 0 ? ` ${totalDuration % 60}min` : ''}
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium mb-2 text-zinc-400">
           Time Slots
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {timeSlots.map((slot) => (
+          {timeSlots.map((slot, index) => (
             <button
               key={slot.id}
               onClick={() => handleTimeSelect(slot)}
-              disabled={!slot.isAvailable}
+              disabled={isSlotDisabled(slot, index)}
               className={`p-4 rounded-xl border ${
                 selectedTime === formatTime(slot.startTime)
                   ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                  : slot.isAvailable
+                  : !isSlotDisabled(slot, index)
                   ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
                   : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
               } transition-all duration-200`}
             >
-              <Clock className={`h-5 w-5 mx-auto mb-1 ${!slot.isAvailable ? 'opacity-50' : ''}`} />
+              <Clock className={`h-5 w-5 mx-auto mb-1 ${isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
               <div className="text-sm">{formatTime(slot.startTime)}</div>
               <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
-              {!slot.isAvailable && (
+              {isSlotDisabled(slot, index) && (
                 <div className="text-xs text-rose-500 mt-1">
-                  Unavailable
+                  {!slot.isAvailable ? 'Unavailable' : 'Not enough time'}
                 </div>
               )}
             </button>

@@ -110,9 +110,12 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to fetch appointments');
 
       const data = await response.json();
-      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => 
-        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-      );
+      // Sort appointments by date and time
+      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => {
+        const dateA = new Date(a.startTime);
+        const dateB = new Date(b.startTime);
+        return dateA.getTime() - dateB.getTime(); // This will sort from earliest to latest
+      });
       
       const newCache = {
         data: sortedAppointments,
@@ -130,7 +133,7 @@ export default function Dashboard() {
     }
   };
 
-  // Updated forceRefresh function
+  // Update forceRefresh function with the same sorting logic
   const forceRefresh = async () => {
     setIsLoading(true);
     try {
@@ -144,9 +147,12 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to fetch appointments');
 
       const data = await response.json();
-      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => 
-        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-      );
+      // Sort appointments by date and time
+      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => {
+        const dateA = new Date(a.startTime);
+        const dateB = new Date(b.startTime);
+        return dateA.getTime() - dateB.getTime(); // This will sort from earliest to latest
+      });
       
       const newCache = {
         data: sortedAppointments,

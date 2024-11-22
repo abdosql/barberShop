@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Calendar, Clock, User, Scissors, Phone } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import ServiceCard from './ServiceCard';
@@ -42,97 +42,30 @@ interface UserInfo {
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
   const { token } = useAuth();
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [time, setTime] = useState('');
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [showSocial, setShowSocial] = useState(false);
+
+  // Combine related state into a single object
+  const [formState, setFormState] = useState({
+    date: new Date().toISOString().split('T')[0],
+    time: '',
+    selectedServices: [] as string[],
+    isSubmitting: false,
+    showSocial: false
+  });
+
+  // Loading states
+  const [loading, setLoading] = useState({
+    services: true,
+    timeSlots: true
+  });
+
+  // Data states
   const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get userInfo from session storage
-  const getUserInfo = (): UserInfo | null => {
-    const userInfoStr = sessionStorage.getItem('userInfo');
-    return userInfoStr ? JSON.parse(userInfoStr) : null;
-  };
-
-  // Fetch services from API
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
-          headers: {
-            'Accept': 'application/ld+json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch services');
-        }
-
-        const data = await response.json();
-        setServices(data.member);
-      } catch (err) {
-        console.error('Error fetching services:', err);
-        setError('Failed to load services');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchServices();
-  }, [token]);
-
-  // Add effect to fetch time slots
-  useEffect(() => {
-    const fetchTimeSlots = async () => {
-      setIsLoadingTimeSlots(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
-          headers: {
-            'Accept': 'application/ld+json'
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch time slots');
-        }
-
-        const data = await response.json();
-        const slots = data['member'] || [];
-
-        // Sort time slots by time only
-        const sortedSlots = slots.sort((a: TimeSlot, b: TimeSlot) => {
-          const timeA = new Date(a.startTime).getHours() * 60 + new Date(a.startTime).getMinutes();
-          const timeB = new Date(b.startTime).getHours() * 60 + new Date(b.startTime).getMinutes();
-          return timeA - timeB;
-        });
-
-        setTimeSlots(sortedSlots);
-      } catch (err) {
-        console.error('Error fetching time slots:', err);
-        setError('Failed to load time slots');
-      } finally {
-        setIsLoadingTimeSlots(false);
-      }
-    };
-
-    fetchTimeSlots();
-  }, []);
-
-  const toggleService = (serviceId: number) => {
-    setSelectedServices(prev =>
-      prev.includes(serviceId.toString())
-        ? prev.filter(id => id !== serviceId.toString())
-        : [...prev, serviceId.toString()]
-    );
-  };
-
+  // Memoized calculations
   const { totalPrice, totalDuration } = useMemo(() => {
-    return selectedServices.reduce(
+    return formState.selectedServices.reduce(
       (acc, serviceId) => {
         const service = services.find(s => s.id.toString() === serviceId);
         if (service) {
@@ -145,7 +78,61 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       },
       { totalPrice: 0, totalDuration: 0 }
     );
-  }, [selectedServices, services]);
+  }, [formState.selectedServices, services]);
+
+  // Memoized slot availability check
+  const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
+    if (!slot.isAvailable) return true;
+    if (totalDuration <= 0) return false;
+
+    const slotsNeeded = Math.ceil(totalDuration / 30);
+    console.log(`Checking slot ${formatTime(slot.startTime)}, needs ${slotsNeeded} slots`);
+    
+    const hasEnough = hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots);
+    console.log(`Has enough slots: ${hasEnough}`);
+    
+    return !hasEnough;
+  }, [totalDuration, timeSlots]);
+
+  // API calls moved to separate functions
+  const fetchServices = useCallback(async () => {
+    try {
+      const data = await fetchData('/api/services?page=1');
+      setServices(data.member);
+    } catch (err) {
+      setError('Failed to load services');
+    } finally {
+      setLoading(prev => ({ ...prev, services: false }));
+    }
+  }, []);
+
+  const fetchTimeSlots = useCallback(async () => {
+    try {
+      const data = await fetchData('/api/time_slots?page=1');
+      setTimeSlots(sortTimeSlots(data.member));
+    } catch (err) {
+      setError('Failed to load time slots');
+    } finally {
+      setLoading(prev => ({ ...prev, timeSlots: false }));
+    }
+  }, []);
+
+  // Effects
+  useEffect(() => {
+    fetchServices();
+    fetchTimeSlots();
+  }, [fetchServices, fetchTimeSlots]);
+
+  // Event handlers
+  const handleServiceSelect = (serviceId: number) => {
+    setFormState(prev => {
+      const newServices = prev.selectedServices.includes(serviceId.toString())
+        ? prev.selectedServices.filter(id => id !== serviceId.toString())
+        : [...prev.selectedServices, serviceId.toString()];
+
+      return { ...prev, selectedServices: newServices };
+    });
+  };
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) {
@@ -170,14 +157,14 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (readOnly || !time || selectedServices.length === 0) {
+    if (readOnly || !formState.time || formState.selectedServices.length === 0) {
       return;
     }
 
-    setIsSubmitting(true);
+    setFormState(prev => ({ ...prev, isSubmitting: true }));
     try {
       // Find the initial selected time slot
-      const initialTimeSlot = timeSlots.find(slot => formatTime(slot.startTime) === time);
+      const initialTimeSlot = timeSlots.find(slot => formatTime(slot.startTime) === formState.time);
       
       if (!initialTimeSlot) {
         throw new Error('Selected time slot not found');
@@ -226,16 +213,19 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       }
 
       // Success! Reset form
-      setSelectedServices([]);
-      setTime('');
-      setDate(new Date().toISOString().split('T')[0]);
-      setShowSocial(true);
+      setFormState(prev => ({
+        ...prev,
+        selectedServices: [],
+        time: '',
+        date: new Date().toISOString().split('T')[0],
+        showSocial: true
+      }));
 
     } catch (err) {
       console.error('Error creating appointment:', err);
       setError(err instanceof Error ? err.message : 'Failed to book appointment. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setFormState(prev => ({ ...prev, isSubmitting: false }));
     }
   };
 
@@ -246,7 +236,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"; // For 5 or more services
   };
 
-  if (isLoading) {
+  if (loading.services) {
     return <div className="text-center text-zinc-400">Loading services...</div>;
   }
 
@@ -269,13 +259,13 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
                 price={Number(service.price)}
                 duration={service.duration}
                 icon={Scissors}
-                isSelected={selectedServices.includes(service.id.toString())}
-                onClick={() => toggleService(service.id)}
+                isSelected={formState.selectedServices.includes(service.id.toString())}
+                onClick={() => handleServiceSelect(service.id)}
               />
             ))}
           </div>
           
-          {selectedServices.length > 0 && (
+          {formState.selectedServices.length > 0 && (
             <div className="mt-4 p-4 bg-zinc-800 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-zinc-400">{translations.home.booking.totalDuration}:</span>
@@ -297,9 +287,9 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <input
               type="date"
-              value={date}
+              value={formState.date}
               min={new Date().toISOString().split('T')[0]}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => setFormState(prev => ({ ...prev, date: e.target.value }))}
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
@@ -312,31 +302,37 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
           <div className="relative">
             <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <select
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
+              value={formState.time}
+              onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))}
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none"
             >
               <option value="">Choose a time</option>
-              {timeSlots.map((slot) => (
+              {timeSlots.map((slot, index) => (
                 <option 
                   key={slot.id} 
                   value={formatTime(slot.startTime)}
-                  disabled={!slot.isAvailable}
+                  disabled={isSlotDisabled(slot, index)}
                 >
                   {formatTime(slot.startTime)} ({formatDuration(totalDuration)})
+                  {isSlotDisabled(slot, index) && ' - Not enough consecutive slots'}
                 </option>
               ))}
             </select>
           </div>
+          {totalDuration > 0 && (
+            <p className="mt-2 text-sm text-zinc-400">
+              Required time slots: {Math.ceil(totalDuration / 30)}
+            </p>
+          )}
         </div>
 
         {/* Show loading state for time slots */}
-        {isLoadingTimeSlots && (
+        {loading.timeSlots && (
           <div className="text-center text-zinc-400">Loading available time slots...</div>
         )}
 
         {/* Show message when no time slots available */}
-        {!isLoadingTimeSlots && timeSlots.length === 0 && (
+        {!loading.timeSlots && timeSlots.length === 0 && (
           <div className="text-center text-zinc-400 mt-2">
             No available time slots for this date
           </div>
@@ -344,11 +340,11 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
         {!readOnly && (
           <button
-            disabled={selectedServices.length === 0 || !date || !time || isSubmitting}
+            disabled={formState.selectedServices.length === 0 || !formState.date || !formState.time || formState.isSubmitting}
             className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-400 
                      transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? (
+            {formState.isSubmitting ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -367,9 +363,61 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       </div>
 
       <SocialLinks 
-        isOpen={showSocial} 
-        onClose={() => setShowSocial(false)} 
+        isOpen={formState.showSocial} 
+        onClose={() => setFormState(prev => ({ ...prev, showSocial: false }))} 
       />
     </form>
   );
 }
+
+// Utility functions moved outside component
+const sortTimeSlots = (slots: TimeSlot[]) => {
+  return slots.sort((a, b) => {
+    const timeA = new Date(a.startTime).getTime();
+    const timeB = new Date(b.startTime).getTime();
+    return timeA - timeB;
+  });
+};
+
+const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slots: TimeSlot[]) => {
+  // Check if we have enough slots remaining
+  if (startIndex + slotsNeeded > slots.length) return false;
+
+  // Get the required duration in minutes
+  const requiredMinutes = slotsNeeded * 30;
+  let availableMinutes = 0;
+
+  // Check consecutive slots
+  for (let i = startIndex; i < slots.length && availableMinutes < requiredMinutes; i++) {
+    // If current slot is not available, break
+    if (!slots[i].isAvailable) {
+      break;
+    }
+
+    // If not first slot, check if consecutive
+    if (i > startIndex) {
+      const currentStart = new Date(slots[i].startTime).getTime();
+      const prevEnd = new Date(slots[i - 1].endTime).getTime();
+      
+      // If there's a gap between slots, break
+      if (currentStart !== prevEnd) {
+        break;
+      }
+    }
+
+    // Add this slot's duration (30 minutes)
+    availableMinutes += 30;
+  }
+
+  // Return true only if we have enough consecutive minutes
+  return availableMinutes >= requiredMinutes;
+};
+
+const fetchData = async (endpoint: string) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+    headers: { 'Accept': 'application/ld+json' }
+  });
+
+  if (!response.ok) throw new Error('Network response was not ok');
+  return response.json();
+};
