@@ -34,15 +34,24 @@ export default function Dashboard() {
   const { token } = useAuth();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [cachedAppointments, setCachedAppointments] = useState<{
     data: Appointment[];
     timestamp: number;
-  } | null>(null);
-  const CACHE_DURATION = 30000; // 30 seconds cache
-  const [isLoading, setIsLoading] = useState(true);
+  } | null>(() => {
+    // Try to get cached data from localStorage on initial load
+    const cached = localStorage.getItem('appointmentsCache');
+    if (cached) {
+      const parsedCache = JSON.parse(cached);
+      // Check if cache is still valid (24 hours)
+      if (Date.now() - parsedCache.timestamp < 24 * 60 * 60 * 1000) {
+        return parsedCache;
+      }
+    }
+    return null;
+  });
 
   const { pendingAppointments, acceptedAppointments } = useMemo(() => {
     const appointments = cachedAppointments?.data || [];
@@ -67,21 +76,25 @@ export default function Dashboard() {
           : apt
       );
       
-      const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
-      showNotification(`Appointment for ${clientName} has been confirmed successfully.`);
-
-      return {
+      const newCache = {
         data: newData,
         timestamp: Date.now()
       };
+
+      // Update localStorage
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      
+      const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
+      showNotification(`Appointment for ${clientName} has been confirmed successfully.`);
+
+      return newCache;
     });
   };
 
-  const fetchAppointments = useCallback(async (force: boolean = false) => {
-    const now = Date.now();
-    
-    if (!force && cachedAppointments && (now - cachedAppointments.timestamp < CACHE_DURATION)) {
-      console.log('Using cached data');
+  const fetchAppointments = async (force: boolean = false) => {
+    // If we have cached data and not forcing refresh, use cache
+    if (!force && cachedAppointments) {
+      console.log('Using cached data from localStorage');
       return;
     }
 
@@ -101,34 +114,67 @@ export default function Dashboard() {
         new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
       );
       
-      setCachedAppointments({
+      const newCache = {
         data: sortedAppointments,
-        timestamp: now
-      });
-      console.log('Cache updated at:', new Date(now).toLocaleTimeString());
+        timestamp: Date.now()
+      };
+
+      // Save to localStorage and state
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      setCachedAppointments(newCache);
+      console.log('Cache updated and saved to localStorage at:', new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
-
-  const forceRefresh = () => {
-    setIsLoading(true);
-    fetchAppointments(true);
   };
 
+  // Updated forceRefresh function
+  const forceRefresh = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments?page=1`, {
+        headers: {
+          'Accept': 'application/ld+json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch appointments');
+
+      const data = await response.json();
+      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => 
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      );
+      
+      const newCache = {
+        data: sortedAppointments,
+        timestamp: Date.now()
+      };
+
+      // Update localStorage with fresh data
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      setCachedAppointments(newCache);
+      
+      showNotification('Appointments refreshed successfully');
+      console.log('Cache forcefully updated at:', new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error('Error refreshing appointments:', err);
+      showNotification('Failed to refresh appointments');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial fetch only if no cache exists
   useEffect(() => {
-    fetchAppointments();
-
-    const intervalId = setInterval(() => {
-      fetchAppointments(true);
-    }, CACHE_DURATION);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [fetchAppointments]);
+    if (!cachedAppointments) {
+      fetchAppointments();
+    } else {
+      setIsLoading(false);
+    }
+  }, [token]);
 
   const handleServiceAdded = () => {
     setIsAddServiceModalOpen(false);
