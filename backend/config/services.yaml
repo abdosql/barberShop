@@ -20,6 +20,29 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Notification\Clients\WhatsAppClient:
+        arguments:
+            $apiKey: '%env(WHATSAPP_API_KEY)%'
+            $phoneNumberId: '%env(WHATSAPP_PHONE_NUMBER_ID)%'
+            $httpClient: '@http_client'
+
+    # Telegram Client Configuration
+    App\Notification\Clients\TelegramClient:
+        arguments:
+            $botToken: '%env(TELEGRAM_BOT_TOKEN)%'
+            $httpClient: '@http_client'
+
+    # Notification Factory Configuration
+    App\Factory\NotificationFactory:
+        arguments:
+            $config:
+                whatsapp:
+                    default_language: 'en'
+                    retry_attempts: 3
+                telegram:
+                    parse_mode: 'HTML'
+                    retry_attempts: 3
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

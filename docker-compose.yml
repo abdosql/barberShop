@@ -70,6 +70,29 @@ services:
     networks:
       - app_network
 
+  notification:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    container_name: notification_service
+    volumes:
+      - ./notification:/app
+    environment:
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+      - TELEGRAM_PHONE_NUMBER=${TELEGRAM_PHONE_NUMBER}
+      - BARBERSHOP_NAME=${BARBERSHOP_NAME}
+      - BARBERSHOP_MAPS_LINK=${BARBERSHOP_MAPS_LINK}
+      - BARBERSHOP_PHONE=${BARBERSHOP_PHONE}
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+    networks:
+      - app_network
+    depends_on:
+      - backend
+
 networks:
   app_network:
     driver: bridge

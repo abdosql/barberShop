@@ -6,6 +6,7 @@ import StatsCards from './StatsCards';
 import AddServiceModal from './AddServiceModal';
 import ManageServicesModal from './ManageServicesModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 interface Appointment {
   "@id": string;
@@ -29,13 +30,22 @@ interface Appointment {
   timeSlots: string[];
 }
 
+type NotificationType = 'success' | 'error';
+
 export default function Dashboard() {
   const { translations } = useLanguage();
   const { token } = useAuth();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: NotificationType;
+    show: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    show: false
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [cachedAppointments, setCachedAppointments] = useState<{
     data: Appointment[];
@@ -52,19 +62,26 @@ export default function Dashboard() {
     }
     return null;
   });
+  const [confirmedViewMode, setConfirmedViewMode] = useState<'accepted' | 'declined'>('accepted');
 
-  const { pendingAppointments, acceptedAppointments } = useMemo(() => {
+  const { pendingAppointments, confirmedAppointments, declinedAppointments } = useMemo(() => {
     const appointments = cachedAppointments?.data || [];
     return {
       pendingAppointments: appointments.filter(apt => apt.status === 'pending'),
-      acceptedAppointments: appointments.filter(apt => apt.status === 'accepted')
+      confirmedAppointments: appointments.filter(apt => apt.status === 'accepted'),
+      declinedAppointments: appointments.filter(apt => apt.status === 'declined')
     };
   }, [cachedAppointments]);
 
-  const showNotification = (message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const showNotification = (message: string, type: NotificationType = 'success') => {
+    setNotification({
+      message,
+      type,
+      show: true
+    });
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
   };
 
   const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
@@ -81,11 +98,33 @@ export default function Dashboard() {
         timestamp: Date.now()
       };
 
-      // Update localStorage
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       
       const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
-      showNotification(`Appointment for ${clientName} has been confirmed successfully.`);
+      showNotification(`Appointment for ${clientName} has been confirmed successfully.`, 'success');
+
+      return newCache;
+    });
+  };
+
+  const handleAppointmentDeclined = (declinedAppointment: Appointment) => {
+    setCachedAppointments(current => {
+      if (!current) return null;
+      const newData = current.data.map(apt => 
+        apt.id === declinedAppointment.id 
+          ? { ...apt, status: 'declined' }
+          : apt
+      );
+      
+      const newCache = {
+        data: newData,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      
+      const clientName = `${declinedAppointment.user_.firstName} ${declinedAppointment.user_.lastName}`;
+      showNotification(`Appointment for ${clientName} has been declined.`, 'error');
 
       return newCache;
     });
@@ -163,11 +202,11 @@ export default function Dashboard() {
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       setCachedAppointments(newCache);
       
-      showNotification('Appointments refreshed successfully');
+      showNotification('Appointments refreshed successfully', 'success');
       console.log('Cache forcefully updated at:', new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Error refreshing appointments:', err);
-      showNotification('Failed to refresh appointments');
+      showNotification('Failed to refresh appointments', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -190,17 +229,30 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-zinc-900">
       {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg 
-                      transform transition-all duration-500 ease-in-out z-50">
+      {notification.show && (
+        <div 
+          className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg 
+                     transform transition-all duration-500 ease-in-out z-50
+                     ${notification.type === 'success' 
+                       ? 'bg-green-500 text-white' 
+                       : 'bg-rose-500 text-white'}`}
+        >
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5" />
-            <span>{toastMessage}</span>
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : (
+              <XCircle className="w-5 h-5" />
+            )}
+            <span>{notification.message}</span>
           </div>
         </div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">
             {translations.admin.dashboard.title}
@@ -228,48 +280,112 @@ export default function Dashboard() {
         </div>
         
         <div className="space-y-8 mb-12">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white">
-                {translations.admin.dashboard.pendingAppointments}
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
-                  {pendingAppointments.length} pending
-                </span>
-                <button
-                  onClick={forceRefresh}
-                  className="p-2 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 transition-colors"
-                  title="Refresh"
-                >
-                  <RefreshCw className="w-4 h-4 text-zinc-400" />
-                </button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-white">
+                  {translations.admin.dashboard.pendingAppointments}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-sm">
+                    {pendingAppointments.length} pending
+                  </span>
+                  <button
+                    onClick={forceRefresh}
+                    className="p-2 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 transition-colors"
+                    title="Refresh"
+                  >
+                    <RefreshCw className="w-4 h-4 text-zinc-400" />
+                  </button>
+                </div>
               </div>
+              <AppointmentList 
+                appointments={pendingAppointments}
+                status="pending"
+                onAppointmentUpdated={(appointment) => {
+                  if (appointment.status === 'accepted') {
+                    handleAppointmentAccepted(appointment);
+                  } else if (appointment.status === 'declined') {
+                    handleAppointmentDeclined(appointment);
+                  }
+                }}
+                isLoading={isLoading}
+                pageSize={5}
+              />
             </div>
-            <AppointmentList 
-              appointments={pendingAppointments}
-              status="pending"
-              onAppointmentUpdated={handleAppointmentAccepted}
-              isLoading={isLoading}
-            />
-          </div>
+          </motion.div>
           
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white">
-                {translations.admin.dashboard.acceptedAppointments}
-              </h2>
-              <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-sm">
-                {acceptedAppointments.length} today
-              </span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-white">
+                  {confirmedViewMode === 'accepted' 
+                    ? translations.admin.dashboard.acceptedAppointments
+                    : translations.admin.dashboard.declinedAppointments}
+                </h2>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center bg-zinc-800/50 rounded-lg p-1">
+                    <button
+                      onClick={() => setConfirmedViewMode('accepted')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        confirmedViewMode === 'accepted'
+                          ? 'bg-blue-500 text-white'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="hidden sm:inline">Confirmed</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setConfirmedViewMode('declined')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        confirmedViewMode === 'declined'
+                          ? 'bg-rose-500 text-white'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <XCircle className="w-4 h-4" />
+                        <span className="hidden sm:inline">Declined</span>
+                      </div>
+                    </button>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    confirmedViewMode === 'accepted' 
+                      ? 'bg-green-500/10 text-green-500'
+                      : 'bg-rose-500/10 text-rose-500'
+                  }`}>
+                    {confirmedViewMode === 'accepted' 
+                      ? `${confirmedAppointments.length} confirmed`
+                      : `${declinedAppointments.length} declined`}
+                  </span>
+                </div>
+              </div>
+              <AppointmentList 
+                appointments={confirmedViewMode === 'accepted' ? confirmedAppointments : declinedAppointments}
+                status={confirmedViewMode}
+                onAppointmentUpdated={(appointment) => {
+                  showNotification(
+                    `Appointment status updated successfully.`,
+                    appointment.status === 'accepted' ? 'success' : 'error'
+                  );
+                  fetchAppointments(true);
+                }}
+                isLoading={isLoading}
+                pageSize={5}
+              />
             </div>
-            <AppointmentList 
-              appointments={acceptedAppointments}
-              status="accepted"
-              onAppointmentUpdated={fetchAppointments}
-              isLoading={isLoading}
-            />
-          </div>
+          </motion.div>
         </div>
 
         <div>
@@ -286,7 +402,7 @@ export default function Dashboard() {
           isOpen={isManageServicesModalOpen}
           onClose={() => setIsManageServicesModalOpen(false)}
         />
-      </div>
+      </motion.div>
     </div>
   );
 } 

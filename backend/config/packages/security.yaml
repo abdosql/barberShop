@@ -14,6 +14,15 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+            
+        # This must come before the 'api' firewall
+        swagger_doc:
+            pattern: ^/api/docs
+            security: false
+            
+        swagger:
+            pattern: ^/api/$
+            security: false
 
         login:
             pattern: ^/api/login
@@ -29,19 +38,16 @@ security:
         api:
             pattern: ^/api
             stateless: true
-            jwt:
-                provider: app_user_provider
+            provider: app_user_provider
+            jwt: ~
 
     access_control:
-        - { path: ^/api/me, roles: ROLE_USER }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/users, methods: [POST], roles: PUBLIC_ACCESS }
         - { path: ^/api/services, methods: [GET], roles: PUBLIC_ACCESS }
         - { path: ^/api/time_slots, methods: [GET], roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
+        - { path: ^/api, roles: PUBLIC_ACCESS }
+g
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
 when@test:

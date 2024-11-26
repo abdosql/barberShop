@@ -42,7 +42,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Patch(
             denormalizationContext: ['groups' => ['appointment:patch']],
             security: "is_granted('ROLE_ADMIN')",
-            securityMessage: "Only admins can edit appointments."
+            securityMessage: "Only admins can edit appointments.",
+            processor: AppointmentProcessor::class
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')",
