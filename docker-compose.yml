@@ -54,7 +54,7 @@ services:
     networks:
       - app_network
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://54.37.66.72:8000
 
   database:
     image: postgres:15-alpine
