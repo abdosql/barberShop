@@ -46,8 +46,7 @@ security:
         - { path: ^/api/users, methods: [POST], roles: PUBLIC_ACCESS }
         - { path: ^/api/services, methods: [GET], roles: PUBLIC_ACCESS }
         - { path: ^/api/time_slots, methods: [GET], roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: PUBLIC_ACCESS }
-g
+        - { path: ^/api, roles: PUBLIC_ACCESS }g
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
 when@test:
