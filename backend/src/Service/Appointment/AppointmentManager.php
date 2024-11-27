@@ -9,7 +9,7 @@ namespace App\Service\Appointment;
 use App\Entity\Appointment;
 use Symfony\Bundle\SecurityBundle\Security;
 
-class AppointmentManager
+readonly class AppointmentManager
 {
     public function __construct(
         private Security $security,

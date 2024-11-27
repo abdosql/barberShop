@@ -9,7 +9,7 @@ namespace App\Service\Appointment;
 use App\Entity\Appointment;
 use Doctrine\ORM\EntityManagerInterface;
 
-class TimeSlotManager
+readonly class TimeSlotManager
 {
     public function __construct(
         private EntityManagerInterface $entityManager
