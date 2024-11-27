@@ -76,7 +76,8 @@ services:
       dockerfile: Dockerfile
     container_name: notification_service
     volumes:
-      - ./notification:/app
+      - ./notification:/app:rw
+      - notification_sessions:/app/sessions:rw
     environment:
       - TELEGRAM_API_ID=${TELEGRAM_API_ID}
       - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
@@ -99,5 +100,6 @@ networks:
 
 volumes:
   postgres_data:
-  caddy_data:
+  caddy_data:g
   caddy_config:
+  notification_sessions:

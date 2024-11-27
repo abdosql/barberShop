@@ -13,6 +13,8 @@ nest_asyncio.apply()
 load_dotenv()
 
 app = Flask(__name__)
+client = None
+loop = None
 
 # Get Telegram credentials from environment variables
 API_ID = os.getenv('TELEGRAM_API_ID')
@@ -35,11 +37,6 @@ required_env_vars = {
 missing_vars = [var for var, value in required_env_vars.items() if not value]
 if missing_vars:
     raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
-
-# Initialize the Telegram client
-client = TelegramClient('barbershop_session', int(API_ID), API_HASH)
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
 
 # Message templates for different languages
 MESSAGE_TEMPLATES = {
@@ -74,7 +71,7 @@ MESSAGE_TEMPLATES = {
         'time': "🕐",
         'service': "💇‍♂️",
         'barber': "💈",
-        'find_us': "📍 *فين تلقانا:*",
+        'find_us': "📍 *فين تلانا:*",
         'contact': "📞 *للاتصال:*",
         'arrive_early': "_الله يجازيك بخير تجي 5 دقايق قبل الموعد_",
         'best_regards': "مع تحياتي,"
@@ -112,6 +109,69 @@ def create_appointment_message(customer_name, service, date_time, barber_name, l
     
     return message
 
+async def get_code():
+    """Async function to get the verification code"""
+    print("\n⚠️ Waiting for verification code...")
+    # Wait for a code file to appear
+    code_file = '/app/sessions/auth_code.txt'
+    while not os.path.exists(code_file):
+        await asyncio.sleep(1)
+    
+    with open(code_file, 'r') as f:
+        code = f.read().strip()
+    
+    # Remove the code file after reading
+    os.remove(code_file)
+    return code
+
+def init_telegram():
+    """Initialize Telegram client and connect"""
+    global client, loop
+    
+    try:
+        # Create event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        # Initialize client with a session file in the mounted volume
+        session_file = '/app/sessions/barbershop_session'
+        client = TelegramClient(session_file, int(API_ID), API_HASH)
+        
+        async def connect_client():
+            await client.connect()
+            
+            if not await client.is_user_authorized():
+                print(f"\n🔄 Starting authentication for {PHONE_NUMBER}")
+                await client.send_code_request(PHONE_NUMBER)
+                
+                # Create a marker file to indicate we're waiting for code
+                with open('/app/sessions/waiting_for_code', 'w') as f:
+                    f.write('1')
+                
+                code = await get_code()
+                try:
+                    await client.sign_in(PHONE_NUMBER, code)
+                    # Remove the marker file after successful authentication
+                    if os.path.exists('/app/sessions/waiting_for_code'):
+                        os.remove('/app/sessions/waiting_for_code')
+                except Exception as e:
+                    print(f"Error during sign in: {str(e)}")
+                    return False
+            return True
+
+        success = loop.run_until_complete(connect_client())
+        
+        if success:
+            print("✅ Telegram client initialized successfully!")
+            return True
+        else:
+            print("❌ Failed to initialize Telegram client")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Failed to initialize Telegram client: {str(e)}")
+        return False
+
 # Root endpoint
 @app.route('/')
 def root():
@@ -126,6 +186,18 @@ def root():
 
 @app.route('/send_appointment_confirmation', methods=['POST'])
 def send_appointment_confirmation():
+    global client, loop
+    
+    # Check if client is connected
+    if not client or not client.is_connected():
+        try:
+            init_telegram()
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to initialize Telegram client: {str(e)}'
+            }), 500
+    
     try:
         data = request.get_json()
         required_fields = ['phone_number', 'customer_name', 'service', 'date_time', 'barber_name']
@@ -203,18 +275,11 @@ def health_check():
         'message': 'Service is running'
     })
 
-# Optional: Add a message handler to process confirmation/cancellation replies
-@client.on(events.NewMessage)
-async def handle_responses(event):
-    if event.message.message.lower() == "confirm":
-        await event.respond("✅ Thank you for confirming your appointment! We look forward to seeing you.")
-    elif event.message.message.lower() == "cancel":
-        await event.respond("❌ Your appointment has been cancelled. Please contact us to reschedule.")
-
 if __name__ == '__main__':
-    print("Starting Telegram client...")
-    client.start(phone=PHONE_NUMBER)
-    print("Telegram client started successfully!")
-    
-    # Run the Flask app
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    print("Initializing Telegram client...")
+    if init_telegram():
+        print("Starting Flask server...")
+        app.run(host='0.0.0.0', port=5000, debug=False)
+    else:
+        print("Failed to initialize Telegram client. Exiting...")
+        exit(1)
