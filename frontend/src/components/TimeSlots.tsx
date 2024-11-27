@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { API_ENDPOINTS } from '../utils/api';
 
 interface TimeSlot {
   "@id": string;
@@ -96,7 +97,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
     const fetchTimeSlots = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
+        const response = await fetch(`${API_ENDPOINTS.TIME_SLOTS}?page=1`, {
           headers: {
             'Accept': 'application/ld+json'
           },
