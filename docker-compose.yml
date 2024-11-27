@@ -100,6 +100,6 @@ networks:
 
 volumes:
   postgres_data:
-  caddy_data:g
+  caddy_data:
   caddy_config:
   notification_sessions:
