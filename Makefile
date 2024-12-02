@@ -3,11 +3,12 @@
 # Development environment (PowerShell)
 dev-win:
 	@echo "Starting development environment in Windows..."
-	powershell -Command "$$env:VITE_API_URL='http://localhost:8000'; \
-	$$env:FRONTEND_TARGET='development'; \
-	$$env:FRONTEND_PORT='5173'; \
-	$$env:CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$'; \
-	docker compose up --build"
+	@powershell -NoProfile -Command " \
+		Set-Item -Path Env:VITE_API_URL -Value 'http://localhost:8000'; \
+		Set-Item -Path Env:FRONTEND_TARGET -Value 'development'; \
+		Set-Item -Path Env:FRONTEND_PORT -Value '5173'; \
+		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value '^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$'; \
+		docker compose up --build -d"
 
 # Development environment (Linux)
 dev:
@@ -16,7 +17,7 @@ dev:
 	FRONTEND_TARGET=development \
 	FRONTEND_PORT=5173 \
 	CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$' \
-	docker compose up --build
+	docker compose up --build -d
 
 # Production environment (Linux)
 prod:
@@ -25,16 +26,17 @@ prod:
 	FRONTEND_TARGET=production \
 	FRONTEND_PORT=4173 \
 	CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$' \
-	docker compose up --build
+	docker compose up --build -d
 
 # Production environment (PowerShell)
 prod-win:
 	@echo "Starting production environment in Windows..."
-	powershell -Command "$$env:VITE_API_URL='http://54.37.66.72:8000'; \
-	$$env:FRONTEND_TARGET='production'; \
-	$$env:FRONTEND_PORT='4173'; \
-	$$env:CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$'; \
-	docker compose up --build"
+	@powershell -NoProfile -Command " \
+		Set-Item -Path Env:VITE_API_URL -Value 'http://54.37.66.72:8000'; \
+		Set-Item -Path Env:FRONTEND_TARGET -Value 'production'; \
+		Set-Item -Path Env:FRONTEND_PORT -Value '4173'; \
+		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value '^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$'; \
+		docker compose up --build -d"
 
 # Stop all containers
 down:

@@ -13,20 +13,21 @@
         # Keep referrer data off of HTTP connections
         Referrer-Policy "no-referrer-when-downgrade"
         
-        # CORS headers
-        Access-Control-Allow-Origin "{http.request.header.Origin}"
-        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Authorization, Content-Type, X-Requested-With"
+        # CORS headers for development and production
+        Access-Control-Allow-Origin "*"  # In production, replace with specific domain
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "*"
         Access-Control-Allow-Credentials "true"
         Access-Control-Max-Age "3600"
-        
-        # Handle preflight requests
-        @options {
-            method OPTIONS
-        }
-        handle @options {
-            respond 204
-        }
+        defer
+    }
+
+    # Handle preflight requests
+    @options {
+        method OPTIONS
+    }
+    handle @options {
+        respond 204
     }
 
     # Handle errors
@@ -40,4 +41,4 @@
         format console
         level INFO
     }
-} 
+}
