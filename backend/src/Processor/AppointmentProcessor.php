@@ -15,29 +15,33 @@ use App\Service\Appointment\TimeSlotManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 readonly class AppointmentProcessor implements ProcessorInterface
 {
     public function __construct(
         private AppointmentManager $appointmentManager,
-        private TimeSlotManager $timeSlotManager,
         private PersistProcessor $persistProcessor,
     ) {}
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (!$data instanceof Appointment) {
             throw new \InvalidArgumentException('Data is not an instance of Appointment');
         }
+
         $request = $context['request'] ?? null;
+        $appointment = $this->appointmentManager->handleAppointment($data, $request->getMethod());
 
-        $requestMethod = $request->getMethod();
-
-        $appointment = $this->appointmentManager->handleAppointment($data, $requestMethod);
-        $persistedAppointment  = $this->persistProcessor->process($appointment, $operation, $uriVariables, $context);
-
-        $this->timeSlotManager->handleTimeSlots($persistedAppointment, $requestMethod);
-
-        return $persistedAppointment;
+        return $this->persistProcessor->process($appointment, $operation, $uriVariables, $context);
     }
 }

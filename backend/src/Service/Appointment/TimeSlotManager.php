@@ -15,14 +15,12 @@ readonly class TimeSlotManager
         private EntityManagerInterface $entityManager
     ) {}
 
-    public function handleTimeSlots(Appointment $appointment, ?string $requestMethod): void
+    public function handleTimeSlots(Appointment $appointment, ?string $status): void
     {
         foreach ($appointment->getTimeSlots() as $timeSlot) {
-            $isAvailable = $requestMethod === 'PATCH';
+            $isAvailable = $status === 'declined';
             $timeSlot->setIsAvailable($isAvailable);
             $this->entityManager->persist($timeSlot);
         }
-
-        $this->entityManager->flush();
     }
 }

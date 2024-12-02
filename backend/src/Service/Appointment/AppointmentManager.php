@@ -19,6 +19,7 @@ readonly class AppointmentManager
     public function __construct(
         private Security $security,
         private NotificationService $notificationService,
+        private TimeSlotManager $timeSlotManager,
     ) {}
 
     /**
@@ -29,18 +30,23 @@ readonly class AppointmentManager
      */
     public function handleAppointment(Appointment $appointment, ?string $requestMethod): Appointment
     {
+        $status = $appointment->getStatus();
+
         $now = new \DateTimeImmutable();
         if ($requestMethod === 'POST') {
             $appointment->setUser($this->security->getUser());
             $appointment->setCreatedAt($now);
             $appointment->setUpdatedAt($now);
+
+            $this->timeSlotManager->handleTimeSlots($appointment, $status);
+
         }
 
         if ($requestMethod === 'PATCH') {
             $appointment->setUpdatedAt($now);
             $user = $appointment->getUser();
             // Send notification if appointment is accepted
-            if ($appointment->getStatus() === 'accepted') {
+            if ($status === 'accepted') {
                 $appointmentDate = $appointment->getStartTime();
                 $details = [
                     'phone_number' => '+212' . ltrim($user->getPhoneNumber(), '0'),
@@ -54,7 +60,10 @@ readonly class AppointmentManager
                 
                 $this->notificationService->notify($details);
             }
+
+            $this->timeSlotManager->handleTimeSlots($appointment, $status);
         }
+
 
         return $appointment;
     }
