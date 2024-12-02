@@ -87,6 +87,7 @@ export default function Dashboard() {
   const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
     setCachedAppointments(current => {
       if (!current) return null;
+      
       const newData = current.data.map(apt => 
         apt.id === acceptedAppointment.id 
           ? { ...apt, status: 'accepted' }
@@ -307,7 +308,9 @@ export default function Dashboard() {
                 appointments={pendingAppointments}
                 status="pending"
                 onAppointmentUpdated={(appointment) => {
+                  console.log('AppointmentList callback triggered with:', appointment);
                   if (appointment.status === 'accepted') {
+                    console.log('Appointment is accepted, calling handleAppointmentAccepted');
                     handleAppointmentAccepted(appointment);
                   } else if (appointment.status === 'declined') {
                     handleAppointmentDeclined(appointment);

@@ -69,6 +69,7 @@ export default function AppointmentList({
   const handleAccept = async (appointmentId: number) => {
     setIsUpdating(appointmentId);
     try {
+      console.log('Starting appointment acceptance...');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}`, {
         method: 'PATCH',
         headers: {
@@ -87,6 +88,9 @@ export default function AppointmentList({
       }
 
       const updatedAppointment = await response.json();
+      console.log('Appointment updated successfully:', updatedAppointment);
+
+      // Update UI
       onAppointmentUpdated(updatedAppointment);
     } catch (err) {
       console.error('Error accepting appointment:', err);

@@ -13,7 +13,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class TelegramNotification extends AbstractNotification
+class TelegramNotification extends AbstractNotification implements NotificationInterface
 {
     private TelegramClient $client;
 
@@ -30,18 +30,18 @@ class TelegramNotification extends AbstractNotification
      * @throws DecodingExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function send(string $recipient, string $content, array $options = []): void
+    public function send(array $details, array $options = []): void
     {
-        $params = [
-            'chat_id' => $recipient,
-            'text' => $content,
-            'parse_mode' => $options['parse_mode'] ?? 'HTML'
+        $payload = [
+            'phone_number' => $details['phone_number'] ?? '',
+            'customer_name' => $details['customer_name'] ?? '',
+            'service' => $details['service'] ?? '',
+            'date_time' => $details['date_time'] ?? '',
+            'barber_name' => $details['barber_name'] ?? '',
+            'language' => $details['language'] ?? 'fr'
         ];
 
-        if (isset($options['reply_markup'])) {
-            $params['reply_markup'] = $options['reply_markup'];
-        }
-
-        $this->client->sendMessage($params);
+        $this->client->sendMessage($payload);
     }
+
 }

@@ -1,0 +1,18 @@
+services:
+  # Notification Sender
+  App\Notification\Clients\TelegramClient:
+    arguments:
+      $httpClient: '@http_client'
+
+  # Bind the interface to the implementation
+  App\Service\Notification\Contract\NotificationSenderInterface:
+    '@': '@App\Notification\Clients\TelegramClient'
+
+  # Notification Service
+  App\Service\Notification\NotificationService:
+    arguments:
+      $notificationSender: '@App\Service\Notification\Contract\NotificationSenderInterface'
+
+  # Bind the service interface to the implementation
+  App\Service\Notification\Contract\NotificationServiceInterface:
+    '@': '@App\Service\Notification\NotificationService'

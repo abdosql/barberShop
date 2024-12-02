@@ -6,22 +6,36 @@
 
 namespace App\Service\Notification;
 
-use App\Factory\NotificationFactory;
+use App\Service\Notification\Contract\NotificationSenderInterface;
+use App\Service\Notification\Contract\NotificationServiceInterface;
+use App\Service\Notification\DTO\NotificationDetails;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class NotificationService
+readonly class NotificationService implements NotificationServiceInterface
 {
-    private NotificationFactory $factory;
-    private string $defaultChannel;
-
-    public function __construct(NotificationFactory $factory, string $defaultChannel = 'whatsapp')
-    {
-        $this->factory = $factory;
-        $this->defaultChannel = $defaultChannel;
+    public function __construct(
+        private NotificationSenderInterface $notificationSender
+    ) {
     }
 
-    public function notify(string $recipient, string $message, ?string $channel = null): void
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
+    public function notify(array $details): void
     {
-        $notification = $this->factory->create($channel ?? $this->defaultChannel);
-        $notification->send($recipient, $message);
+        try {
+            $notificationDetails = NotificationDetails::fromArray($details);
+            $this->notificationSender->send($notificationDetails);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to prevent breaking the main application flow
+            error_log('Notification error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }

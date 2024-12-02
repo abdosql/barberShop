@@ -8,5 +8,5 @@ namespace App\Notification;
 
 interface NotificationInterface
 {
-    public function send(string $recipient, string $content, array $options = []): void;
+    public function send(array $details, array $options = []): void;
 }

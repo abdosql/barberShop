@@ -17,4 +17,18 @@
         <li>Your template at <code>/var/www/html/templates/notification/index.html.twig</code></li>
     </ul>
 </div>
+
+{% block content %}
+    <div>
+        <h2>Appointment Confirmation</h2>
+        <p>Dear {{ customer_name }},</p>
+        <p>Your appointment has been confirmed with the following details:</p>
+        <ul>
+            <li>Service: {{ service }}</li>
+            <li>Date and Time: {{ date_time }}</li>
+            <li>Barber: {{ barber_name }}</li>
+        </ul>
+        <p>Thank you for choosing our service!</p>
+    </div>
+{% endblock %}
 {% endblock %}
