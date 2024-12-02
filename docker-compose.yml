@@ -43,18 +43,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: react_app
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      target: ${FRONTEND_TARGET:-development}
     ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-    networks:
-      - app_network
+      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
     environment:
-      - VITE_API_URL=${VITE_API_URL}
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - NODE_ENV=${FRONTEND_TARGET:-development}
 
   database:
     image: postgres:15-alpine

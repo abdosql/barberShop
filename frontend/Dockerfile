@@ -1,13 +1,36 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
+# Add build argument for API URL
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Copy package files
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy source code
 COPY . .
 
-EXPOSE 5173
+# Build for production if needed
+RUN npm run build
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"] 
+# Development stage
+FROM node:18-alpine as development
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5173
+CMD ["npm", "run", "dev"]
+
+# Production stage
+FROM nginx:alpine as production
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 4173
+CMD ["nginx", "-g", "daemon off;"] 

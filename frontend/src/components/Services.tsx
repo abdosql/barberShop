@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scissors, ScissorsSquare, Brush, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ServicesAPI } from '../services/api';
 
 interface Service {
   "@id": string;
@@ -39,7 +38,17 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const data = await ServicesAPI.getServices(token);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
+          headers: {
+            'Accept': 'application/ld+json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+
+        const data = await response.json();
         setServices(data.member);
       } catch (err) {
         console.error('Error fetching services:', err);

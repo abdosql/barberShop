@@ -97,7 +97,14 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   // API calls moved to separate functions
   const fetchServices = useCallback(async () => {
     try {
-      const data = await fetchData('/api/services?page=1');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services?page=1`, {
+        headers: {
+          'Accept': 'application/ld+json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch services');
+      const data = await response.json();
       setServices(data.member);
     } catch (err) {
       setError('Failed to load services');
@@ -108,7 +115,14 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   const fetchTimeSlots = useCallback(async () => {
     try {
-      const data = await fetchData('/api/time_slots?page=1');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
+        headers: {
+          'Accept': 'application/ld+json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch time slots');
+      const data = await response.json();
       setTimeSlots(sortTimeSlots(data.member));
     } catch (err) {
       setError('Failed to load time slots');
