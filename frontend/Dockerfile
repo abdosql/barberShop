@@ -24,13 +24,13 @@ FROM node:18-alpine as development
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY . .
+# Don't copy source code in development as it will be mounted
 EXPOSE 5173
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Production stage
 FROM nginx:alpine as production
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 4173
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["nginx", "-g", "daemon off;"]

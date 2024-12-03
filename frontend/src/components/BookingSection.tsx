@@ -17,6 +17,7 @@ interface BookingState {
 
 export default function BookingSection() {
   const [step, setStep] = useState(1);
+  const [refreshTimeSlots, setRefreshTimeSlots] = useState(0);
   const [booking, setBooking] = useState<BookingState>({
     services: [],
     time: '',
@@ -38,6 +39,10 @@ export default function BookingSection() {
         services: value.services,
         totalDuration: value.totalDuration
       }));
+      // Refresh time slots when services change
+      console.log('Services changed, triggering time slot refresh');
+      setRefreshTimeSlots(prev => prev + 1);
+      setStep(prev => Math.min(prev + 1, 3));
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
@@ -98,34 +103,31 @@ export default function BookingSection() {
           </div>
 
           {/* Booking Content */}
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-800 shadow-xl p-6 md:p-8">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative">
               {step > 1 && (
                 <button
                   onClick={goBack}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white mb-6 transition-colors"
+                  className="absolute -left-16 top-0 p-2 text-zinc-400 hover:text-white transition-colors"
                 >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
+                  <ArrowLeft className="w-6 h-6" />
                 </button>
               )}
-              
+
               {step === 1 && (
                 <Services
+                  onSelect={(services, totalDuration) => updateBooking('services', { services, totalDuration })}
                   selectedServices={booking.services}
-                  onSelect={(services) => updateBooking('services', services)}
-                  onNext={handleNext}
                 />
               )}
+
               {step === 2 && (
-                <TimeSlots 
-                  onSelect={(timeData) => updateBooking('time', {
-                    time: timeData.time,
-                    timeSlot: timeData.timeSlot
-                  })} 
+                <TimeSlots
                   selectedServices={booking.services}
                   totalDuration={booking.totalDuration}
+                  onSelect={(timeData) => updateBooking('time', timeData)}
                   onNext={handleNext}
+                  refreshTrigger={refreshTimeSlots}
                 />
               )}
               {step === 3 && <Summary booking={booking} onBack={goBack} />}

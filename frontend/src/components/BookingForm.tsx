@@ -42,6 +42,7 @@ interface UserInfo {
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
   const { token } = useAuth();
+  const [refreshTimeSlots, setRefreshTimeSlots] = useState(0);
 
   // Combine related state into a single object
   const [formState, setFormState] = useState({
@@ -134,8 +135,12 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   // Effects
   useEffect(() => {
     fetchServices();
+  }, [fetchServices]);
+
+  useEffect(() => {
+    console.log('Fetching time slots, refreshTimeSlots:', refreshTimeSlots);
     fetchTimeSlots();
-  }, [fetchServices, fetchTimeSlots]);
+  }, [fetchTimeSlots, refreshTimeSlots]);
 
   // Event handlers
   const handleServiceSelect = (serviceId: number) => {
@@ -226,7 +231,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         throw new Error(errorData.message || 'Failed to create appointment');
       }
 
-      // Success! Reset form
+      // Reset form first
       setFormState(prev => ({
         ...prev,
         selectedServices: [],
@@ -234,6 +239,11 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         date: new Date().toISOString().split('T')[0],
         showSocial: true
       }));
+
+      // Then refresh time slots
+      console.log('Appointment created, refreshing time slots');
+      setRefreshTimeSlots(prev => prev + 1);
+      await fetchTimeSlots(); // Immediately fetch new time slots
 
     } catch (err) {
       console.error('Error creating appointment:', err);
@@ -367,10 +377,10 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
                 Booking...
               </span>
             ) : (
-              <>
+              <span>
                 <User className="h-5 w-5" />
                 {translations.home.booking.bookAppointment}
-              </>
+              </span>
             )}
           </button>
         )}

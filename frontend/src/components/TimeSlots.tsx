@@ -18,9 +18,10 @@ interface TimeSlotsProps {
   selectedServices: string[];
   totalDuration: number;
   onNext?: () => void;
+  refreshTrigger?: number;
 }
 
-export default function TimeSlots({ onSelect, selectedServices, totalDuration, onNext }: TimeSlotsProps) {
+export default function TimeSlots({ onSelect, selectedServices, totalDuration, onNext, refreshTrigger }: TimeSlotsProps) {
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,7 +95,9 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
+      console.log('Fetching time slots... refreshTrigger:', refreshTrigger);
       setIsLoading(true);
+      setSelectedTime(''); // Reset selection when refreshing
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
@@ -116,6 +119,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
           return timeA - timeB;
         });
 
+        console.log('Fetched time slots:', sortedSlots.length);
         setTimeSlots(sortedSlots);
       } catch (err) {
         console.error('Error fetching time slots:', err);
@@ -126,7 +130,12 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
     };
 
     fetchTimeSlots();
-  }, []);
+  }, [refreshTrigger]);
+
+  // Reset selection when services change
+  useEffect(() => {
+    setSelectedTime('');
+  }, [selectedServices]);
 
   const handleTimeSelect = (slot: TimeSlot) => {
     setSelectedTime(formatTime(slot.startTime));
