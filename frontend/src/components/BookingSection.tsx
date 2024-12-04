@@ -123,10 +123,9 @@ export default function BookingSection() {
 
               {step === 2 && (
                 <TimeSlots
+                  onSelect={(timeData) => updateBooking('time', timeData)}
                   selectedServices={booking.services}
                   totalDuration={booking.totalDuration}
-                  onSelect={(timeData) => updateBooking('time', timeData)}
-                  onNext={handleNext}
                   refreshTrigger={refreshTimeSlots}
                 />
               )}

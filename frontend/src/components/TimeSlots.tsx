@@ -2,26 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+interface DailyTimeSlot {
+  "@type": string;
+  "@id": string;
+  id: number;
+  date: string;
+  is_available: boolean;
+}
+
 interface TimeSlot {
   "@id": string;
   "@type": string;
   id: number;
   startTime: string;
   endTime: string;
-  isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
+  dailyTimeSlots: DailyTimeSlot[];
 }
 
 interface TimeSlotsProps {
   onSelect: (timeData: { time: string; timeSlot: TimeSlot }) => void;
   selectedServices: string[];
   totalDuration: number;
+  selectedDate: string;
   onNext?: () => void;
   refreshTrigger?: number;
 }
 
-export default function TimeSlots({ onSelect, selectedServices, totalDuration, onNext, refreshTrigger }: TimeSlotsProps) {
+export default function TimeSlots({ onSelect, selectedServices, totalDuration, selectedDate, onNext, refreshTrigger }: TimeSlotsProps) {
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,33 +41,71 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
     return Math.ceil(duration / 30); // 30 minutes per slot
   };
 
+  // Function to ensure date comparison is consistent
+  const formatDateForComparison = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+  };
+
+  // Function to check if a time slot is available
+  const isTimeSlotAvailable = (timeSlot: TimeSlot, selectedDate: string) => {
+    const formattedSelectedDate = formatDateForComparison(selectedDate);
+    console.log('Checking availability for:', {
+      timeSlot: formatTime(timeSlot.startTime),
+      selectedDate: formattedSelectedDate,
+      dailyTimeSlots: timeSlot.dailyTimeSlots
+    });
+    
+    // If dailyTimeSlots is empty, the slot is available
+    if (timeSlot.dailyTimeSlots.length === 0) {
+      console.log('No daily time slots, slot is available');
+      return true;
+    }
+
+    // Check if there's a dailyTimeSlot for the selected date
+    const dailySlot = timeSlot.dailyTimeSlots.find(
+      slot => formatDateForComparison(slot.date) === formattedSelectedDate
+    );
+
+    console.log('Found daily slot:', dailySlot);
+
+    // If no dailyTimeSlot exists for this date, the slot is available
+    if (!dailySlot) {
+      console.log('No matching daily slot found, slot is available');
+      return true;
+    }
+
+    // If a dailyTimeSlot exists for this date, return its availability
+    console.log('Daily slot found, availability:', dailySlot.is_available);
+    return dailySlot.is_available;
+  };
+
   // Function to check if there are enough consecutive available slots
   const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number) => {
-    if (!timeSlots[startIndex]?.isAvailable) return false;
+    if (!isTimeSlotAvailable(timeSlots[startIndex], selectedDate)) return false;
     if (startIndex + slotsNeeded > timeSlots.length) return false;
-    
-    // Check all required slots
+
     for (let i = startIndex; i < startIndex + slotsNeeded; i++) {
-      if (!timeSlots[i] || !timeSlots[i].isAvailable) {
+      if (!timeSlots[i] || !isTimeSlotAvailable(timeSlots[i], selectedDate)) {
         return false;
       }
-      
-      // Check if slots are consecutive by comparing times
+
       if (i > startIndex) {
         const currentSlotTime = new Date(timeSlots[i].startTime);
-        const previousSlotTime = new Date(timeSlots[i-1].startTime);
-        const timeDiff = (currentSlotTime.getTime() - previousSlotTime.getTime()) / (1000 * 60); // diff in minutes
-        if (timeDiff !== 30) { // slots must be 30 minutes apart
+        const previousSlotTime = new Date(timeSlots[i - 1].startTime);
+        const timeDiff = (currentSlotTime.getTime() - previousSlotTime.getTime()) / (1000 * 60);
+        if (timeDiff !== 30) {
           return false;
         }
       }
     }
+
     return true;
   };
 
   // Check if a slot should be disabled
   const isSlotDisabled = (slot: TimeSlot, index: number) => {
-    if (!slot.isAvailable) return true;
+    if (!isTimeSlotAvailable(slot, selectedDate)) return true;
     if (totalDuration <= 0) return false;
 
     const slotsNeeded = Math.ceil(totalDuration / 30);
@@ -66,14 +113,14 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
 
     // Check consecutive slots starting from this index
     for (let i = index; i < timeSlots.length && availableConsecutiveSlots < slotsNeeded; i++) {
-      if (!timeSlots[i].isAvailable) break;
-      
+      if (!isTimeSlotAvailable(timeSlots[i], selectedDate)) break;
+
       if (i > index) {
         const currentStart = new Date(timeSlots[i].startTime).getTime();
         const prevEnd = new Date(timeSlots[i - 1].endTime).getTime();
         if (currentStart !== prevEnd) break;
       }
-      
+
       availableConsecutiveSlots++;
     }
 
@@ -86,7 +133,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
       const selectedSlotIndex = timeSlots.findIndex(
         slot => formatTime(slot.startTime) === selectedTime
       );
-      
+
       if (selectedSlotIndex !== -1 && isSlotDisabled(timeSlots[selectedSlotIndex], selectedSlotIndex)) {
         setSelectedTime(''); // Reset selection if it becomes invalid
       }
@@ -95,7 +142,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
-      console.log('Fetching time slots... refreshTrigger:', refreshTrigger);
+      console.log('Fetching time slots for date:', selectedDate);
       setIsLoading(true);
       setSelectedTime(''); // Reset selection when refreshing
       try {
@@ -119,7 +166,12 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
           return timeA - timeB;
         });
 
-        console.log('Fetched time slots:', sortedSlots.length);
+        console.log('Fetched and sorted time slots:', {
+          count: sortedSlots.length,
+          firstSlot: sortedSlots[0]?.startTime,
+          lastSlot: sortedSlots[sortedSlots.length - 1]?.startTime
+        });
+        
         setTimeSlots(sortedSlots);
       } catch (err) {
         console.error('Error fetching time slots:', err);
@@ -130,7 +182,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
     };
 
     fetchTimeSlots();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, selectedDate]);
 
   // Reset selection when services change
   useEffect(() => {
@@ -197,7 +249,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, o
               <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
               {isSlotDisabled(slot, index) && (
                 <div className="text-xs text-rose-500 mt-1">
-                  {!slot.isAvailable ? 'Unavailable' : 'Not enough time'}
+                  {!isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
                 </div>
               )}
             </button>

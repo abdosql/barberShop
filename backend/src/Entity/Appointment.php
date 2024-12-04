@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -17,12 +19,18 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiFilter(DateFilter::class, properties: ['startTime'])]
 #[ORM\Entity(repositoryClass: AppointmentRepository::class)]
 #[ApiResource(
     operations: [
         new GetCollection(
-            normalizationContext: ['groups' => ['appointment:read']],
-            security: "is_granted('ROLE_USER')"
+            normalizationContext: [
+                'groups' => [
+                    'appointment:read',
+                    "request.query.has('startTime') and not request.query.has('extended') ? 'appointment:date_filter' : 'appointment:read'"
+                ]
+            ],
+            security: "is_granted('ROLE_USER') or (request.query.has('startTime') and not request.query.has('extended'))"
         ),
         new Post(
             denormalizationContext: ['groups' => ['appointment:create']],
@@ -62,15 +70,15 @@ class Appointment
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update', 'appointment:date_filter'])]
     private ?\DateTimeImmutable $startTime = null;
 
     #[ORM\Column]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update', 'appointment:date_filter'])]
     private ?\DateTimeImmutable $endTime = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update', 'appointment:patch'])]
+    #[Groups(['appointment:read', 'appointment:create', 'appointment:update', 'appointment:patch', 'appointment:date_filter'])]
     private ?string $status = null;
 
     #[ORM\Column]
@@ -103,7 +111,7 @@ class Appointment
     /**
      * @var Collection<int, TimeSlot>
      */
-    #[Groups(['appointment:read', 'appointment:create', 'appointment:update'])]
+    #[Groups(['appointment:read', 'appointment:create'])]
     #[ORM\OneToMany(targetEntity: TimeSlot::class, mappedBy: 'appointment')]
     private Collection $timeSlots;
 

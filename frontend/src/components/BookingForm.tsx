@@ -24,6 +24,10 @@ interface TimeSlot {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  dailyTimeSlots: {
+    date: string;
+    is_available: boolean;
+  }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -37,6 +41,14 @@ interface UserInfo {
   email: string;
   roles: string[];
   // add other fields that exist in your userInfo
+}
+
+interface TimeSlotResponse {
+  "@context": string;
+  "@id": string;
+  "@type": string;
+  "totalItems": number;
+  "member": TimeSlot[];
 }
 
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
@@ -83,17 +95,27 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   // Memoized slot availability check
   const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
-    if (!slot.isAvailable) return true;
+    // First check the dailyTimeSlots availability
+    const isAvailableForDate = !slot.dailyTimeSlots.some(
+      dailySlot => 
+        new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && 
+        !dailySlot.is_available
+    );
+
+    // If not available for this date, disable the slot
+    if (!isAvailableForDate) return true;
+
+    // If no services selected, slot is available
     if (totalDuration <= 0) return false;
 
     const slotsNeeded = Math.ceil(totalDuration / 30);
     console.log(`Checking slot ${formatTime(slot.startTime)}, needs ${slotsNeeded} slots`);
     
-    const hasEnough = hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots);
+    const hasEnough = hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots, totalDuration, formState.date);
     console.log(`Has enough slots: ${hasEnough}`);
     
     return !hasEnough;
-  }, [totalDuration, timeSlots]);
+  }, [totalDuration, timeSlots, formState.date]);
 
   // API calls moved to separate functions
   const fetchServices = useCallback(async () => {
@@ -116,6 +138,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   const fetchTimeSlots = useCallback(async () => {
     try {
+      setLoading(prev => ({ ...prev, timeSlots: true }));
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
         headers: {
           'Accept': 'application/ld+json',
@@ -123,9 +146,19 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       });
 
       if (!response.ok) throw new Error('Failed to fetch time slots');
-      const data = await response.json();
-      setTimeSlots(sortTimeSlots(data.member));
+      const data: TimeSlotResponse = await response.json();
+      
+      // Sort time slots by time
+      const sortedSlots = data.member.sort((a, b) => {
+        const timeA = new Date(a.startTime).getTime();
+        const timeB = new Date(b.startTime).getTime();
+        return timeA - timeB;
+      });
+
+      console.log('Fetched time slots:', sortedSlots);
+      setTimeSlots(sortedSlots);
     } catch (err) {
+      console.error('Error fetching time slots:', err);
       setError('Failed to load time slots');
     } finally {
       setLoading(prev => ({ ...prev, timeSlots: false }));
@@ -138,9 +171,9 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   }, [fetchServices]);
 
   useEffect(() => {
-    console.log('Fetching time slots, refreshTimeSlots:', refreshTimeSlots);
+    console.log('Fetching time slots, date:', formState.date);
     fetchTimeSlots();
-  }, [fetchTimeSlots, refreshTimeSlots]);
+  }, [fetchTimeSlots, formState.date, refreshTimeSlots]);
 
   // Event handlers
   const handleServiceSelect = (serviceId: number) => {
@@ -331,16 +364,24 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none"
             >
               <option value="">Choose a time</option>
-              {timeSlots.map((slot, index) => (
-                <option 
-                  key={slot.id} 
-                  value={formatTime(slot.startTime)}
-                  disabled={isSlotDisabled(slot, index)}
-                >
-                  {formatTime(slot.startTime)} ({formatDuration(totalDuration)})
-                  {isSlotDisabled(slot, index) && ' - Not enough consecutive slots'}
-                </option>
-              ))}
+              {timeSlots.map((slot, index) => {
+                const isAvailable = !slot.dailyTimeSlots.some(
+                  dailySlot => 
+                    new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && 
+                    !dailySlot.is_available
+                );
+                
+                return (
+                  <option 
+                    key={slot.id} 
+                    value={formatTime(slot.startTime)}
+                    disabled={!isAvailable || isSlotDisabled(slot, index)}
+                  >
+                    {formatTime(slot.startTime)}
+                    {!isAvailable ? ' (Not Available)' : ''}
+                  </option>
+                );
+              })}
             </select>
           </div>
           {totalDuration > 0 && (
@@ -395,26 +436,25 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 }
 
 // Utility functions moved outside component
-const sortTimeSlots = (slots: TimeSlot[]) => {
-  return slots.sort((a, b) => {
-    const timeA = new Date(a.startTime).getTime();
-    const timeB = new Date(b.startTime).getTime();
-    return timeA - timeB;
-  });
-};
-
-const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slots: TimeSlot[]) => {
+const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slots: TimeSlot[], totalDuration: number, date: string) => {
   // Check if we have enough slots remaining
   if (startIndex + slotsNeeded > slots.length) return false;
 
   // Get the required duration in minutes
-  const requiredMinutes = slotsNeeded * 30;
+  const requiredMinutes = totalDuration;
   let availableMinutes = 0;
 
   // Check consecutive slots
   for (let i = startIndex; i < slots.length && availableMinutes < requiredMinutes; i++) {
+    // Check if current slot is available for the selected date
+    const isAvailableForDate = !slots[i].dailyTimeSlots.some(
+      dailySlot => 
+        new Date(dailySlot.date).toISOString().split('T')[0] === date && 
+        !dailySlot.is_available
+    );
+
     // If current slot is not available, break
-    if (!slots[i].isAvailable) {
+    if (!isAvailableForDate) {
       break;
     }
 
