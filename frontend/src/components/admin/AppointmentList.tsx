@@ -17,7 +17,7 @@ interface Appointment {
   id: number;
   startTime: string;
   endTime: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   totalDuration: number;
   totalPrice: string;
   createdAt: string;
@@ -29,7 +29,7 @@ interface Appointment {
 
 interface AppointmentListProps {
   appointments: Appointment[];
-  status: 'pending' | 'accepted' | 'declined';
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   onAppointmentUpdated: (appointment: Appointment) => void;
   isLoading: boolean;
   pageSize?: number;
@@ -46,6 +46,7 @@ export default function AppointmentList({
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [isDeclining, setIsDeclining] = useState<number | null>(null);
+  const [isCancelling, setIsCancelling] = useState<number | null>(null);
   const [displayCount, setDisplayCount] = useState(pageSize);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -130,6 +131,38 @@ export default function AppointmentList({
     }
   };
 
+  const handleCancel = async (appointmentId: number) => {
+    setIsCancelling(appointmentId);
+    setError(null);
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/merge-patch+json',
+          'Accept': 'application/ld+json',
+        },
+        body: JSON.stringify({
+          status: 'cancelled'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData?.['hydra:description'] || 'Failed to cancel appointment');
+      }
+
+      const updatedAppointment = await response.json();
+      onAppointmentUpdated(updatedAppointment);
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      setError(err instanceof Error ? err.message : 'Failed to cancel appointment. Please try again.');
+    } finally {
+      setIsCancelling(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -210,6 +243,16 @@ export default function AppointmentList({
               <h3 className="text-lg font-medium text-white mb-2">No Confirmed Appointments</h3>
               <p className="text-zinc-400 max-w-sm mx-auto">
                 There are no confirmed appointments yet. Appointments will appear here after you approve them from the pending list.
+              </p>
+            </>
+          ) : status === 'cancelled' ? (
+            <>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500/10 text-orange-500 mb-4">
+                <XCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">No Cancelled Appointments</h3>
+              <p className="text-zinc-400 max-w-sm mx-auto">
+                There are no cancelled appointments. Appointments that are cancelled will appear here.
               </p>
             </>
           ) : (
@@ -297,15 +340,36 @@ export default function AppointmentList({
                           </>
                         )}
                         {status === 'accepted' && (
-                          <span className="text-green-500 flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            Confirmed
-                          </span>
+                          <>
+                            <span className="text-green-500 flex items-center gap-1">
+                              <CheckCircle className="w-4 h-4" />
+                              Confirmed
+                            </span>
+                            <button 
+                              onClick={() => handleCancel(appointment.id)}
+                              disabled={isCancelling === appointment.id}
+                              className="p-2 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20
+                                       disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Cancel"
+                            >
+                              {isCancelling === appointment.id ? (
+                                <div className="w-5 h-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <XCircle className="w-5 h-5" />
+                              )}
+                            </button>
+                          </>
                         )}
                         {status === 'declined' && (
                           <span className="text-rose-500 flex items-center gap-1">
                             <XCircle className="w-4 h-4" />
                             Declined
+                          </span>
+                        )}
+                        {status === 'cancelled' && (
+                          <span className="text-orange-500 flex items-center gap-1">
+                            <XCircle className="w-4 h-4" />
+                            Cancelled
                           </span>
                         )}
                       </div>
@@ -397,15 +461,36 @@ export default function AppointmentList({
                         </>
                       )}
                       {status === 'accepted' && (
-                        <span className="text-green-500 flex items-center gap-1 text-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          Confirmed
-                        </span>
+                        <>
+                          <span className="text-green-500 flex items-center gap-1 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            Confirmed
+                          </span>
+                          <button 
+                            onClick={() => handleCancel(appointment.id)}
+                            disabled={isCancelling === appointment.id}
+                            className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20
+                                     disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Cancel"
+                          >
+                            {isCancelling === appointment.id ? (
+                              <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                          </button>
+                        </>
                       )}
                       {status === 'declined' && (
                         <span className="text-rose-500 flex items-center gap-1 text-sm">
                           <XCircle className="w-4 h-4" />
                           Declined
+                        </span>
+                      )}
+                      {status === 'cancelled' && (
+                        <span className="text-orange-500 flex items-center gap-1 text-sm">
+                          <XCircle className="w-4 h-4" />
+                          Cancelled
                         </span>
                       )}
                     </div>

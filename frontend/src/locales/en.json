@@ -49,6 +49,12 @@
       "manageServices": "Manage Services",
       "pendingAppointments": "Pending Appointments",
       "acceptedAppointments": "Accepted Appointments",
+      "declinedAppointments": "Declined Appointments",
+      "cancelledAppointments": "Cancelled Appointments",
+      "pendingTitle": "Pending Appointments",
+      "acceptedTitle": "Accepted Appointments",
+      "declinedTitle": "Declined Appointments",
+      "cancelledTitle": "Cancelled Appointments",
       "overview": "Overview",
       "pending": "pending",
       "today": "today"
@@ -108,4 +114,4 @@
       "signIn": "Sign in"
     }
   }
-} 
+}

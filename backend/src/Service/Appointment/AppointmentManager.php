@@ -47,7 +47,10 @@ readonly class AppointmentManager
         if ($requestMethod === 'PATCH') {
             $appointment->setUpdatedAt($now);
             if ($status === 'accepted') {
-                $this->sendNotification($appointment);
+                $this->sendNotification($appointment, $status);
+            }
+            if ($status === 'cancelled') {
+                $this->sendNotification($appointment, $status);
             }
 
             $appointment = $this->timeSlotManager->handleTimeSlots($appointment, $status);
@@ -63,7 +66,7 @@ readonly class AppointmentManager
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    private function sendNotification(Appointment $appointment): void
+    private function sendNotification(Appointment $appointment, string $status): void
     {
         $user = $appointment->getUser();
         $appointmentDate = $appointment->getStartTime();

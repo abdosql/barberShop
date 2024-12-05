@@ -24,12 +24,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
-            normalizationContext: [
-                'groups' => [
-                    'appointment:read',
-                    "request.query.has('startTime') and not request.query.has('extended') ? 'appointment:date_filter' : 'appointment:read'"
-                ]
-            ],
+            normalizationContext: ['groups' => ['appointment:read']],
             security: "is_granted('ROLE_USER') or (request.query.has('startTime') and not request.query.has('extended'))"
         ),
         new Post(

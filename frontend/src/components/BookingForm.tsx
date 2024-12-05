@@ -248,7 +248,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       const appointmentBody = {
         startTime: `${formState.date}T${initialTimeSlot.startTime.split('T')[1]}`,
         endTime: endTime.toISOString(),
-        status: "string",
+        status: "pending",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
         timeSlots: getConsecutiveSlots(initialTimeSlot, totalDuration)

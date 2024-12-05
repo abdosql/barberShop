@@ -10,7 +10,11 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpq-dev \
-    openssl
+    openssl \
+    --no-install-recommends \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath
