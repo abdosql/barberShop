@@ -232,16 +232,26 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       const endTime = new Date(initialTimeSlot.startTime);
       endTime.setMinutes(endTime.getMinutes() + totalDuration);
 
-      // Create new appointment body
+      // Get all consecutive slots needed for the appointment
+      const getConsecutiveSlots = (startSlot: TimeSlot, totalDuration: number) => {
+        const slotsNeeded = Math.ceil(totalDuration / 30); // 30 minutes per slot
+        const startIndex = timeSlots.findIndex(slot => slot.id === startSlot.id);
+        const consecutiveSlots = [];
+        
+        for (let i = startIndex; i < startIndex + slotsNeeded; i++) {
+          consecutiveSlots.push(`${import.meta.env.VITE_API_URL}/api/time_slots/${timeSlots[i].id}`);
+        }
+        
+        return consecutiveSlots;
+      };
+
       const appointmentBody = {
         startTime: `${formState.date}T${initialTimeSlot.startTime.split('T')[1]}`,
         endTime: endTime.toISOString(),
         status: "string",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
-        timeSlots: [
-          `${import.meta.env.VITE_API_URL}/api/time_slots/${initialTimeSlot.id}`
-        ]
+        timeSlots: getConsecutiveSlots(initialTimeSlot, totalDuration)
       };
 
       console.log('Request Body:', appointmentBody);
@@ -361,7 +371,8 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             <select
               value={formState.time}
               onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))}
-              className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none"
+              disabled={loading.timeSlots}
+              className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">Choose a time</option>
               {timeSlots.map((slot, index) => {

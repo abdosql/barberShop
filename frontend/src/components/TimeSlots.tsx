@@ -142,14 +142,13 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
-      console.log('Fetching time slots for date:', selectedDate);
       setIsLoading(true);
       setSelectedTime(''); // Reset selection when refreshing
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
             'Accept': 'application/ld+json'
-          },
+          }
         });
 
         if (!response.ok) {
@@ -157,39 +156,20 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         }
 
         const data = await response.json();
-        const slots = data['member'] || [];
-
-        // Sort time slots by time only
-        const sortedSlots = slots.sort((a: TimeSlot, b: TimeSlot) => {
-          const timeA = new Date(a.startTime).getHours() * 60 + new Date(a.startTime).getMinutes();
-          const timeB = new Date(b.startTime).getHours() * 60 + new Date(b.startTime).getMinutes();
-          return timeA - timeB;
-        });
-
-        console.log('Fetched and sorted time slots:', {
-          count: sortedSlots.length,
-          firstSlot: sortedSlots[0]?.startTime,
-          lastSlot: sortedSlots[sortedSlots.length - 1]?.startTime
-        });
-        
-        setTimeSlots(sortedSlots);
+        setTimeSlots(data.member);
       } catch (err) {
         console.error('Error fetching time slots:', err);
-        setError('Failed to load time slots');
+        setError(err instanceof Error ? err.message : 'Failed to load time slots');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchTimeSlots();
-  }, [refreshTrigger, selectedDate]);
-
-  // Reset selection when services change
-  useEffect(() => {
-    setSelectedTime('');
-  }, [selectedServices]);
+  }, [selectedDate, refreshTrigger]);
 
   const handleTimeSelect = (slot: TimeSlot) => {
+    if (isLoading) return; // Prevent selection while loading
     setSelectedTime(formatTime(slot.startTime));
     onSelect({
       time: formatTime(slot.startTime),
@@ -198,15 +178,31 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   };
 
   const formatTime = (isoString: string) => {
-    // Parse the UTC time string and keep it in UTC
     const date = new Date(isoString);
     const hours = date.getUTCHours().toString().padStart(2, '0');
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   };
 
+  // Render loading state
   if (isLoading) {
-    return <div className="text-center text-zinc-400">Loading available time slots...</div>;
+    return (
+      <div className="text-white">
+        <h2 className="text-2xl font-bold mb-6 text-center">Select Time</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div
+              key={index}
+              className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50"
+            >
+              <Clock className="h-5 w-5 mx-auto mb-1 opacity-50" />
+              <div className="text-sm animate-pulse bg-zinc-800 h-4 w-16 mx-auto rounded"></div>
+              <div className="text-xs text-zinc-500 mt-1">Loading...</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -235,21 +231,21 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
             <button
               key={slot.id}
               onClick={() => handleTimeSelect(slot)}
-              disabled={isSlotDisabled(slot, index)}
+              disabled={isLoading || isSlotDisabled(slot, index)}
               className={`p-4 rounded-xl border ${
                 selectedTime === formatTime(slot.startTime)
                   ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                  : !isSlotDisabled(slot, index)
+                  : !isSlotDisabled(slot, index) && !isLoading
                   ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
                   : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
               } transition-all duration-200`}
             >
-              <Clock className={`h-5 w-5 mx-auto mb-1 ${isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
+              <Clock className={`h-5 w-5 mx-auto mb-1 ${isLoading || isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
               <div className="text-sm">{formatTime(slot.startTime)}</div>
               <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
-              {isSlotDisabled(slot, index) && (
+              {(isLoading || isSlotDisabled(slot, index)) && (
                 <div className="text-xs text-rose-500 mt-1">
-                  {!isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
+                  {isLoading ? 'Refreshing...' : !isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
                 </div>
               )}
             </button>
