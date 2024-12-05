@@ -175,6 +175,12 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     fetchTimeSlots();
   }, [fetchTimeSlots, formState.date, refreshTimeSlots]);
 
+  useEffect(() => {
+    // Reset selected time and fetch new time slots when date changes
+    setFormState(prev => ({ ...prev, time: '' }));
+    fetchTimeSlots();
+  }, [formState.date]);
+
   // Event handlers
   const handleServiceSelect = (serviceId: number) => {
     setFormState(prev => {
@@ -222,31 +228,23 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         throw new Error('Selected time slot not found');
       }
 
-      // Calculate how many 30-minute slots we need
-      const slotsNeeded = Math.ceil(totalDuration / 30);
+      // Calculate end time based on total duration
+      const endTime = new Date(initialTimeSlot.startTime);
+      endTime.setMinutes(endTime.getMinutes() + totalDuration);
 
-      // Find the index of the initial slot
-      const initialSlotIndex = timeSlots.findIndex(slot => slot.id === initialTimeSlot.id);
-      
-      // Get the required consecutive slots
-      const requiredSlots = timeSlots.slice(initialSlotIndex, initialSlotIndex + slotsNeeded);
-
-      // Verify we have enough consecutive available slots
-      if (requiredSlots.length < slotsNeeded) {
-        throw new Error('Not enough consecutive time slots available for this service duration');
-      }
-
-      // Create simplified appointment body
+      // Create new appointment body
       const appointmentBody = {
-        startTime: initialTimeSlot.startTime,
-        endTime: requiredSlots[requiredSlots.length - 1].endTime,
-        status: "pending",
+        startTime: `${formState.date}T${initialTimeSlot.startTime.split('T')[1]}`,
+        endTime: endTime.toISOString(),
+        status: "string",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
-        timeSlots: requiredSlots.map(slot => 
-          `${import.meta.env.VITE_API_URL}/api/time_slots/${slot.id}`
-        )
+        timeSlots: [
+          `${import.meta.env.VITE_API_URL}/api/time_slots/${initialTimeSlot.id}`
+        ]
       };
+
+      console.log('Request Body:', appointmentBody);
 
       // Create the appointment
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments`, {
@@ -259,9 +257,11 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         body: JSON.stringify(appointmentBody),
       });
 
+      const responseData = await response.json();
+      console.log('Response:', responseData);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create appointment');
+        throw new Error(responseData.message || 'Failed to create appointment');
       }
 
       // Reset form first

@@ -16,7 +16,7 @@ class DailyTimeSlot
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['timeslot:read', 'timeslot:create','appointment:create'])]
+    #[Groups(['timeslot:read', 'timeslot:create',])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
@@ -25,6 +25,7 @@ class DailyTimeSlot
     private ?bool $is_available = null;
 
     #[ORM\ManyToOne(inversedBy: 'dailyTimeSlots')]
+    #[Groups(['timeslot:read', 'timeslot:create'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?TimeSlot $timeSlot = null;
 

@@ -84,7 +84,7 @@ class TimeSlot
      * @var Collection<int, DailyTimeSlot>
      */
     #[Groups(['timeslot:read', 'timeslot:create', 'timeslot:patch', 'appointment:create'])]
-    #[ORM\OneToMany(targetEntity: DailyTimeSlot::class, mappedBy: 'timeSlot')]
+    #[ORM\OneToMany(targetEntity: DailyTimeSlot::class, mappedBy: "timeSlot", cascade: ["persist"])]
     private Collection $dailyTimeSlots;
 
     public function __construct()
