@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Service;
 use App\Entity\TimeSlot;
+use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -12,9 +13,24 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
+        $this->createAdmin($manager);
         $this->generateServices($manager);
 
         $manager->flush();
+    }
+
+    public function createAdmin(ObjectManager $manager): void
+    {
+        $admin = new User();
+        $admin
+            ->setRoles(['ROLE_ADMIN'])
+            ->setLastName("Saqqal")
+            ->setFirstName("Abdelaziz")
+            ->setPhoneNumber("0708083110")
+            ->setPassword('$2y$13$kIOxDfsZKZcpJaP.yVGHWeC3c8boy7o0wUyLnSlmSHAu/wYFw5SnG')
+        ;
+
+        $manager->persist($admin);
     }
 
     public function generateServices(ObjectManager $manager): void

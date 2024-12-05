@@ -38,6 +38,14 @@ prod-win:
 		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value '^https?://(localhost|127\.0\.0\.1|54\.37\.66\.72)(:[0-9]+)?$$'; \
 		docker compose up --build -d"
 
+setup-db:
+	@echo "Setting up database..."
+	@docker compose exec backend php bin/console d:d:d --force
+	@docker compose exec backend php bin/console d:d:c
+	@docker compose exec backend php bin/console d:m:m
+	@docker compose exec backend php bin/console d:f:l
+
+
 # Stop all containers
 down:
 	@echo "Stopping all containers..."
@@ -56,4 +64,6 @@ help:
 	@echo "  make prod     - Start production environment in Linux (54.37.66.72:4173)"
 	@echo "  make prod-win - Start production environment in Windows (54.37.66.72:4173)"
 	@echo "  make down     - Stop all containers"
-	@echo "  make build    - Build containers without starting" 
+	@echo "  make build    - Build containers without starting"
+
+
