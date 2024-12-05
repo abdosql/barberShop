@@ -49,14 +49,14 @@ class TimeSlotManager
                 // Create a new DailyTimeSlot for this date
                 $newDailyTimeSlot = new DailyTimeSlot();
                 $newDailyTimeSlot->setDate(new \DateTime($appointmentDate));
-                $newDailyTimeSlot->setIsAvailable($status === 'declined'); // Set availability
+                $newDailyTimeSlot->setIsAvailable($status === 'declined' || "cancelled"); // Set availability
                 $newDailyTimeSlot->setTimeSlot($existingTimeSlot); // Set the owning side
 
                 // Add the new DailyTimeSlot to the TimeSlot
                 $existingTimeSlot->addDailyTimeSlot($newDailyTimeSlot);
             } else {
                 // Update the existing DailyTimeSlot's availability
-                $dailyTimeSlotForDate->setIsAvailable($status === 'declined');
+                $dailyTimeSlotForDate->setIsAvailable($status === 'declined' || "cancelled");
             }
 
             // No need to persist explicitly if cascade persist is correctly set
