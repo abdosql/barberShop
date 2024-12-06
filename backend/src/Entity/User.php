@@ -19,6 +19,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\State\UserStateProcessor;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -64,8 +65,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 10, unique: true)]
     #[Groups(['user:read', 'user:create', 'appointment:read'])]
+    #[Assert\Regex(pattern: "/^0[0-9]{9}$/", message: "Le numéro de téléphone doit commencer par 0 et contenir exactement 10 chiffres.")]
+    #[Assert\Unique(message: "This account already exists.")]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255)]
@@ -90,6 +93,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ApiProperty(securityPostDenormalize: "is_granted('PUBLIC_ACCESS')")]
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le mot de passe ne doit pas être vide.")]
+    #[Assert\Length(
+        min: 8,
+        max: 64,
+        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/",
+        message: "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial."
+    )]
     #[Groups(['user:create'])]
     private ?string $password = null;
 

@@ -4,6 +4,7 @@ import { Lock, Scissors, User, Phone, Loader2 } from 'lucide-react';
 import Footer from '../Footer';
 import LanguageToggle from '../LanguageToggle';
 import { Button } from '../ui/Button';
+import { validatePhoneNumber, validatePassword } from '../../utils/validations';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -11,12 +12,46 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{
+    name?: string;
+    phone?: string;
+    password?: string;
+    general?: string;
+  }>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Validate name
+    if (!name.trim()) {
+      newErrors.name = "Le nom est requis.";
+    }
+
+    // Validate phone number
+    const phoneError = validatePhoneNumber(phone);
+    if (phoneError) {
+      newErrors.phone = phoneError;
+    }
+
+    // Validate password
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsLoading(true);
+
+    if (!validateForm()) {
+      setIsLoading(false);
+      return;
+    }
 
     // Split name into firstName and lastName
     const [firstName, ...lastNameParts] = name.trim().split(' ');
@@ -27,7 +62,6 @@ export default function Register() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/ld+json',
-          'Accept': 'application/ld+json',
         },
         body: JSON.stringify({
           firstName,
@@ -40,12 +74,42 @@ export default function Register() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.['hydra:description'] || 'Registration failed');
+        if (response.status === 422) {
+          const violations = errorData?.violations || [];
+          const newErrors: { [key: string]: string } = {};
+          
+          violations.forEach((violation: { propertyPath: string; message: string }) => {
+            switch (violation.propertyPath) {
+              case 'phoneNumber':
+                newErrors.phone = violation.message;
+                break;
+              case 'password':
+                newErrors.password = violation.message;
+                break;
+              case 'firstName':
+              case 'lastName':
+                newErrors.name = violation.message;
+                break;
+              default:
+                newErrors.general = "L'inscription a échoué. Veuillez réessayer.";
+            }
+          });
+
+          if (Object.keys(newErrors).length === 0) {
+            setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
+          } else {
+            setErrors(newErrors);
+          }
+        } else if (errorData?.['hydra:description']?.includes('phone number')) {
+          setErrors({ phone: "Ce numéro de téléphone est déjà utilisé." });
+        } else {
+          setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
+        }
+        setIsLoading(false);
+        return;
       }
 
-      // After successful registration, navigate to login page with success state
       navigate('/login', { 
-        replace: true, // This ensures the user can't go back to the registration page
         state: { 
           registrationSuccess: true,
           name: firstName
@@ -53,7 +117,7 @@ export default function Register() {
       });
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +154,9 @@ export default function Register() {
           {/* Form Section - Responsive padding and spacing */}
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
             {/* Error Message */}
-            {error && (
+            {errors.general && (
               <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 text-xs sm:text-sm px-3 py-2 rounded-lg">
-                {error}
+                {errors.general}
               </div>
             )}
 
@@ -111,12 +175,16 @@ export default function Register() {
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
-                             bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border ${
+                      errors.name ? 'border-rose-500' : 'border-zinc-800'
+                    } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                     placeholder="Enter your name"
                     required
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.name}</p>
+                  )}
                 </div>
               </div>
 
@@ -134,12 +202,16 @@ export default function Register() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
-                             bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border ${
+                      errors.phone ? 'border-rose-500' : 'border-zinc-800'
+                    } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                     placeholder="Enter your phone number"
                     required
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.phone}</p>
+                  )}
                 </div>
               </div>
 
@@ -157,12 +229,16 @@ export default function Register() {
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
-                             bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border ${
+                      errors.password ? 'border-rose-500' : 'border-zinc-800'
+                    } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                     placeholder="Create a password"
                     required
                   />
+                  {errors.password && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.password}</p>
+                  )}
                 </div>
               </div>
 
@@ -189,4 +265,4 @@ export default function Register() {
       <Footer />
     </div>
   );
-} 
+}

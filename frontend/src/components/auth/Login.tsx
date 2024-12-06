@@ -7,11 +7,23 @@ import LanguageToggle from '../LanguageToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from '../ui/Button';
 
+interface ValidationError {
+  "@context": string;
+  "@type": string;
+  "violations": Array<{
+    propertyPath: string;
+    message: string;
+    code: string | null;
+  }>;
+  status: number;
+  detail: string;
+}
+
 export default function Login() {
   const { translations } = useLanguage();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,16 +60,64 @@ export default function Login() {
     }
   }, [registrationSuccess]);
 
+  const validatePhoneNumber = (phone: string) => {
+    if (!phone) return 'Please enter your phone number.';
+    if (phone.length < 10) return 'Phone number must be at least 10 digits.';
+    return null;
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) return 'Please enter your password.';
+    if (password.length < 8) return 'Password must be at least 8 characters.';
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsLoading(true);
+
+    // Validate inputs
+    const phoneError = validatePhoneNumber(phone);
+    const passwordError = validatePassword(password);
+
+    if (phoneError || passwordError) {
+      setErrors({
+        ...(phoneError && { phoneNumber: phoneError }),
+        ...(passwordError && { password: passwordError })
+      });
+      setIsLoading(false);
+      return;
+    }
     
     try {
       await login(phone, password);
       // Navigation will happen automatically due to the effect above
-    } catch (err) {
-      setError('Invalid credentials. Please try again.');
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const violations = err.response.data?.violations || [];
+        const newErrors: { [key: string]: string } = {};
+        
+        violations.forEach((violation: { propertyPath: string; message: string }) => {
+          // Map backend field names to frontend field names if needed
+          const fieldMap: { [key: string]: string } = {
+            phoneNumber: 'phoneNumber',
+            password: 'password'
+          };
+          
+          const fieldName = fieldMap[violation.propertyPath] || violation.propertyPath;
+          newErrors[fieldName] = violation.message;
+        });
+
+        if (Object.keys(newErrors).length === 0) {
+          // If no specific violations were found, set a general error
+          setErrors({ general: 'Une erreur de validation s\'est produite.' });
+        } else {
+          setErrors(newErrors);
+        }
+      } else {
+        setErrors({ general: 'Une erreur s\'est produite. Veuillez réessayer.' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -123,9 +183,9 @@ export default function Login() {
 
           {/* Compact Form Section */}
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
-            {error && (
+            {errors.general && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-500 text-sm">
-                {error}
+                {errors.general}
               </div>
             )}
             
@@ -144,13 +204,17 @@ export default function Login() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
                              bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                             ${errors.phoneNumber ? 'border-red-500' : ''}`}
                     placeholder={translations.auth.login.enterPhone}
                     required
                   />
                 </div>
+                {errors.phoneNumber && (
+                  <p className="mt-2 text-sm text-red-600">{errors.phoneNumber}</p>
+                )}
               </div>
 
               {/* Password Input */}
@@ -167,13 +231,17 @@ export default function Login() {
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border border-zinc-800 rounded-lg 
                              bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                             ${errors.password ? 'border-red-500' : ''}`}
                     placeholder={translations.auth.login.enterPassword}
                     required
                   />
                 </div>
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
 
               {/* Remember Me & Forgot Password */}
