@@ -21,21 +21,30 @@ export default function StatsCards() {
   const { token } = useAuth();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:8000/api/analytics', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/analytics`, {
           headers: {
-            'accept': 'application/ld+json',
+            'Accept': 'application/ld+json',
             'Authorization': `Bearer ${token}`
           }
         });
-        if (!response.ok) throw new Error('Failed to fetch analytics');
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch analytics');
+        }
+
         const data = await response.json();
         setAnalytics(data);
       } catch (error) {
         console.error('Error fetching analytics:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch analytics');
       } finally {
         setIsLoading(false);
       }
@@ -43,6 +52,14 @@ export default function StatsCards() {
 
     fetchAnalytics();
   }, [token]);
+
+  if (error) {
+    return (
+      <div className="bg-rose-500/10 text-rose-500 p-4 rounded-xl text-center">
+        {error}
+      </div>
+    );
+  }
 
   if (isLoading || !analytics) {
     return (
@@ -99,15 +116,14 @@ export default function StatsCards() {
               <p className="text-sm text-zinc-400">{stat.title}</p>
               <p className="text-2xl font-semibold text-white mt-1">{stat.value}</p>
             </div>
-            <div className={`w-12 h-12 rounded-lg bg-${stat.color}-500/10 flex items-center justify-center`}>
+            <div className={`p-3 rounded-lg bg-${stat.color}-500/10`}>
               <stat.icon className={`w-6 h-6 text-${stat.color}-500`} />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <span className={`text-${stat.color}-500 text-sm`}>{stat.change}</span>
-            <span className="text-zinc-400 text-sm ml-2">
-              {translations.admin.stats.vsLastMonth}
-            </span>
+          <div className="mt-4">
+            <p className={`text-sm ${stat.change.startsWith('+') ? 'text-green-500' : 'text-rose-500'}`}>
+              {stat.change} from last month
+            </p>
           </div>
         </div>
       ))}
