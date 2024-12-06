@@ -45,24 +45,27 @@ class TimeSlotManager
                 }
             }
 
+            // Determine availability based on appointment status
+            $isAvailable = in_array($status, ['declined', 'cancelled', 'completed'], true);
+
             if (!$dailyTimeSlotForDate) {
                 // Create a new DailyTimeSlot for this date
                 $newDailyTimeSlot = new DailyTimeSlot();
                 $newDailyTimeSlot->setDate(new \DateTime($appointmentDate));
-                $newDailyTimeSlot->setIsAvailable($status === 'declined' || "cancelled"); // Set availability
-                $newDailyTimeSlot->setTimeSlot($existingTimeSlot); // Set the owning side
+                $newDailyTimeSlot->setIsAvailable($isAvailable);
+                $newDailyTimeSlot->setTimeSlot($existingTimeSlot);
 
                 // Add the new DailyTimeSlot to the TimeSlot
                 $existingTimeSlot->addDailyTimeSlot($newDailyTimeSlot);
             } else {
                 // Update the existing DailyTimeSlot's availability
-                $dailyTimeSlotForDate->setIsAvailable($status === 'declined' || "cancelled");
+                $dailyTimeSlotForDate->setIsAvailable($isAvailable);
             }
 
-            // No need to persist explicitly if cascade persist is correctly set
-            // However, ensure the entities are managed
+            // Persist the changes
             $this->entityManager->persist($existingTimeSlot);
         }
+        
         return $appointment;
     }
 }

@@ -1,38 +1,89 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Users, Calendar, Clock, TrendingUp } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface AnalyticsDTO {
+  currentValue: number;
+  previousValue: number;
+  growth: number;
+}
+
+interface DashboardAnalytics {
+  totalAppointments: AnalyticsDTO;
+  completedAppointments: AnalyticsDTO;
+  cancelledAppointments: AnalyticsDTO;
+  revenue: AnalyticsDTO;
+}
 
 export default function StatsCards() {
   const { translations } = useLanguage();
+  const { token } = useAuth();
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/analytics', {
+          headers: {
+            'accept': 'application/ld+json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch analytics');
+        const data = await response.json();
+        setAnalytics(data);
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [token]);
+
+  if (isLoading || !analytics) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-6 animate-pulse">
+            <div className="h-20"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const stats = [
     {
-      title: translations.admin.stats.totalClients,
-      value: "124",
-      icon: Users,
-      change: "+12%",
+      title: translations.admin.stats.totalAppointments,
+      value: analytics.totalAppointments.currentValue.toString(),
+      icon: Calendar,
+      change: `${analytics.totalAppointments.growth > 0 ? '+' : ''}${analytics.totalAppointments.growth.toFixed(1)}%`,
       color: "blue"
     },
     {
-      title: translations.admin.stats.todayAppointments,
-      value: "8",
-      icon: Calendar,
-      change: "+3",
-      color: "amber"
+      title: translations.admin.stats.completedAppointments,
+      value: analytics.completedAppointments.currentValue.toString(),
+      icon: Clock,
+      change: `${analytics.completedAppointments.growth > 0 ? '+' : ''}${analytics.completedAppointments.growth.toFixed(1)}%`,
+      color: "green"
     },
     {
-      title: translations.admin.stats.pendingRequests,
-      value: "5",
-      icon: Clock,
-      change: "-2",
+      title: translations.admin.stats.cancelledAppointments,
+      value: analytics.cancelledAppointments.currentValue.toString(),
+      icon: Users,
+      change: `${analytics.cancelledAppointments.growth > 0 ? '+' : ''}${analytics.cancelledAppointments.growth.toFixed(1)}%`,
       color: "rose"
     },
     {
       title: translations.admin.stats.monthlyRevenue,
-      value: "4,250 DH",
+      value: `${analytics.revenue.currentValue.toFixed(2)} DH`,
       icon: TrendingUp,
-      change: "+18%",
-      color: "green"
+      change: `${analytics.revenue.growth > 0 ? '+' : ''}${analytics.revenue.growth.toFixed(1)}%`,
+      color: "amber"
     }
   ];
 
@@ -62,4 +113,4 @@ export default function StatsCards() {
       ))}
     </div>
   );
-} 
+}

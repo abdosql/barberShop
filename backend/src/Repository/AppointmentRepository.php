@@ -40,4 +40,23 @@ class AppointmentRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    /**
+     * Find appointments for a specific month
+     * @param \DateTime $month First day of the month
+     * @return Appointment[]
+     */
+    public function findByMonth(\DateTime $month): array
+    {
+        $nextMonth = clone $month;
+        $nextMonth->modify('first day of next month');
+
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.startTime >= :start')
+            ->andWhere('a.startTime < :end')
+            ->setParameter('start', \DateTimeImmutable::createFromMutable($month))
+            ->setParameter('end', \DateTimeImmutable::createFromMutable($nextMonth))
+            ->getQuery()
+            ->getResult();
+    }
 }
