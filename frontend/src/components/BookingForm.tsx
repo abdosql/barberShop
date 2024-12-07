@@ -311,6 +311,14 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"; // For 5 or more services
   };
 
+  const getMinDate = () => {
+    const today = new Date();
+    // Get the local date string in YYYY-MM-DD format for the current timezone
+    const offset = today.getTimezoneOffset();
+    const localDate = new Date(today.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().split('T')[0];
+  };
+
   if (loading.services) {
     return <div className="text-center text-zinc-400">Loading services...</div>;
   }
@@ -363,8 +371,26 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             <input
               type="date"
               value={formState.date}
-              min={new Date().toISOString().split('T')[0]}
-              onChange={(e) => setFormState(prev => ({ ...prev, date: e.target.value }))} // Reset time selection when date changes
+              min={getMinDate()}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value + 'T00:00:00');
+                const minDate = new Date(getMinDate() + 'T00:00:00');
+                
+                if (selectedDate >= minDate) {
+                  setFormState(prev => ({ 
+                    ...prev, 
+                    date: e.target.value,
+                    time: '' // Clear time when date changes
+                  }));
+                } else {
+                  // If selected date is before today, set to today
+                  setFormState(prev => ({ 
+                    ...prev, 
+                    date: getMinDate(),
+                    time: '' // Clear time when date changes
+                  }));
+                }
+              }}
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
