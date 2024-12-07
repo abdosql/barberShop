@@ -56,7 +56,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: ['groups' => ['user:create', 'user:update']]
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+#[UniqueEntity(
+    fields: ['phoneNumber'],
+    message: 'This phone number is already in use.'
+)]#[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -68,7 +71,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 10, unique: true)]
     #[Groups(['user:read', 'user:create', 'appointment:read'])]
     #[Assert\Regex(pattern: "/^0[0-9]{9}$/", message: "Le numéro de téléphone doit commencer par 0 et contenir exactement 10 chiffres.")]
-    #[Assert\Unique(message: "This account already exists.")]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255)]
