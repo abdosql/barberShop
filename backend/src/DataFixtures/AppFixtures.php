@@ -27,7 +27,7 @@ class AppFixtures extends Fixture
             ->setLastName("Saqqal")
             ->setFirstName("Abdelaziz")
             ->setPhoneNumber("0708083110")
-            ->setPassword('$2y$13$kIOxDfsZKZcpJaP.yVGHWeC3c8boy7o0wUyLnSlmSHAu/wYFw5SnG')
+            ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
         ;
 
         $manager->persist($admin);
