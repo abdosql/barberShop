@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Scissors, Phone, LogOut, User, Menu, X, Settings, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,7 +6,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import InstallQRCode from './InstallQRCode';
 import { SocialLinksContext } from '../App';
-import { useClickOutside } from '../hooks/useClickOutside';
 
 /**
  * Navbar Component
@@ -17,7 +16,6 @@ export default function Navbar() {
   // State for controlling mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isQRVisible, setIsQRVisible] = useState(false);
-  const qrRef = useRef<HTMLDivElement>(null);
 
   // Get social links context
   const { showSocial, setShowSocial } = useContext(SocialLinksContext);
@@ -26,11 +24,6 @@ export default function Navbar() {
   const { userInfo, logout } = useAuth();
   const { translations } = useLanguage();
   const navigate = useNavigate();
-
-  // Use click outside hook
-  useClickOutside(qrRef, () => {
-    if (isQRVisible) setIsQRVisible(false);
-  });
 
   /**
    * Handles user logout functionality
@@ -60,7 +53,7 @@ export default function Navbar() {
             <LanguageToggle />
             
             {/* QR Code - Always visible */}
-            <div className="relative group" ref={qrRef}>
+            <div className="relative group">
               <button
                 className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
                 onClick={() => setIsQRVisible(!isQRVisible)}
@@ -179,7 +172,7 @@ export default function Navbar() {
 
         {/* Mobile QR Code dropdown */}
         {isQRVisible && (
-          <div className="md:hidden border-t border-zinc-800 py-4" ref={qrRef}>
+          <div className="md:hidden border-t border-zinc-800 py-4">
             <InstallQRCode />
           </div>
         )}
@@ -214,15 +207,13 @@ export default function Navbar() {
                         "Guest"
                       )}
                     </p>
-                    <p className="text-xs text-zinc-400">
-                      {userInfo.phoneNumber}
-                    </p>
+                    <p className="text-xs text-zinc-400">{userInfo.phoneNumber}</p>
                   </div>
                 </div>
 
                 {/* Mobile menu actions */}
                 <div className="space-y-2">
-                  {/* Admin Dashboard Link - Only show for admin users */}
+                  {/* Admin Dashboard Link */}
                   {userInfo.roles?.includes('ROLE_ADMIN') && (
                     <Link
                       to="/admin"
