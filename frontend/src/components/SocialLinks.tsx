@@ -63,12 +63,17 @@ export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
         >
           <div 
             className="bg-zinc-900 p-4 sm:p-6 rounded-2xl shadow-xl w-full max-w-[280px] sm:max-w-sm mx-auto"
-            onClick={e => e.stopPropagation()}
+            onClick={e => {
+              e.stopPropagation(); // This prevents the click from reaching the parent
+            }}
           >
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-lg sm:text-xl font-bold text-white">Follow Us</h3>
               <button 
-                onClick={onClose}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent event bubbling
+                  onClose();
+                }}
                 className="text-zinc-400 hover:text-white transition-colors p-2"
                 aria-label="Close"
               >

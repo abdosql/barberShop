@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -12,8 +12,16 @@ import Dashboard from './components/admin/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ShopClosedPage from './components/ShopClosedPage';
+import SocialLinks from './components/SocialLinks';
+
+// Create a context for managing the social links modal
+export const SocialLinksContext = React.createContext({
+  showSocial: false,
+  setShowSocial: (show: boolean) => {}
+});
 
 function AppContent() {
+  const [showSocial, setShowSocial] = useState(false);
   const { isShopOpen } = useShopAvailability();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -25,29 +33,37 @@ function AppContent() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    <SocialLinksContext.Provider value={{ showSocial, setShowSocial }}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      {/* Protected routes */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
+        {/* Protected routes */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin" element={
+          <ProtectedRoute requireAdmin>
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
         </ProtectedRoute>
-      } />
-      
-      <Route path="/admin" element={
-        <ProtectedRoute requireAdmin>
-          <AdminLayout>
-            <Dashboard />
-          </AdminLayout>
-        </ProtectedRoute>
-      } />
+        } />
 
-      {/* Catch all route */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* Social Links Modal */}
+      <SocialLinks 
+        isOpen={showSocial} 
+        onClose={() => setShowSocial(false)} 
+      />
+    </SocialLinksContext.Provider>
   );
 }
 
