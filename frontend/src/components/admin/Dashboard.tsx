@@ -289,48 +289,47 @@ export default function Dashboard() {
               onClick={toggleShopAvailability}
               whileTap={{ scale: 0.95 }}
               className={`
-                relative inline-flex items-center gap-2 px-5 py-2.5
-                rounded-lg font-medium transition-all duration-300
+                w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 
+                bg-zinc-700 hover:bg-zinc-600 rounded-lg 
+                text-sm font-medium transition-colors relative group
                 ${isShopOpen 
-                  ? 'bg-zinc-700 text-emerald-400 hover:bg-zinc-600 hover:text-emerald-300' 
-                  : 'bg-zinc-700 text-red-400 hover:bg-zinc-600 hover:text-red-300'
+                  ? 'text-emerald-400 hover:text-emerald-300' 
+                  : 'text-red-400 hover:text-red-300'
                 }
-                before:absolute before:inset-0 before:rounded-lg
-                before:border before:border-current before:opacity-50
-                before:transition-transform before:duration-300
-                hover:before:scale-105 overflow-hidden group
               `}
             >
               <motion.div
                 initial={false}
-                animate={{ rotate: isShopOpen ? 0 : 180 }}
-                transition={{ duration: 0.3 }}
-                className="relative"
+                animate={{ 
+                  rotate: isShopOpen ? 0 : 180,
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{ 
+                  rotate: { duration: 0.3 },
+                  scale: { duration: 0.2 }
+                }}
               >
                 <Store className="w-4 h-4" />
               </motion.div>
-              <motion.span
-                initial={false}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-                className="relative"
-              >
+              <span>
                 {isShopOpen 
                   ? (translations.shopOpen || "Shop Open") 
                   : (translations.shopClosed || "Shop Closed")
                 }
-              </motion.span>
+              </span>
               <motion.div
-                initial={false}
-                animate={{ 
-                  opacity: 1,
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{ duration: 0.3 }}
-                className={`
-                  absolute right-2 top-2 w-2 h-2 rounded-full
+                className={`absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full
                   ${isShopOpen ? 'bg-emerald-400' : 'bg-red-400'}
                 `}
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 1, 0.5]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
               />
             </motion.button>
             <button
