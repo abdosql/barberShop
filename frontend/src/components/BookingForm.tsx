@@ -188,8 +188,16 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         ? prev.selectedServices.filter(id => id !== serviceId.toString())
         : [...prev.selectedServices, serviceId.toString()];
 
-      return { ...prev, selectedServices: newServices };
+      // Clear time selection when services change
+      return { 
+        ...prev, 
+        selectedServices: newServices,
+        time: '', // Clear the selected time
+      };
     });
+    
+    // Trigger time slots refresh
+    setRefreshTimeSlots(prev => prev + 1);
   };
 
   const formatDuration = (minutes: number) => {
@@ -356,7 +364,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               type="date"
               value={formState.date}
               min={new Date().toISOString().split('T')[0]}
-              onChange={(e) => setFormState(prev => ({ ...prev, date: e.target.value }))}
+              onChange={(e) => setFormState(prev => ({ ...prev, date: e.target.value }))} // Reset time selection when date changes
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
@@ -370,7 +378,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <select
               value={formState.time}
-              onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))}
+              onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))} // Reset time selection when date changes
               disabled={loading.timeSlots}
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -34,15 +34,18 @@ export default function BookingSection() {
       }));
       setStep(prev => Math.min(prev + 1, 3));
     } else if (field === 'services') {
+      // When services change, clear the time selection and don't advance step
       setBooking(prev => ({ 
         ...prev, 
         services: value.services,
-        totalDuration: value.totalDuration
+        totalDuration: value.totalDuration,
+        time: '', // Clear time
+        selectedTimeSlot: undefined // Clear selected time slot
       }));
       // Refresh time slots when services change
       console.log('Services changed, triggering time slot refresh');
       setRefreshTimeSlots(prev => prev + 1);
-      setStep(prev => Math.min(prev + 1, 3));
+      // Don't advance step automatically when services change
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
