@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128">
+  <!-- Barber Pole -->
+  <rect x="22" y="8" width="20" height="48" rx="6" ry="6" fill="#d8d8d8" />
+  <rect x="24" y="10" width="16" height="44" rx="4" ry="4" fill="#fff" />
+  <!-- Stripes -->
+  <path d="M24,12 L40,28" stroke="#f04b4b" stroke-width="2" />
+  <path d="M24,18 L40,34" stroke="#f04b4b" stroke-width="2" />
+  <path d="M24,24 L40,40" stroke="#4285f4" stroke-width="2" />
+  <path d="M24,30 L40,46" stroke="#4285f4" stroke-width="2" />
+  <!-- Top Cap -->
+  <circle cx="32" cy="8" r="6" fill="#555" />
+  <!-- Bottom Cap -->
+  <circle cx="32" cy="56" r="6" fill="#555" />
+  <!-- Scissors -->
+  <path d="M16,40 C14,38 12,42 14,44 L18,48" stroke="#000" stroke-width="2" fill="none" />
+  <path d="M18,40 C20,38 22,42 20,44 L16,48" stroke="#000" stroke-width="2" fill="none" />
+  <circle cx="16" cy="40" r="2" fill="#000" />
+  <circle cx="18" cy="40" r="2" fill="#000" />
+</svg>

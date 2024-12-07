@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Scissors, Phone, LogOut, User, Menu, X, Settings } from 'lucide-react';
+import { Scissors, Phone, LogOut, User, Menu, X, Settings, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
+import InstallQRCode from './InstallQRCode';
 import { SocialLinksContext } from '../App';
 
 /**
@@ -14,10 +15,11 @@ import { SocialLinksContext } from '../App';
 export default function Navbar() {
   // State for controlling mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+  const [isQRVisible, setIsQRVisible] = useState(false);
+
   // Get social links context
   const { showSocial, setShowSocial } = useContext(SocialLinksContext);
-  
+
   // Get authentication and language context
   const { userInfo, logout } = useAuth();
   const { translations } = useLanguage();
@@ -45,11 +47,11 @@ export default function Navbar() {
             </div>
             <span className="text-white font-bold">Barbershop</span>
           </Link>
-          
+
           {/* Desktop navigation menu */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
-            
+
             {/* Conditional rendering based on authentication state */}
             {userInfo ? (
               <div className="flex items-center gap-4">
@@ -92,7 +94,7 @@ export default function Navbar() {
                       <Settings className="w-4 h-4" />
                     </Link>
                   )}
-                  
+
                   {/* Contact button */}
                   <button
                     onClick={() => setShowSocial(true)}
@@ -100,7 +102,22 @@ export default function Navbar() {
                   >
                     <Phone className="w-4 h-4" />
                   </button>
-                  
+
+                  {/* Install QR Code */}
+                  <div className="relative group">
+                    <button
+                      className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
+                      onClick={() => setIsQRVisible(!isQRVisible)}
+                    >
+                      <QrCode className="w-4 h-4" />
+                    </button>
+                    {isQRVisible && (
+                      <div className="absolute right-0 mt-2">
+                        <InstallQRCode />
+                      </div>
+                    )}
+                  </div>
+
                   {/* Logout button */}
                   <button
                     onClick={handleLogout}
@@ -179,7 +196,7 @@ export default function Navbar() {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Mobile menu actions */}
                 <div className="space-y-2">
                   {/* Admin Dashboard Link - Only show for admin users */}
