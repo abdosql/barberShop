@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Calendar, Users, Clock, CheckCircle, XCircle, Plus, Settings, RefreshCw } from 'lucide-react';
+import { Calendar, Users, Clock, CheckCircle, XCircle, Plus, Settings, RefreshCw, Store } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useShopAvailability } from '../../contexts/ShopAvailabilityContext';
 import AppointmentList from './AppointmentList';
 import StatsCards from './StatsCards';
 import AddServiceModal from './AddServiceModal';
 import ManageServicesModal from './ManageServicesModal';
-import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Appointment {
@@ -35,6 +36,7 @@ type NotificationType = 'success' | 'error';
 export default function Dashboard() {
   const { translations } = useLanguage();
   const { token } = useAuth();
+  const { isShopOpen, toggleShopAvailability } = useShopAvailability();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
   const [notification, setNotification] = useState<{
@@ -278,11 +280,59 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">
             {translations.admin.dashboard.title}
           </h1>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex items-center gap-3">
+            <motion.button
+              onClick={toggleShopAvailability}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                relative inline-flex items-center gap-2 px-5 py-2.5
+                rounded-lg font-medium transition-all duration-300
+                ${isShopOpen 
+                  ? 'bg-zinc-700 text-emerald-400 hover:bg-zinc-600 hover:text-emerald-300' 
+                  : 'bg-zinc-700 text-red-400 hover:bg-zinc-600 hover:text-red-300'
+                }
+                before:absolute before:inset-0 before:rounded-lg
+                before:border before:border-current before:opacity-50
+                before:transition-transform before:duration-300
+                hover:before:scale-105 overflow-hidden group
+              `}
+            >
+              <motion.div
+                initial={false}
+                animate={{ rotate: isShopOpen ? 0 : 180 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
+              >
+                <Store className="w-4 h-4" />
+              </motion.div>
+              <motion.span
+                initial={false}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className="relative"
+              >
+                {isShopOpen 
+                  ? (translations.shopOpen || "Shop Open") 
+                  : (translations.shopClosed || "Shop Closed")
+                }
+              </motion.span>
+              <motion.div
+                initial={false}
+                animate={{ 
+                  opacity: 1,
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{ duration: 0.3 }}
+                className={`
+                  absolute right-2 top-2 w-2 h-2 rounded-full
+                  ${isShopOpen ? 'bg-emerald-400' : 'bg-red-400'}
+                `}
+              />
+            </motion.button>
             <button
               onClick={() => setIsManageServicesModalOpen(true)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 
@@ -492,4 +542,4 @@ export default function Dashboard() {
       </motion.div>
     </div>
   );
-} 
+}
