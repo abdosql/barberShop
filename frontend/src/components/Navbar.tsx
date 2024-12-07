@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Scissors, Phone, LogOut, User, Menu, X, Settings, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import InstallQRCode from './InstallQRCode';
 import { SocialLinksContext } from '../App';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 /**
  * Navbar Component
@@ -16,6 +17,7 @@ export default function Navbar() {
   // State for controlling mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isQRVisible, setIsQRVisible] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   // Get social links context
   const { showSocial, setShowSocial } = useContext(SocialLinksContext);
@@ -24,6 +26,11 @@ export default function Navbar() {
   const { userInfo, logout } = useAuth();
   const { translations } = useLanguage();
   const navigate = useNavigate();
+
+  // Use click outside hook
+  useClickOutside(qrRef, () => {
+    if (isQRVisible) setIsQRVisible(false);
+  });
 
   /**
    * Handles user logout functionality
@@ -51,6 +58,21 @@ export default function Navbar() {
           {/* Desktop navigation menu */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
+            
+            {/* QR Code - Always visible */}
+            <div className="relative group" ref={qrRef}>
+              <button
+                className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
+                onClick={() => setIsQRVisible(!isQRVisible)}
+              >
+                <QrCode className="w-4 h-4" />
+              </button>
+              {isQRVisible && (
+                <div className="absolute right-0 mt-2 z-50">
+                  <InstallQRCode />
+                </div>
+              )}
+            </div>
 
             {/* Conditional rendering based on authentication state */}
             {userInfo ? (
@@ -103,21 +125,6 @@ export default function Navbar() {
                     <Phone className="w-4 h-4" />
                   </button>
 
-                  {/* Install QR Code */}
-                  <div className="relative group">
-                    <button
-                      className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
-                      onClick={() => setIsQRVisible(!isQRVisible)}
-                    >
-                      <QrCode className="w-4 h-4" />
-                    </button>
-                    {isQRVisible && (
-                      <div className="absolute right-0 mt-2">
-                        <InstallQRCode />
-                      </div>
-                    )}
-                  </div>
-
                   {/* Logout button */}
                   <button
                     onClick={handleLogout}
@@ -148,6 +155,15 @@ export default function Navbar() {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <LanguageToggle />
+            
+            {/* QR Code for mobile */}
+            <button
+              className="p-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
+              onClick={() => setIsQRVisible(!isQRVisible)}
+            >
+              <QrCode className="w-6 h-6" />
+            </button>
+
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
@@ -160,6 +176,13 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+
+        {/* Mobile QR Code dropdown */}
+        {isQRVisible && (
+          <div className="md:hidden border-t border-zinc-800 py-4" ref={qrRef}>
+            <InstallQRCode />
+          </div>
+        )}
 
         {/* Mobile menu dropdown */}
         {isMenuOpen && (
