@@ -28,8 +28,10 @@ WORKDIR /var/www/html
 COPY docker/scripts/generate-jwt-keys.sh /usr/local/bin/
 COPY docker/scripts/docker-entrypoint.sh /usr/local/bin/
 
-# Make scripts executable
-RUN chmod +x /usr/local/bin/generate-jwt-keys.sh \
+# Fix line endings and make scripts executable
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && sed -i 's/\r$//' /usr/local/bin/generate-jwt-keys.sh \
+    && chmod +x /usr/local/bin/generate-jwt-keys.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Copy application files
