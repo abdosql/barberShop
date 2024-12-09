@@ -18,6 +18,7 @@ services:
       - DATABASE_URL=postgresql://user:password@database:5432/app_db
       - SYMFONY_DOTENV_VARS=CORS_ALLOW_ORIGIN
       - APP_RUNTIME_ENV=dev
+      - MERCURE_PUBLIC_URL=http://mercure:80/.well-known/mercure
     depends_on:
       - database
     networks:
@@ -55,6 +56,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL:-http://localhost:9999/.well-known/mercure}
       - NODE_ENV=${FRONTEND_TARGET:-development}
 
   database:
@@ -104,7 +106,7 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://localhost:8000
+        cors_origins *
         anonymous
         subscriptions
     networks:
