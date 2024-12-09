@@ -84,9 +84,11 @@
         }
 
         // Subscribe to Mercure hub
-        const url = new URL('http://localhost:9999/.well-known/mercure');
-        url.searchParams.append('topic', 'https://localhost/shop-status/');
-        url.searchParams.append('topic', 'https://localhost/shop-status/*');
+        const url = new URL("{{ mercure_public_url }}");
+        const scheme = url.protocol.replace(':', '');
+        const host = url.hostname;
+        url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
+        url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
         
         const eventSource = new EventSource(url, {
             withCredentials: false
@@ -94,6 +96,7 @@
 
         // Handle incoming messages
         eventSource.onmessage = event => {
+            console.log('Received update:', event.data);
             const status = JSON.parse(event.data);
             updateShopStatus(status);
         };
@@ -104,6 +107,16 @@
             const statusText = document.getElementById('status-text');
             statusText.textContent = 'Connection Error';
             statusText.className = 'text-danger';
+        };
+
+        // Add connection status indicator
+        eventSource.onopen = () => {
+            console.log('Connected to Mercure hub');
+            const statusText = document.getElementById('status-text');
+            if (statusText.textContent === 'Connection Error') {
+                statusText.textContent = 'Loading status...';
+                statusText.className = '';
+            }
         };
     </script>
 {% endblock %}

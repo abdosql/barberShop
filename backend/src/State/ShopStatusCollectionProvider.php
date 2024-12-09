@@ -9,14 +9,14 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\ShopStatus;
-use App\Publisher\PublisherInterface;
+use App\Service\ShopStatusPublisher;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class ShopStatusCollectionProvider implements ProviderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private PublisherInterface $publisher
+        private ShopStatusPublisher $statusPublisher,
     ) {
     }
 
@@ -26,7 +26,7 @@ readonly class ShopStatusCollectionProvider implements ProviderInterface
         $status = $repository->findOneBy([]) ?? $this->createInitialStatus();
         
         // Publish current status
-        $this->publishStatus($status);
+        $this->statusPublisher->publish($status);
         
         return [$status];
     }
@@ -40,23 +40,8 @@ readonly class ShopStatusCollectionProvider implements ProviderInterface
         $this->entityManager->persist($status);
         $this->entityManager->flush();
 
-        $this->publishStatus($status);
+        $this->statusPublisher->publish($status);
         
         return $status;
-    }
-
-    private function publishStatus(ShopStatus $status): void
-    {
-        $this->publisher->publish(
-            topics: [
-                'https://localhost/shop-status/',
-                'https://localhost/shop-status/' . $status->getId()
-            ],
-            data: [
-                'id' => $status->getId(),
-                'isOpen' => $status->getIsOpen(),
-                'lastUpdated' => $status->getLastUpdated()->format(\DateTimeInterface::ATOM)
-            ]
-        );
     }
 }

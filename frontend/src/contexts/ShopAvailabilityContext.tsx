@@ -10,10 +10,11 @@ interface ShopAvailabilityContextType {
 const ShopAvailabilityContext = createContext<ShopAvailabilityContextType | undefined>(undefined);
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_URL = `${BASE_URL}/api`;
+const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL || 'http://localhost:9999/.well-known/mercure';
 
 export function ShopAvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);  // Start with loading true
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchShopStatus = async () => {
     try {
@@ -23,10 +24,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
         setIsShopOpen(status.isOpen);
       }
     } finally {
-      // Only set loading to false after initial fetch
-      if (isLoading) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
@@ -34,9 +32,33 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     // Initial fetch
     fetchShopStatus();
 
-    // Set up polling
-    const interval = setInterval(fetchShopStatus, 1000);
-    return () => clearInterval(interval);
+    // Subscribe to Mercure hub
+    const url = new URL(MERCURE_URL);
+    const scheme = url.protocol.replace(':', '');
+    const host = url.hostname;
+    url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
+    url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
+
+    const eventSource = new EventSource(url, {
+      withCredentials: false
+    });
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.isOpen !== undefined) {
+        setIsShopOpen(data.isOpen);
+        setIsLoading(false);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+    };
+
+    // Cleanup
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const toggleShopAvailability = async () => {
@@ -52,9 +74,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
           }
         }
       );
-      if (response.data?.isOpen !== undefined) {
-        setIsShopOpen(response.data.isOpen);
-      }
+      // Note: We don't need to setIsShopOpen here as it will come through Mercure
     } finally {
       setIsLoading(false);
     }
