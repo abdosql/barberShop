@@ -45,7 +45,11 @@ setup-db:
 	@docker compose exec backend php bin/console d:m:m
 	@docker compose exec backend php bin/console d:f:l
 
+enter-backend:
+	@docker compose exec backend bash
 
+enter-frontend:
+	@docker compose exec frontend sh
 # Stop all containers
 down:
 	@echo "Stopping all containers..."

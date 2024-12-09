@@ -1,41 +1,4 @@
 :80 {
-   root * /var/www/html/public
-   php_fastcgi backend:9000
-   file_server
-   encode gzip
-
-   # CORS configuration
-   header {
-       Strict-Transport-Security "max-age=31536000; includeSubDomains"
-       X-Content-Type-Options "nosniff"
-       Referrer-Policy "no-referrer-when-downgrade"
-       Access-Control-Allow-Origin "*"
-       Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-       Access-Control-Allow-Headers "*"
-       Access-Control-Allow-Credentials "true"
-       Access-Control-Max-Age "3600"
-       defer
-   }
-
-   @options {
-       method OPTIONS
-   }
-   handle @options {
-       respond 204
-   }
-
-   handle_errors {
-       respond "{http.error.status_code} {http.error.status_text}"
-   }
-
-   log {
-       output stdout
-       format console
-       level INFO
-   }
-}
-
-:80 {
    log {
        format filter {
            wrap json

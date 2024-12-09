@@ -24,14 +24,16 @@ services:
       - app_network
 
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
     container_name: caddy_server
     ports:
       - "8000:80"
       - "443:443"
     volumes:
       - ./backend:/var/www/html
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/Caddyfile.caddy:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -92,6 +94,26 @@ services:
       - app_network
     depends_on:
       - backend
+
+
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ':80'
+      MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_EXTRA_DIRECTIVES: 'cors_origins http://localhost'
+    networks:
+      - app_network
+    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
+    ports:
+      - "9999:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
 
 networks:
   app_network:
