@@ -1,8 +1,13 @@
 const isDevelopment = self.location.hostname === 'localhost' && self.location.port === '5173';
 
 if (isDevelopment) {
-  // Bypass all caching in development
+  // Bypass all caching in development and handle CORS
   self.addEventListener('fetch', (event) => {
+    // Skip handling for Mercure EventSource requests
+    if (event.request.url.includes('mercure')) {
+      return;
+    }
+
     event.respondWith(
       fetch(event.request)
         .catch(error => {

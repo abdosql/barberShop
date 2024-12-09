@@ -36,11 +36,14 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     const url = new URL(MERCURE_URL);
     const scheme = url.protocol.replace(':', '');
     const host = url.hostname;
+    console.log('Mercure URL:', MERCURE_URL);
+    console.log('Subscribing to:', `${scheme}://${host}/shop-status/`);
+    console.log('Topics:', `${scheme}://${host}/shop-status/`, `${scheme}://${host}/shop-status/{id}`);
     url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
-    url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
+    url.searchParams.append('topic', `${scheme}://${host}/shop-status/{id}`);
 
     const eventSource = new EventSource(url, {
-      withCredentials: false
+      withCredentials: true
     });
 
     eventSource.onmessage = (event) => {
