@@ -26,6 +26,8 @@ class MercureController extends AbstractController
     #[Route('/', name: 'app_mercure_receiver')]
     public function subscriber(): Response
     {
-        return $this->render('mercure/index.html.twig');
+        return $this->render('mercure/index.html.twig', [
+            'mercure_public_url' => $this->getParameter('mercure.public_url'),
+        ]);
     }
 }

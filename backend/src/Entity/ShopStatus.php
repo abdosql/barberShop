@@ -42,7 +42,8 @@ class ShopStatus
     #[ORM\Column]
     private ?bool $isOpen = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["shop_status:read"])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeInterface $lastUpdated = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
@@ -61,7 +62,6 @@ class ShopStatus
     public function setIsOpen(bool $isOpen): static
     {
         $this->isOpen = $isOpen;
-
         return $this;
     }
 
@@ -73,7 +73,6 @@ class ShopStatus
     public function setLastUpdated(\DateTimeInterface $lastUpdated): static
     {
         $this->lastUpdated = $lastUpdated;
-
         return $this;
     }
 
@@ -85,7 +84,6 @@ class ShopStatus
     public function setUpdatedBy(?User $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
-
         return $this;
     }
 }

@@ -103,7 +103,10 @@ services:
       SERVER_NAME: ':80'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
-      MERCURE_EXTRA_DIRECTIVES: 'cors_origins http://localhost'
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins http://localhost:8000
+        anonymous
+        subscriptions
     networks:
       - app_network
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
