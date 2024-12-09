@@ -10,6 +10,7 @@ dev-win:
 		Set-Item -Path Env:FRONTEND_PORT -Value '5173'; \
 		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value 'http://localhost:5173 http://localhost:4173 http://localhost:8000'; \
 		Set-Item -Path Env:MERCURE_PUBLIC_URL -Value 'http://localhost:9999/.well-known/mercure'; \
+		Set-Item -Path Env:VITE_MERCURE_HOST -Value 'localhost'; \
 		docker compose up --build -d"
 
 # Development environment (Linux)
@@ -21,6 +22,7 @@ dev:
 	FRONTEND_PORT=5173 \
 	CORS_ALLOW_ORIGIN='http://localhost:5173 http://localhost:4173 http://localhost:8000' \
 	MERCURE_PUBLIC_URL=http://localhost:9999/.well-known/mercure \
+	VITE_MERCURE_HOST=localhost \
 	docker compose up --build -d
 
 # Production environment (Linux)
@@ -32,6 +34,7 @@ prod:
 	FRONTEND_PORT=4173 \
 	CORS_ALLOW_ORIGIN='http://54.37.66.72:4173 http://54.37.66.72:8000' \
 	MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure \
+	VITE_MERCURE_HOST=54.37.66.72 \
 	docker compose up --build -d
 
 # Production environment (PowerShell)
@@ -44,6 +47,7 @@ prod-win:
 		Set-Item -Path Env:FRONTEND_PORT -Value '4173'; \
 		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value 'http://54.37.66.72:4173 http://54.37.66.72:8000'; \
 		Set-Item -Path Env:MERCURE_PUBLIC_URL -Value 'http://54.37.66.72:9999/.well-known/mercure'; \
+		Set-Item -Path Env:VITE_MERCURE_HOST -Value '54.37.66.72'; \
 		docker compose up --build -d"
 
 setup-db:

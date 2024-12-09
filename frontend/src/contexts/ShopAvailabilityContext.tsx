@@ -11,6 +11,7 @@ const ShopAvailabilityContext = createContext<ShopAvailabilityContextType | unde
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_URL = `${BASE_URL}/api`;
 const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL || 'http://localhost:9999/.well-known/mercure';
+const MERCURE_HOST = import.meta.env.VITE_MERCURE_HOST || 'localhost';
 
 export function ShopAvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
@@ -35,12 +36,13 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     // Subscribe to Mercure hub
     const url = new URL(MERCURE_URL);
     const scheme = url.protocol.replace(':', '');
-    const host = window.location.hostname === 'localhost' ? 'localhost' : '54.37.66.72';
+    
     console.log('Mercure URL:', MERCURE_URL);
-    console.log('Subscribing to:', `${scheme}://${host}/shop-status/`);
-    console.log('Topics:', `${scheme}://${host}/shop-status/`, `${scheme}://${host}/shop-status/{id}`);
-    url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
-    url.searchParams.append('topic', `${scheme}://${host}/shop-status/{id}`);
+    console.log('Mercure Host:', MERCURE_HOST);
+    console.log('Topics:', `${scheme}://${MERCURE_HOST}/shop-status/`, `${scheme}://${MERCURE_HOST}/shop-status/{id}`);
+    
+    url.searchParams.append('topic', `${scheme}://${MERCURE_HOST}/shop-status/`);
+    url.searchParams.append('topic', `${scheme}://${MERCURE_HOST}/shop-status/{id}`);
 
     const eventSource = new EventSource(url, {
       withCredentials: true
