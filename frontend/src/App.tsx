@@ -13,6 +13,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ShopClosedPage from './components/ShopClosedPage';
 import SocialLinks from './components/SocialLinks';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Create a context for managing the social links modal
 export const SocialLinksContext = React.createContext({
@@ -22,12 +23,17 @@ export const SocialLinksContext = React.createContext({
 
 function AppContent() {
   const [showSocial, setShowSocial] = useState(false);
-  const { isShopOpen } = useShopAvailability();
+  const { isShopOpen, isLoading } = useShopAvailability();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAuthRoute = ['/login', '/register'].includes(location.pathname);
 
-  // Show closed page only for public routes when shop is closed
+  // Show loading spinner while checking shop status (except for admin routes)
+  if (isLoading && !isAdminRoute && !isAuthRoute) {
+    return <LoadingSpinner />;
+  }
+
+  // Show closed page only for public routes (not admin or auth) when shop is closed
   if (!isShopOpen && !isAdminRoute && !isAuthRoute) {
     return <ShopClosedPage />;
   }
@@ -46,12 +52,13 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
-        <Route path="/admin" element={
+        {/* Admin routes - not affected by shop status */}
+        <Route path="/admin/*" element={
           <ProtectedRoute requireAdmin>
             <AdminLayout>
               <Dashboard />
             </AdminLayout>
-        </ProtectedRoute>
+          </ProtectedRoute>
         } />
 
         {/* Catch all route */}

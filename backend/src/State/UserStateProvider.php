@@ -9,7 +9,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Psr\Log\LoggerInterface;
 
-class UserStateProvider implements ProviderInterface
+readonly class UserStateProvider implements ProviderInterface
 {
     public function __construct(
         private Security $security,
