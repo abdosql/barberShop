@@ -35,7 +35,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     // Subscribe to Mercure hub
     const url = new URL(MERCURE_URL);
     const scheme = url.protocol.replace(':', '');
-    const host = url.hostname;
+    const host = window.location.hostname === 'localhost' ? 'localhost' : '54.37.66.72';
     console.log('Mercure URL:', MERCURE_URL);
     console.log('Subscribing to:', `${scheme}://${host}/shop-status/`);
     console.log('Topics:', `${scheme}://${host}/shop-status/`, `${scheme}://${host}/shop-status/{id}`);
