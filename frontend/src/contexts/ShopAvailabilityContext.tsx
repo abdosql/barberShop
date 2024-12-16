@@ -8,10 +8,10 @@ interface ShopAvailabilityContextType {
 }
 
 const ShopAvailabilityContext = createContext<ShopAvailabilityContextType | undefined>(undefined);
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_URL;
 const API_URL = `${BASE_URL}/api`;
-const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL || 'http://localhost:9999/.well-known/mercure';
-const MERCURE_HOST = import.meta.env.VITE_MERCURE_HOST || 'localhost';
+const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL;
+const MERCURE_HOST = import.meta.env.VITE_MERCURE_HOST;
 
 export function ShopAvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
