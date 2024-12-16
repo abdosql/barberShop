@@ -28,13 +28,13 @@ dev:
 # Production environment (Linux)
 prod:
 	@echo "Starting production environment..."
-	VITE_API_URL=http://54.37.66.72:8000 \
-	VITE_MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure \
-	FRONTEND_TARGET=production \
-	FRONTEND_PORT=4173 \
-	CORS_ALLOW_ORIGIN='http://54.37.66.72:4173 http://54.37.66.72:8000' \
-	MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure \
-	VITE_MERCURE_HOST=54.37.66.72 \
+	@export VITE_API_URL=http://54.37.66.72:8000 && \
+	export VITE_MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure && \
+	export FRONTEND_TARGET=production && \
+	export FRONTEND_PORT=4173 && \
+	export CORS_ALLOW_ORIGIN='http://54.37.66.72:4173 http://54.37.66.72:8000' && \
+	export MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure && \
+	export VITE_MERCURE_HOST=54.37.66.72 && \
 	docker compose up --build -d
 
 # Production environment (PowerShell)
