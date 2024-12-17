@@ -23,8 +23,7 @@ readonly class ShopStatusPublisher
     {
         $this->publisher->publish(
             topics: [
-                sprintf('%s://%s/shop-status/', $this->scheme, $this->mercureHost),
-                sprintf('%s://%s/shop-status/%s', $this->scheme, $this->mercureHost, $status->getId())
+                "shop-status"
             ],
             data: [
                 'id' => $status->getId(),

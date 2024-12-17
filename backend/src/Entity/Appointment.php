@@ -100,7 +100,7 @@ class Appointment
      * @var Collection<int, AppointmentService>
      */
     #[ORM\OneToMany(targetEntity: AppointmentService::class, mappedBy: 'appointment')]
-    #[Groups(['appointment:read'])]
+    #[Groups(['appointment:read', 'appointment:create'])]
     private Collection $appointmentServices;
 
     /**

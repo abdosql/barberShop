@@ -1,10 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+interface ShopStatus {
+  id: number;
+  isOpen: boolean;
+  lastUpdated: string;
+}
+
 interface ShopAvailabilityContextType {
   isShopOpen: boolean;
   toggleShopAvailability: () => Promise<void>;
   isLoading: boolean;
+  lastUpdated?: string;
 }
 
 const ShopAvailabilityContext = createContext<ShopAvailabilityContextType | undefined>(undefined);
@@ -14,40 +21,26 @@ const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL;
 
 export function ShopAvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchShopStatus = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/shop/status`);
-      const status = response.data.member?.[0];
-      if (status?.isOpen !== undefined) {
-        setIsShopOpen(status.isOpen);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>();
 
   useEffect(() => {
-    // Initial fetch
-    fetchShopStatus();
-
-    // Subscribe to Mercure hub
+    // Subscribe to Mercure hub for real-time updates
     const url = new URL(MERCURE_URL);
-    const scheme = url.protocol.replace(':', '');
-    const host = url.hostname;
-    url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
-    url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
+    url.searchParams.append('topic', 'shop-status');
 
     const eventSource = new EventSource(url, {
       withCredentials: false
     });
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.isOpen !== undefined) {
+      try {
+        const data: ShopStatus = JSON.parse(event.data);
+        console.log('Received shop status update:', data);
         setIsShopOpen(data.isOpen);
-        setIsLoading(false);
+        setLastUpdated(data.lastUpdated);
+      } catch (error) {
+        console.error('Error parsing Mercure event:', error);
       }
     };
 
@@ -55,7 +48,6 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
       console.error('EventSource failed:', error);
     };
 
-    // Cleanup
     return () => {
       eventSource.close();
     };
@@ -64,7 +56,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
   const toggleShopAvailability = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.patch(
+      await axios.patch(
         `${API_URL}/shop/status/1`,
         { isOpen: !isShopOpen },
         {
@@ -74,7 +66,9 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
           }
         }
       );
-      // Note: We don't need to setIsShopOpen here as it will come through Mercure
+      // Status update will come through Mercure
+    } catch (error) {
+      console.error('Error toggling shop status:', error);
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +78,8 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     <ShopAvailabilityContext.Provider value={{
       isShopOpen,
       toggleShopAvailability,
-      isLoading
+      isLoading,
+      lastUpdated
     }}>
       {children}
     </ShopAvailabilityContext.Provider>
