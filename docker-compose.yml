@@ -109,7 +109,7 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000
+        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000 http://54.37.66.72:4173 http://54.37.66.72:8000 
         anonymous
         subscriptions
     networks:
