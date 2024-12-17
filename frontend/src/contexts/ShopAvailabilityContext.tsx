@@ -9,8 +9,8 @@ interface ShopAvailabilityContextType {
 
 const ShopAvailabilityContext = createContext<ShopAvailabilityContextType | undefined>(undefined);
 const BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = `${BASE_URL}/api`;
 const MERCURE_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL;
-const MERCURE_HOST = import.meta.env.VITE_MERCURE_HOST;
 
 export function ShopAvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
@@ -18,15 +18,11 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
 
   const fetchShopStatus = async () => {
     try {
-      console.log('Fetching shop status from:', `${BASE_URL}/api/shop/status`);
-      const response = await axios.get(`${BASE_URL}/api/shop/status`);
-      console.log('Shop status response:', response.data);
-      const status = response.data['hydra:member']?.[0];
+      const response = await axios.get(`${API_URL}/shop/status`);
+      const status = response.data.member?.[0];
       if (status?.isOpen !== undefined) {
         setIsShopOpen(status.isOpen);
       }
-    } catch (error) {
-      console.error('Error fetching shop status:', error);
     } finally {
       setIsLoading(false);
     }
@@ -37,67 +33,59 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     fetchShopStatus();
 
     // Subscribe to Mercure hub
-    if (!MERCURE_URL || !MERCURE_HOST) {
-      console.error('Mercure configuration missing:', { MERCURE_URL, MERCURE_HOST });
-      return;
-    }
+    const url = new URL(MERCURE_URL);
+    const scheme = url.protocol.replace(':', '');
+    const host = url.hostname;
+    url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
+    url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
 
-    try {
-      const url = new URL(MERCURE_URL);
-      const scheme = url.protocol.replace(':', '');
-      
-      console.log('Mercure configuration:', {
-        MERCURE_URL,
-        MERCURE_HOST,
-        scheme,
-        topic: `${scheme}://${MERCURE_HOST}/shop-status`
-      });
-      
-      url.searchParams.append('topic', `${scheme}://${MERCURE_HOST}/shop-status`);
+    const eventSource = new EventSource(url, {
+      withCredentials: false
+    });
 
-      const eventSource = new EventSource(url);
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.isOpen !== undefined) {
+        setIsShopOpen(data.isOpen);
+        setIsLoading(false);
+      }
+    };
 
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('Received Mercure event:', data);
-          if (data.isOpen !== undefined) {
-            setIsShopOpen(data.isOpen);
-          }
-        } catch (error) {
-          console.error('Error parsing Mercure event:', error);
-        }
-      };
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+    };
 
-      eventSource.onerror = (error) => {
-        console.error('EventSource error:', error);
-      };
-
-      return () => {
-        eventSource.close();
-      };
-    } catch (error) {
-      console.error('Error setting up Mercure:', error);
-    }
+    // Cleanup
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const toggleShopAvailability = async () => {
     try {
-      const status = await axios.patch(`${BASE_URL}/api/shop/status/1`, {
-        isOpen: !isShopOpen
-      }, {
-        headers: {
-          'Content-Type': 'application/merge-patch+json'
+      setIsLoading(true);
+      const response = await axios.patch(
+        `${API_URL}/shop/status/1`,
+        { isOpen: !isShopOpen },
+        {
+          headers: {
+            'Content-Type': 'application/merge-patch+json',
+            'Accept': 'application/ld+json'
+          }
         }
-      });
-      console.log('Toggle response:', status.data);
-    } catch (error) {
-      console.error('Error toggling shop availability:', error);
+      );
+      // Note: We don't need to setIsShopOpen here as it will come through Mercure
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <ShopAvailabilityContext.Provider value={{ isShopOpen, toggleShopAvailability, isLoading }}>
+    <ShopAvailabilityContext.Provider value={{
+      isShopOpen,
+      toggleShopAvailability,
+      isLoading
+    }}>
       {children}
     </ShopAvailabilityContext.Provider>
   );
@@ -105,7 +93,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
 
 export function useShopAvailability() {
   const context = useContext(ShopAvailabilityContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useShopAvailability must be used within a ShopAvailabilityProvider');
   }
   return context;
