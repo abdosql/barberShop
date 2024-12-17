@@ -9,17 +9,16 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy source code and env files
+# Copy source code
 COPY . .
 
-# Create dist directory and copy appropriate env file based on target
-RUN mkdir -p dist && \
-    if [ "$FRONTEND_TARGET" = "production" ]; then \
-        cp .env.production .env && \
-        npm run build; \
-    else \
-        cp .env.development .env; \
+# For production, copy the correct env file before building
+RUN if [ "$FRONTEND_TARGET" = "production" ]; then \
+    cp .env.production .env; \
     fi
+
+# Build for production if needed
+RUN npm run build
 
 # Development stage
 FROM node:18-alpine as development
