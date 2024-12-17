@@ -12,8 +12,9 @@ RUN npm install
 # Copy source code and env files
 COPY . .
 
-# Copy appropriate env file based on target
-RUN if [ "$FRONTEND_TARGET" = "production" ]; then \
+# Create dist directory and copy appropriate env file based on target
+RUN mkdir -p dist && \
+    if [ "$FRONTEND_TARGET" = "production" ]; then \
         cp .env.production .env && \
         npm run build; \
     else \
