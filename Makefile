@@ -8,7 +8,8 @@ dev:
 # Production environment
 prod:
 	@echo "Starting production environment..."
-	APP_ENV=production docker compose up --build -d
+	export APP_ENV=production && \
+	docker compose up --build -d
 	
 # Stop all containers
 down:
