@@ -3,21 +3,22 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Add build argument for API URL
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL}
-
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy source code
+# Copy source code and env files
 COPY . .
 
-# Build for production if needed
-RUN npm run build
+# Copy appropriate env file based on target
+RUN if [ "$FRONTEND_TARGET" = "production" ]; then \
+        cp .env.production .env && \
+        npm run build; \
+    else \
+        cp .env.development .env; \
+    fi
 
 # Development stage
 FROM node:18-alpine as development
