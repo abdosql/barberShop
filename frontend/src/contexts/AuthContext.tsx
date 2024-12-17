@@ -88,6 +88,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (phoneNumber: string, password: string) => {
     try {
+      console.log('Logging in...');
+      console.log(`${API_URL}/api/login`);
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: {

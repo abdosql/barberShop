@@ -1,54 +1,24 @@
 .PHONY: dev prod down build
 
-# Development environment (PowerShell)
-dev-win:
-	@echo "Starting development environment in Windows..."
-	@powershell -NoProfile -Command " \
-		Set-Item -Path Env:VITE_API_URL -Value 'http://localhost:8000'; \
-		Set-Item -Path Env:VITE_MERCURE_PUBLIC_URL -Value 'http://localhost:9999/.well-known/mercure'; \
-		Set-Item -Path Env:FRONTEND_TARGET -Value 'development'; \
-		Set-Item -Path Env:FRONTEND_PORT -Value '5173'; \
-		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value 'http://localhost:5173 http://localhost:4173 http://localhost:8000'; \
-		Set-Item -Path Env:MERCURE_PUBLIC_URL -Value 'http://localhost:9999/.well-known/mercure'; \
-		Set-Item -Path Env:VITE_MERCURE_HOST -Value 'localhost'; \
-		docker compose up --build -d"
-
-# Development environment (Linux)
+# Development environment
 dev:
-	@echo "Starting development environment in Linux..."
-	VITE_API_URL=http://localhost:8000 \
-	VITE_MERCURE_PUBLIC_URL=http://localhost:9999/.well-known/mercure \
-	FRONTEND_TARGET=development \
-	FRONTEND_PORT=5173 \
-	CORS_ALLOW_ORIGIN='http://localhost:5173 http://localhost:4173 http://localhost:8000' \
-	MERCURE_PUBLIC_URL=http://localhost:9999/.well-known/mercure \
-	VITE_MERCURE_HOST=localhost \
-	docker compose up --build -d
+	@echo "Starting development environment..."
+	set APP_ENV=development && docker compose up --build -d
 
-# Production environment (Linux)
+# Production environment
 prod:
 	@echo "Starting production environment..."
-	@export VITE_API_URL=http://54.37.66.72:8000 && \
-	export VITE_MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure && \
-	export FRONTEND_TARGET=production && \
-	export FRONTEND_PORT=4173 && \
-	export CORS_ALLOW_ORIGIN='http://54.37.66.72:4173 http://54.37.66.72:8000' && \
-	export MERCURE_PUBLIC_URL=http://54.37.66.72:9999/.well-known/mercure && \
-	export VITE_MERCURE_HOST=54.37.66.72 && \
-	docker compose up --build -d
+	APP_ENV=production docker compose up --build -d
+	
+# Stop all containers
+down:
+	@echo "Stopping all containers..."
+	docker compose down
 
-# Production environment (PowerShell)
-prod-win:
-	@echo "Starting production environment in Windows..."
-	@powershell -NoProfile -Command " \
-		Set-Item -Path Env:VITE_API_URL -Value 'http://54.37.66.72:8000'; \
-		Set-Item -Path Env:VITE_MERCURE_PUBLIC_URL -Value 'http://54.37.66.72:9999/.well-known/mercure'; \
-		Set-Item -Path Env:FRONTEND_TARGET -Value 'production'; \
-		Set-Item -Path Env:FRONTEND_PORT -Value '4173'; \
-		Set-Item -Path Env:CORS_ALLOW_ORIGIN -Value 'http://54.37.66.72:4173 http://54.37.66.72:8000'; \
-		Set-Item -Path Env:MERCURE_PUBLIC_URL -Value 'http://54.37.66.72:9999/.well-known/mercure'; \
-		Set-Item -Path Env:VITE_MERCURE_HOST -Value '54.37.66.72'; \
-		docker compose up --build -d"
+# Build containers
+build:
+	@echo "Building containers..."
+	docker compose build
 
 setup-db:
 	@echo "Setting up database..."
@@ -62,22 +32,11 @@ enter-backend:
 
 enter-frontend:
 	@docker compose exec frontend sh
-# Stop all containers
-down:
-	@echo "Stopping all containers..."
-	docker compose down
-
-# Build containers without starting
-build:
-	@echo "Building containers..."
-	docker compose build
 
 # Show help
 help:
 	@echo "Available commands:"
-	@echo "  make dev      - Start development environment in Linux (localhost:5173)"
-	@echo "  make dev-win  - Start development environment in Windows (localhost:5173)"
-	@echo "  make prod     - Start production environment in Linux (54.37.66.72:4173)"
-	@echo "  make prod-win - Start production environment in Windows (54.37.66.72:4173)"
+	@echo "  make dev      - Start development environment (localhost:5173)"
+	@echo "  make prod     - Start production environment (54.37.66.72:4173)"
 	@echo "  make down     - Stop all containers"
 	@echo "  make build    - Build containers without starting"
