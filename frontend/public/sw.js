@@ -4,17 +4,20 @@ if (isDevelopment) {
   // Bypass all caching in development and handle CORS
   self.addEventListener('fetch', (event) => {
     // Skip handling for Mercure EventSource requests
-    if (event.request.url.includes('mercure')) {
+    if (event.request.url.includes('mercure') || event.request.url.includes('/api/')) {
       return;
     }
 
-    event.respondWith(
-      fetch(event.request)
-        .catch(error => {
-          console.error('Fetch failed:', error);
-          throw error;
-        })
-    );
+    // Only handle same-origin requests
+    if (new URL(event.request.url).origin === self.location.origin) {
+      event.respondWith(
+        fetch(event.request)
+          .catch(error => {
+            console.error('Fetch failed:', error);
+            throw error;
+          })
+      );
+    }
   });
 } else {
   // Production caching logic
