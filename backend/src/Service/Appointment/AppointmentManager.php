@@ -83,4 +83,3 @@ readonly class AppointmentManager
         $this->notificationService->notify($details);
     }
 }
-

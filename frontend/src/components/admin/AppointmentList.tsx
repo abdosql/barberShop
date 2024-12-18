@@ -210,9 +210,10 @@ export default function AppointmentList({
   };
 
   const getClientName = (appointment: Appointment) => {
+    const user = appointment.user_ || {};
     return {
-      fullName: `${appointment.user_.firstName} ${appointment.user_.lastName}`,
-      phone: appointment.user_.phoneNumber
+      fullName: `${user.firstName || 'Unknown'} ${user.lastName || ''}`,
+      phone: user.phoneNumber || 'No phone'
     };
   };
 

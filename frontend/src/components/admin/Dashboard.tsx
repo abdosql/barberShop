@@ -175,6 +175,113 @@ export default function Dashboard() {
     } else {
       setIsLoading(false);
     }
+
+    // Subscribe to Mercure for real-time appointment updates
+    const mercureUrl = import.meta.env.VITE_MERCURE_PUBLIC_URL;
+    
+    if (!mercureUrl) {
+      console.error('VITE_MERCURE_PUBLIC_URL is not defined in environment variables');
+      return;
+    }
+
+    try {
+      const url = new URL(mercureUrl);
+      url.searchParams.append('topic', 'appointment');
+
+      const eventSource = new EventSource(url, { withCredentials: true });
+
+      eventSource.onmessage = async (event) => {
+        try {
+          const update = JSON.parse(event.data);
+          
+          if (update.action === 'deleted') {
+            // Remove the appointment from cache if it was deleted
+            setCachedAppointments(current => {
+              if (!current) return null;
+              
+              const newData = current.data.filter(apt => apt.id !== update.id);
+              const newCache = {
+                data: newData,
+                timestamp: Date.now()
+              };
+              
+              localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+              return newCache;
+            });
+            
+            showNotification('Appointment was deleted', 'error');
+            return;
+          }
+          
+          // Fetch the full appointment data for created/updated appointments
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${update.id}`, {
+            headers: {
+              'Accept': 'application/ld+json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch appointment');
+          }
+          
+          const appointmentData = await response.json();
+          
+          // Update the cached appointments
+          setCachedAppointments(current => {
+            if (!current) return null;
+            
+            const appointmentExists = current.data.some(apt => apt.id === update.id);
+            
+            let newData;
+            if (appointmentExists) {
+              newData = current.data.map(apt => 
+                apt.id === update.id ? appointmentData : apt
+              );
+            } else {
+              newData = [...current.data, appointmentData];
+            }
+
+            const sortedData = newData.sort((a: Appointment, b: Appointment) => {
+              const dateA = new Date(a.startTime);
+              const dateB = new Date(b.startTime);
+              return dateA.getTime() - dateB.getTime();
+            });
+
+            const newCache = {
+              data: sortedData,
+              timestamp: Date.now()
+            };
+
+            localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+            return newCache;
+          });
+
+          // Show appropriate notification based on action
+          if (update.action === 'created') {
+            showNotification('New appointment received', 'success');
+          } else if (update.action === 'updated') {
+            showNotification('Appointment was updated', 'success');
+          }
+        } catch (error) {
+          console.error('Error processing Mercure message:', error);
+          showNotification('Error processing real-time update', 'error');
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('Mercure EventSource error:', error);
+        showNotification('Real-time updates connection error', 'error');
+      };
+
+      // Cleanup function
+      return () => {
+        eventSource.close();
+      };
+    } catch (error) {
+      console.error('Error setting up Mercure connection:', error);
+      showNotification('Failed to connect to real-time updates', 'error');
+    }
   }, [token]);
 
   const handleServiceAdded = () => {
