@@ -1,15 +1,18 @@
 #!/bin/sh
 set -e
 
+JWT_DIR=/var/www/html/config/jwt
+
 # Create JWT directory
-mkdir -p config/jwt
+mkdir -p $JWT_DIR
 
 # Generate the SSL keys if they don't exist
-if [ ! -f config/jwt/private.pem ]; then
-    openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:${JWT_PASSPHRASE}
-    openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:${JWT_PASSPHRASE}
+if [ ! -f $JWT_DIR/private.pem ]; then
+    openssl genpkey -out $JWT_DIR/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:${JWT_PASSPHRASE}
+    openssl pkey -in $JWT_DIR/private.pem -out $JWT_DIR/public.pem -pubout -passin pass:${JWT_PASSPHRASE}
     
     # Set proper permissions
-    chmod 644 config/jwt/public.pem
-    chmod 600 config/jwt/private.pem
-fi 
+    chown www-data:www-data $JWT_DIR/private.pem $JWT_DIR/public.pem
+    chmod 600 $JWT_DIR/private.pem
+    chmod 644 $JWT_DIR/public.pem
+fi

@@ -38,8 +38,11 @@ RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
 COPY . .
 
 RUN composer install
-# Create jwt directory
-RUN mkdir -p config/jwt
+
+# Create jwt directory and set initial permissions
+RUN mkdir -p config/jwt && \
+    chown -R root:root config/jwt && \
+    chmod 777 config/jwt
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php-fpm"]
