@@ -1,37 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, Clock, Calendar, DollarSign, Eye } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
-
-interface User {
-  "@id": string;
-  "@type": string;
-  phoneNumber: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface Service {
-  "@id": string;
-  "@type": string;
-  name: string;
-}
-
-interface Appointment {
-  "@id": string;
-  "@type": string;
-  id: number;
-  startTime: string;
-  endTime: string;
-  status: 'pending' | 'accepted' | 'completed' | 'rejected' | 'cancelled';
-  totalDuration: number;
-  totalPrice: string;
-  createdAt: string;
-  updatedAt: string;
-  user_: User;
-  services: Service[];
-  timeSlots: string[];
-}
+import { Appointment } from '../../types/appointment';
+import { ServicesModal } from './services/ServicesModal';
+import { formatDate, formatTime, isToday } from '../../utils/dateUtils';
+import { getClientName, getUrgencyIndicator } from '../../utils/appointmentUtils';
 
 interface AppointmentListProps {
   appointments: Appointment[];
@@ -56,17 +30,14 @@ export default function AppointmentList({
   const [isCompleting, setIsCompleting] = useState<number | null>(null);
   const [displayCount, setDisplayCount] = useState(pageSize);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [showServicesModal, setShowServicesModal] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setDisplayCount(pageSize);
   }, [appointments, status, pageSize]);
 
-  const visibleAppointments = useMemo(() => {
-    return appointments.slice(0, displayCount);
-  }, [appointments, displayCount]);
+  const visibleAppointments = appointments.slice(0, displayCount);
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -199,71 +170,6 @@ export default function AppointmentList({
     } finally {
       setIsCancelling(null);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
-
-  const isToday = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
-  };
-
-  const getClientName = (appointment: Appointment) => {
-    const user = appointment.user_ || {};
-    return {
-      fullName: `${user.firstName || 'Unknown'} ${user.lastName || ''}`,
-      phone: user.phoneNumber || 'No phone'
-    };
-  };
-
-  const getUrgencyIndicator = (startTime: string) => {
-    const appointmentDate = new Date(startTime);
-    const today = new Date();
-    
-    // Reset hours to compare just dates
-    today.setHours(0, 0, 0, 0);
-    const appointmentDay = new Date(appointmentDate);
-    appointmentDay.setHours(0, 0, 0, 0);
-    
-    // Calculate days difference
-    const diffTime = appointmentDay.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return {
-        color: 'bg-rose-500',
-        pulseColor: 'bg-rose-500/50',
-        title: 'Urgent - Today'
-      };
-    } else if (diffDays <= 2) {
-      return {
-        color: 'bg-amber-500',
-        pulseColor: 'bg-amber-500/50',
-        title: 'Soon - Within 2 days'
-      };
-    }
-    return {
-      color: 'bg-emerald-500',
-      pulseColor: 'bg-emerald-500/50',
-      title: 'Scheduled'
-    };
   };
 
   const containerVariants = {
@@ -462,7 +368,6 @@ export default function AppointmentList({
                         <button
                           onClick={() => {
                             setSelectedAppointment(appointment);
-                            setShowServicesModal(true);
                           }}
                           className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
                         >
@@ -568,7 +473,6 @@ export default function AppointmentList({
                     <button
                       onClick={() => {
                         setSelectedAppointment(appointment);
-                        setShowServicesModal(true);
                       }}
                       className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
                     >
@@ -597,44 +501,11 @@ export default function AppointmentList({
         </div>
       )}
       {/* Services Modal */}
-      {showServicesModal && selectedAppointment && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full mx-4"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-white">Appointment Services</h3>
-              <button
-                onClick={() => {
-                  setShowServicesModal(false);
-                  setSelectedAppointment(null);
-                }}
-                className="text-zinc-400 hover:text-white transition-colors"
-              >
-                <XCircle size={24} />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {selectedAppointment.services.length > 0 ? (
-                selectedAppointment.services.map((service) => (
-                  <div
-                    key={`service-${service['@id']}`}
-                    className="p-3 bg-zinc-800/50 rounded-lg flex items-center justify-between"
-                  >
-                    <span className="text-zinc-200">{service.name}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-zinc-400">
-                  No services found for this appointment
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
+      {selectedAppointment && (
+        <ServicesModal
+          appointment={selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
+        />
       )}
     </div>
   );
