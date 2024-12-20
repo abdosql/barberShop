@@ -25,29 +25,28 @@ export default function AppointmentList({
 }: AppointmentListProps) {
   const { token } = useAuth();
   const { translations } = useLanguage();
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [isDeclining, setIsDeclining] = useState<number | null>(null);
-  const [isCancelling, setIsCancelling] = useState<number | null>(null);
   const [isCompleting, setIsCompleting] = useState<number | null>(null);
+  const [isCancelling, setIsCancelling] = useState<number | null>(null);
   const [displayCount, setDisplayCount] = useState(pageSize);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [showTodayOnly, setShowTodayOnly] = useState(true);
+
+  // Filter appointments based on the toggle state for accepted appointments
+  const filteredAppointments = status === 'accepted' && showTodayOnly
+    ? appointments.filter(appointment => isToday(appointment.startTime))
+    : appointments;
+
+  const visibleAppointments = filteredAppointments.slice(0, displayCount);
 
   useEffect(() => {
     setDisplayCount(pageSize);
   }, [appointments, status, pageSize]);
 
-  const visibleAppointments = appointments
-    .filter(appointment => {
-      // Only filter by date if it's the accepted tab
-      if (status === 'accepted') {
-        return isToday(appointment.startTime);
-      }
-      return true;
-    })
-    .slice(0, displayCount);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -281,10 +280,26 @@ export default function AppointmentList({
       <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl overflow-hidden">
         {/* Table Title - Mobile Only */}
         <div className="md:hidden text-lg font-medium text-white p-4 border-b border-zinc-700">
-          {status === 'accepted' && translations.admin.dashboard.acceptedAppointments}
-          {status === 'completed' && (translations.admin.dashboard.completedAppointments || "Completed")}
-          {status === 'declined' && translations.admin.dashboard.declinedAppointments}
-          {status === 'cancelled' && translations.admin.dashboard.cancelledAppointments}
+          <div className="flex justify-between items-center">
+            <span>
+              {status === 'accepted' && translations.admin.dashboard.acceptedAppointments}
+              {status === 'completed' && (translations.admin.dashboard.completedAppointments || "Completed")}
+              {status === 'declined' && translations.admin.dashboard.declinedAppointments}
+              {status === 'cancelled' && translations.admin.dashboard.cancelledAppointments}
+            </span>
+            {status === 'accepted' && (
+              <button
+                onClick={() => setShowTodayOnly(!showTodayOnly)}
+                className={`ml-4 px-3 py-1 rounded-lg text-sm transition-colors ${
+                  showTodayOnly 
+                    ? 'bg-blue-500/20 text-blue-400'
+                    : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
+                }`}
+              >
+                {showTodayOnly ? 'Today' : 'All'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Desktop View - Hidden on mobile */}
@@ -299,7 +314,23 @@ export default function AppointmentList({
                   <th className="text-left p-4 text-zinc-400 font-medium">Duration</th>
                   <th className="text-left p-4 text-zinc-400 font-medium">Date & Time</th>
                   <th className="text-left p-4 text-zinc-400 font-medium">Price</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Actions</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">
+                    <div className="flex items-center justify-between">
+                      <span>Actions</span>
+                      {status === 'accepted' && (
+                        <button
+                          onClick={() => setShowTodayOnly(!showTodayOnly)}
+                          className={`ml-2 px-3 py-1 rounded-lg text-sm transition-colors ${
+                            showTodayOnly 
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
+                          }`}
+                        >
+                          {showTodayOnly ? 'Today' : 'All'}
+                        </button>
+                      )}
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <motion.tbody
