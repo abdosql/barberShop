@@ -88,6 +88,16 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   // Memoized slot availability check
   const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
+    // Check if the slot is in the past for today
+    const today = new Date().toISOString().split('T')[0];
+    if (formState.date === today) {
+      const currentTime = new Date();
+      const slotStartTime = new Date(slot.startTime);
+      if (slotStartTime.getTime() < currentTime.getTime()) {
+        return true;
+      }
+    }
+  
     // First check the dailyTimeSlots availability
     const isAvailableForDate = !slot.dailyTimeSlots.some(
       dailySlot => 

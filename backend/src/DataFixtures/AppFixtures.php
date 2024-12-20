@@ -60,7 +60,7 @@ class AppFixtures extends Fixture
         //timeslots
 
         $startTime = new DateTimeImmutable('10:30');
-        $endTime = new DateTimeImmutable('20:30');
+        $endTime = new DateTimeImmutable('21:00');
 
         $intervals = $this->generateTimeIntervals($startTime, $endTime);
 

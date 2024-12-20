@@ -50,15 +50,19 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   // Function to check if a time slot is available
   const isTimeSlotAvailable = (timeSlot: TimeSlot, selectedDate: string) => {
     const formattedSelectedDate = formatDateForComparison(selectedDate);
-    console.log('Checking availability for:', {
-      timeSlot: formatTime(timeSlot.startTime),
-      selectedDate: formattedSelectedDate,
-      dailyTimeSlots: timeSlot.dailyTimeSlots
-    });
+    
+    // Check if the slot is in the past for today
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate === today) {
+      const currentTime = new Date();
+      const slotTime = new Date(timeSlot.startTime);
+      if (slotTime < currentTime) {
+        return false;
+      }
+    }
     
     // If dailyTimeSlots is empty, the slot is available
     if (timeSlot.dailyTimeSlots.length === 0) {
-      console.log('No daily time slots, slot is available');
       return true;
     }
 
@@ -67,16 +71,12 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
       slot => formatDateForComparison(slot.date) === formattedSelectedDate
     );
 
-    console.log('Found daily slot:', dailySlot);
-
     // If no dailyTimeSlot exists for this date, the slot is available
     if (!dailySlot) {
-      console.log('No matching daily slot found, slot is available');
       return true;
     }
 
     // If a dailyTimeSlot exists for this date, return its availability
-    console.log('Daily slot found, availability:', dailySlot.is_available);
     return dailySlot.is_available;
   };
 
