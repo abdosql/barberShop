@@ -36,13 +36,6 @@ interface BookingFormProps {
   readOnly?: boolean;
 }
 
-interface UserInfo {
-  id: number;
-  email: string;
-  roles: string[];
-  // add other fields that exist in your userInfo
-}
-
 interface TimeSlotResponse {
   "@context": string;
   "@id": string;
@@ -259,7 +252,10 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         status: "pending",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),
-        timeSlots: getConsecutiveSlots(initialTimeSlot, totalDuration)
+        timeSlots: getConsecutiveSlots(initialTimeSlot, totalDuration),
+        services: formState.selectedServices.map(serviceId => 
+          `${import.meta.env.VITE_API_URL}/api/services/${serviceId}`
+        )
       };
 
       console.log('Request Body:', appointmentBody);

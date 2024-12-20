@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { CheckCircle, XCircle, Clock, Calendar, DollarSign } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Calendar, DollarSign, Eye } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -9,6 +9,12 @@ interface User {
   phoneNumber: string;
   firstName: string;
   lastName: string;
+}
+
+interface Service {
+  "@id": string;
+  "@type": string;
+  name: string;
 }
 
 interface Appointment {
@@ -23,7 +29,7 @@ interface Appointment {
   createdAt: string;
   updatedAt: string;
   user_: User;
-  appointmentServices: string[];
+  services: Service[];
   timeSlots: string[];
 }
 
@@ -51,6 +57,8 @@ export default function AppointmentList({
   const [displayCount, setDisplayCount] = useState(pageSize);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [showServicesModal, setShowServicesModal] = useState(false);
 
   useEffect(() => {
     setDisplayCount(pageSize);
@@ -451,6 +459,15 @@ export default function AppointmentList({
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </span>
                         )}
+                        <button
+                          onClick={() => {
+                            setSelectedAppointment(appointment);
+                            setShowServicesModal(true);
+                          }}
+                          className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
+                        >
+                          <Eye size={18} />
+                        </button>
                       </div>
                     </td>
                   </motion.tr>
@@ -548,6 +565,15 @@ export default function AppointmentList({
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </span>
                     )}
+                    <button
+                      onClick={() => {
+                        setSelectedAppointment(appointment);
+                        setShowServicesModal(true);
+                      }}
+                      className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
+                    >
+                      <Eye size={18} />
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -568,6 +594,46 @@ export default function AppointmentList({
           >
             {isLoadingMore ? 'Loading...' : 'Load More'}
           </button>
+        </div>
+      )}
+      {/* Services Modal */}
+      {showServicesModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full mx-4"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-white">Appointment Services</h3>
+              <button
+                onClick={() => {
+                  setShowServicesModal(false);
+                  setSelectedAppointment(null);
+                }}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                <XCircle size={24} />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {selectedAppointment.services.length > 0 ? (
+                selectedAppointment.services.map((service) => (
+                  <div
+                    key={`service-${service['@id']}`}
+                    className="p-3 bg-zinc-800/50 rounded-lg flex items-center justify-between"
+                  >
+                    <span className="text-zinc-200">{service.name}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-zinc-400">
+                  No services found for this appointment
+                </div>
+              )}
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

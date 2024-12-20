@@ -82,4 +82,14 @@ readonly class AppointmentManager
 
         $this->notificationService->notify($details);
     }
+
+    public function handleAppointmentServices(Appointment &$appointment): void
+    {
+        $appointmentServices = $appointment->getAppointmentServices();
+
+        foreach ($appointmentServices as $appointmentService)
+        {
+            $appointmentService->setPrice($appointment->getTotalPrice());
+        }
+    }
 }

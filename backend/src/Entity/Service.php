@@ -52,7 +52,7 @@ class Service
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['service:read', 'service:create', 'service:update'])]
+    #[Groups(['service:read', 'service:create', 'service:update', 'appointment:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
@@ -71,21 +71,21 @@ class Service
     #[Groups(['service:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    /**
-     * @var Collection<int, AppointmentService>s
-     */
-    #[ORM\OneToMany(targetEntity: AppointmentService::class, mappedBy: 'Service')]
-    private Collection $appointmentServices;
-
     #[ORM\Column]
     #[Groups(['service:read', 'service:create', 'service:update'])]
     private ?int $duration = null;
+
+    /**
+     * @var Collection<int, Appointment>
+     */
+    #[ORM\ManyToMany(targetEntity: Appointment::class, inversedBy: 'services')]
+    private Collection $appointment;
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
-        $this->appointmentServices = new ArrayCollection();
+        $this->appointment = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -153,36 +153,6 @@ class Service
         return $this;
     }
 
-    /**
-     * @return Collection<int, AppointmentService>
-     */
-    public function getAppointmentServices(): Collection
-    {
-        return $this->appointmentServices;
-    }
-
-    public function addAppointmentService(AppointmentService $appointmentService): static
-    {
-        if (!$this->appointmentServices->contains($appointmentService)) {
-            $this->appointmentServices->add($appointmentService);
-            $appointmentService->setService($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAppointmentService(AppointmentService $appointmentService): static
-    {
-        if ($this->appointmentServices->removeElement($appointmentService)) {
-            // set the owning side to null (unless already changed)
-            if ($appointmentService->getService() === $this) {
-                $appointmentService->setService(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getDuration(): ?int
     {
         return $this->duration;
@@ -191,6 +161,30 @@ class Service
     public function setDuration(int $duration): static
     {
         $this->duration = $duration;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Appointment>
+     */
+    public function getAppointment(): Collection
+    {
+        return $this->appointment;
+    }
+
+    public function addAppointment(Appointment $appointment): static
+    {
+        if (!$this->appointment->contains($appointment)) {
+            $this->appointment->add($appointment);
+        }
+
+        return $this;
+    }
+
+    public function removeAppointment(Appointment $appointment): static
+    {
+        $this->appointment->removeElement($appointment);
 
         return $this;
     }

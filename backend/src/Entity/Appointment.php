@@ -97,23 +97,23 @@ class Appointment
     private ?User $user_ = null;
 
     /**
-     * @var Collection<int, AppointmentService>
-     */
-    #[ORM\OneToMany(targetEntity: AppointmentService::class, mappedBy: 'appointment')]
-    #[Groups(['appointment:read'])]
-    private Collection $appointmentServices;
-
-    /**
      * @var Collection<int, TimeSlot>
      */
     #[Groups(['appointment:read', 'appointment:create'])]
     #[ORM\OneToMany(targetEntity: TimeSlot::class, mappedBy: 'appointment')]
     private Collection $timeSlots;
 
+    /**
+     * @var Collection<int, Service>
+     */
+    #[Groups(['appointment:read', 'appointment:create'])]
+    #[ORM\ManyToMany(targetEntity: Service::class, mappedBy: 'appointment')]
+    private Collection $services;
+
     public function __construct()
     {
-        $this->appointmentServices = new ArrayCollection();
         $this->timeSlots = new ArrayCollection();
+        $this->services = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -218,36 +218,6 @@ class Appointment
     }
 
     /**
-     * @return Collection<int, AppointmentService>
-     */
-    public function getAppointmentServices(): Collection
-    {
-        return $this->appointmentServices;
-    }
-
-    public function addAppointmentService(AppointmentService $appointmentService): static
-    {
-        if (!$this->appointmentServices->contains($appointmentService)) {
-            $this->appointmentServices->add($appointmentService);
-            $appointmentService->setAppointment($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAppointmentService(AppointmentService $appointmentService): static
-    {
-        if ($this->appointmentServices->removeElement($appointmentService)) {
-            // set the owning side to null (unless already changed)
-            if ($appointmentService->getAppointment() === $this) {
-                $appointmentService->setAppointment(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, TimeSlot>
      */
     public function getTimeSlots(): Collection
@@ -272,6 +242,33 @@ class Appointment
             if ($timeSlot->getAppointment() === $this) {
                 $timeSlot->setAppointment(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Service>
+     */
+    public function getServices(): Collection
+    {
+        return $this->services;
+    }
+
+    public function addService(Service $service): static
+    {
+        if (!$this->services->contains($service)) {
+            $this->services->add($service);
+            $service->addAppointment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeService(Service $service): static
+    {
+        if ($this->services->removeElement($service)) {
+            $service->removeAppointment($this);
         }
 
         return $this;
