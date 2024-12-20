@@ -68,7 +68,8 @@ export default function Login() {
 
   const validatePassword = (password: string) => {
     if (!password) return 'Please enter your password.';
-    if (password.length < 8) return 'Password must be at least 8 characters.';
+    if (password.length < 3) return 'Le mot de passe doit contenir au moins 3 caractères.';
+    if (password.length > 64) return 'Le mot de passe ne peut pas dépasser 64 caractères.';
     return null;
   };
 

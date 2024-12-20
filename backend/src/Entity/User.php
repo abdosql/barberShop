@@ -97,14 +97,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le mot de passe ne doit pas être vide.")]
     #[Assert\Length(
-        min: 8,
+        min: 3,
         max: 64,
         minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères.",
         maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères."
-    )]
-    #[Assert\Regex(
-        pattern: "/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/",
-        message: "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial."
     )]
     #[Groups(['user:create'])]
     private ?string $password = null;
