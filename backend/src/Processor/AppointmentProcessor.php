@@ -12,7 +12,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Appointment;
 use App\Service\Appointment\AppointmentManager;
 use App\Service\Publisher\AppointmentPublisher;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;

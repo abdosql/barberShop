@@ -209,6 +209,14 @@ export default function AppointmentList({
     return `${hours}:${minutes}`;
   };
 
+  const isToday = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+  };
+
   const getClientName = (appointment: Appointment) => {
     const user = appointment.user_ || {};
     return {
@@ -334,11 +342,16 @@ export default function AppointmentList({
             >
               {visibleAppointments.map((appointment, index) => {
                 const client = getClientName(appointment);
+                const isTodayAppointment = isToday(appointment.startTime);
                 return (
                   <motion.tr 
                     key={appointment.id}
                     variants={itemVariants}
-                    className="border-b border-zinc-700/50 hover:bg-zinc-700/20"
+                    className={`border-b border-zinc-700/50 hover:bg-zinc-700/20 ${
+                      status === 'accepted' && isTodayAppointment 
+                        ? 'bg-blue-500/10 hover:bg-blue-500/20' 
+                        : ''
+                    }`}
                   >
                     <td className="p-4">
                       <div className="font-medium text-white">{client.fullName}</div>
@@ -419,11 +432,16 @@ export default function AppointmentList({
         >
           {visibleAppointments.map((appointment, index) => {
             const client = getClientName(appointment);
+            const isTodayAppointment = isToday(appointment.startTime);
             return (
               <motion.div
                 key={appointment.id}
                 variants={itemVariants}
-                className="p-4 space-y-4"
+                className={`p-4 space-y-4 ${
+                  status === 'accepted' && isTodayAppointment 
+                    ? 'bg-blue-500/10' 
+                    : ''
+                }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
