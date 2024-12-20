@@ -14,10 +14,16 @@ export const formatTime = (dateString: string) => {
   return `${hours}:${minutes}`;
 };
 
+export const isSameDay = (date1: string | Date, date2: string | Date) => {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return (
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getFullYear() === d2.getFullYear()
+  );
+};
+
 export const isToday = (dateString: string) => {
-  const date = new Date(dateString);
-  const today = new Date();
-  return date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear();
+  return isSameDay(dateString, new Date());
 };

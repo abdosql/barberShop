@@ -6,6 +6,7 @@ import { Appointment } from '../../types/appointment';
 import { ServicesModal } from './services/ServicesModal';
 import { formatDate, formatTime, isToday } from '../../utils/dateUtils';
 import { getClientName, getUrgencyIndicator } from '../../utils/appointmentUtils';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface AppointmentListProps {
   appointments: Appointment[];
@@ -23,6 +24,7 @@ export default function AppointmentList({
   pageSize = 5
 }: AppointmentListProps) {
   const { token } = useAuth();
+  const { translations } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [isDeclining, setIsDeclining] = useState<number | null>(null);
@@ -37,7 +39,15 @@ export default function AppointmentList({
     setDisplayCount(pageSize);
   }, [appointments, status, pageSize]);
 
-  const visibleAppointments = appointments.slice(0, displayCount);
+  const visibleAppointments = appointments
+    .filter(appointment => {
+      // Only filter by date if it's the accepted tab
+      if (status === 'accepted') {
+        return isToday(appointment.startTime);
+      }
+      return true;
+    })
+    .slice(0, displayCount);
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -267,246 +277,257 @@ export default function AppointmentList({
   }
 
   return (
-    <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl overflow-hidden">
-      {/* Desktop View - Hidden on mobile */}
-      <div className="hidden md:block">
-        <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-zinc-900/95 backdrop-blur-sm z-10">
-              <tr className="border-b border-zinc-700">
-                <th className="px-4 py-3 w-8" title="Appointment Priority">•</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Client</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Phone</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Duration</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Date & Time</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Price</th>
-                <th className="text-left p-4 text-zinc-400 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <motion.tbody
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {visibleAppointments.map((appointment, index) => {
-                const client = getClientName(appointment);
-                const isTodayAppointment = isToday(appointment.startTime);
-                const urgency = getUrgencyIndicator(appointment.startTime);
-                
-                return (
-                  <motion.tr 
-                    key={appointment.id}
-                    variants={itemVariants}
-                    className="border-b border-zinc-700/50"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="relative flex items-center justify-center">
-                        <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
-                          <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-medium text-white">{client.fullName}</div>
-                    </td>
-                    <td className="p-4 text-zinc-300">{client.phone}</td>
-                    <td className="p-4 text-zinc-300">{appointment.totalDuration} min</td>
-                    <td className="p-4">
-                      <div className="text-zinc-300">{formatDate(appointment.startTime)}</div>
-                      <div className="text-sm text-zinc-400">{formatTime(appointment.startTime)}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-zinc-300">{appointment.totalPrice} DH</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        {status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleAccept(appointment.id)}
-                              disabled={isUpdating === appointment.id}
-                              className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
-                            >
-                              {isUpdating === appointment.id ? 'Accepting...' : 'Accept'}
-                            </button>
-                            <button
-                              onClick={() => handleDecline(appointment.id)}
-                              disabled={isDeclining === appointment.id}
-                              className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
-                            >
-                              {isDeclining === appointment.id ? 'Declining...' : 'Decline'}
-                            </button>
-                          </>
-                        )}
-                        {status === 'accepted' && (
-                          <>
-                            <button
-                              onClick={() => handleComplete(appointment.id)}
-                              disabled={isCompleting === appointment.id}
-                              className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
-                            >
-                              {isCompleting === appointment.id ? 'Completing...' : 'Complete'}
-                            </button>
-                            <button
-                              onClick={() => handleCancel(appointment.id)}
-                              disabled={isCancelling === appointment.id}
-                              className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
-                            >
-                              {isCancelling === appointment.id ? 'Cancelling...' : 'Cancel'}
-                            </button>
-                          </>
-                        )}
-                        {(status === 'completed' || status === 'cancelled' || status === 'declined') && (
-                          <span className={`px-3 py-1 rounded-lg ${
-                            status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                            status === 'cancelled' ? 'bg-orange-500/10 text-orange-500' :
-                            'bg-rose-500/10 text-rose-500'
-                          }`}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </span>
-                        )}
-                        <button
-                          onClick={() => {
-                            setSelectedAppointment(appointment);
-                          }}
-                          className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
-                        >
-                          <Eye size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </motion.tbody>
-          </table>
+    <>
+      <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl overflow-hidden">
+        {/* Table Title - Mobile Only */}
+        <div className="md:hidden text-lg font-medium text-white p-4 border-b border-zinc-700">
+          {status === 'accepted' && translations.admin.dashboard.acceptedAppointments}
+          {status === 'completed' && (translations.admin.dashboard.completedAppointments || "Completed")}
+          {status === 'declined' && translations.admin.dashboard.declinedAppointments}
+          {status === 'cancelled' && translations.admin.dashboard.cancelledAppointments}
         </div>
-      </div>
 
-      {/* Mobile View - Hidden on desktop */}
-      <div className="md:hidden">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="divide-y divide-zinc-700/50"
-        >
-          {visibleAppointments.map((appointment, index) => {
-            const client = getClientName(appointment);
-            const isTodayAppointment = isToday(appointment.startTime);
-            const urgency = getUrgencyIndicator(appointment.startTime);
-            
-            return (
-              <motion.div
-                key={appointment.id}
-                variants={itemVariants}
-                className="relative border border-zinc-800 rounded-xl overflow-hidden p-4 space-y-4"
+        {/* Desktop View - Hidden on mobile */}
+        <div className="hidden md:block">
+          <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-zinc-900/95 backdrop-blur-sm z-10">
+                <tr className="border-b border-zinc-700">
+                  <th className="px-4 py-3 w-8" title="Appointment Priority">•</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Client</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Phone</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Duration</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Date & Time</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Price</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <motion.tbody
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
               >
-                <div className="absolute top-4 left-4">
-                  <div className="relative flex items-center justify-center">
-                    <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
-                      <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
+                {visibleAppointments.map((appointment, index) => {
+                  const client = getClientName(appointment);
+                  const isTodayAppointment = isToday(appointment.startTime);
+                  const urgency = getUrgencyIndicator(appointment.startTime);
+                  
+                  return (
+                    <motion.tr 
+                      key={appointment.id}
+                      variants={itemVariants}
+                      className="border-b border-zinc-700/50"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="relative flex items-center justify-center">
+                          <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
+                            <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium text-white">{client.fullName}</div>
+                      </td>
+                      <td className="p-4 text-zinc-300">{client.phone}</td>
+                      <td className="p-4 text-zinc-300">{appointment.totalDuration} min</td>
+                      <td className="p-4">
+                        <div className="text-zinc-300">{formatDate(appointment.startTime)}</div>
+                        <div className="text-sm text-zinc-400">{formatTime(appointment.startTime)}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-zinc-300">{appointment.totalPrice} DH</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleAccept(appointment.id)}
+                                disabled={isUpdating === appointment.id}
+                                className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                              >
+                                {isUpdating === appointment.id ? 'Accepting...' : 'Accept'}
+                              </button>
+                              <button
+                                onClick={() => handleDecline(appointment.id)}
+                                disabled={isDeclining === appointment.id}
+                                className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                              >
+                                {isDeclining === appointment.id ? 'Declining...' : 'Decline'}
+                              </button>
+                            </>
+                          )}
+                          {status === 'accepted' && (
+                            <>
+                              <button
+                                onClick={() => handleComplete(appointment.id)}
+                                disabled={isCompleting === appointment.id}
+                                className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                              >
+                                {isCompleting === appointment.id ? 'Completing...' : 'Complete'}
+                              </button>
+                              <button
+                                onClick={() => handleCancel(appointment.id)}
+                                disabled={isCancelling === appointment.id}
+                                className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                              >
+                                {isCancelling === appointment.id ? 'Cancelling...' : 'Cancel'}
+                              </button>
+                            </>
+                          )}
+                          {(status === 'completed' || status === 'cancelled' || status === 'declined') && (
+                            <span className={`px-3 py-1 rounded-lg ${
+                              status === 'completed' ? 'bg-green-500/10 text-green-500' :
+                              status === 'cancelled' ? 'bg-orange-500/10 text-orange-500' :
+                              'bg-rose-500/10 text-rose-500'
+                            }`}>
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </span>
+                          )}
+                          <button
+                            onClick={() => {
+                              setSelectedAppointment(appointment);
+                            }}
+                            className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </motion.tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile View - Hidden on desktop */}
+        <div className="md:hidden">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="divide-y divide-zinc-700/50"
+          >
+            {visibleAppointments.map((appointment, index) => {
+              const client = getClientName(appointment);
+              const isTodayAppointment = isToday(appointment.startTime);
+              const urgency = getUrgencyIndicator(appointment.startTime);
+              
+              return (
+                <motion.div
+                  key={appointment.id}
+                  variants={itemVariants}
+                  className="relative border border-zinc-800 rounded-xl overflow-hidden p-4 space-y-4"
+                >
+                  <div className="absolute top-4 left-4">
+                    <div className="relative flex items-center justify-center">
+                      <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
+                        <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium text-white">{client.fullName}</div>
-                    <div className="text-sm text-zinc-400">{client.phone}</div>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-white">{client.fullName}</div>
+                      <div className="text-sm text-zinc-400">{client.phone}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-zinc-300">{appointment.totalPrice} DH</div>
+                      <div className="text-sm text-zinc-400">{appointment.totalDuration} min</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-zinc-300">{appointment.totalPrice} DH</div>
-                    <div className="text-sm text-zinc-400">{appointment.totalDuration} min</div>
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="text-zinc-400">
+                      <div>{formatDate(appointment.startTime)}</div>
+                      <div>{formatTime(appointment.startTime)}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      {status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleAccept(appointment.id)}
+                            disabled={isUpdating === appointment.id}
+                            className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                          >
+                            {isUpdating === appointment.id ? '...' : 'Accept'}
+                          </button>
+                          <button
+                            onClick={() => handleDecline(appointment.id)}
+                            disabled={isDeclining === appointment.id}
+                            className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                          >
+                            {isDeclining === appointment.id ? '...' : 'Decline'}
+                          </button>
+                        </>
+                      )}
+                      {status === 'accepted' && (
+                        <>
+                          <button
+                            onClick={() => handleComplete(appointment.id)}
+                            disabled={isCompleting === appointment.id}
+                            className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                          >
+                            {isCompleting === appointment.id ? '...' : 'Complete'}
+                          </button>
+                          <button
+                            onClick={() => handleCancel(appointment.id)}
+                            disabled={isCancelling === appointment.id}
+                            className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                          >
+                            {isCancelling === appointment.id ? '...' : 'Cancel'}
+                          </button>
+                        </>
+                      )}
+                      {(status === 'completed' || status === 'cancelled' || status === 'declined') && (
+                        <span className={`px-3 py-1 rounded-lg ${
+                          status === 'completed' ? 'bg-green-500/10 text-green-500' :
+                          status === 'cancelled' ? 'bg-orange-500/10 text-orange-500' :
+                          'bg-rose-500/10 text-rose-500'
+                        }`}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => {
+                          setSelectedAppointment(appointment);
+                        }}
+                        className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
+                      >
+                        <Eye size={18} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <div className="text-zinc-400">
-                    <div>{formatDate(appointment.startTime)}</div>
-                    <div>{formatTime(appointment.startTime)}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    {status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => handleAccept(appointment.id)}
-                          disabled={isUpdating === appointment.id}
-                          className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
-                        >
-                          {isUpdating === appointment.id ? '...' : 'Accept'}
-                        </button>
-                        <button
-                          onClick={() => handleDecline(appointment.id)}
-                          disabled={isDeclining === appointment.id}
-                          className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
-                        >
-                          {isDeclining === appointment.id ? '...' : 'Decline'}
-                        </button>
-                      </>
-                    )}
-                    {status === 'accepted' && (
-                      <>
-                        <button
-                          onClick={() => handleComplete(appointment.id)}
-                          disabled={isCompleting === appointment.id}
-                          className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
-                        >
-                          {isCompleting === appointment.id ? '...' : 'Complete'}
-                        </button>
-                        <button
-                          onClick={() => handleCancel(appointment.id)}
-                          disabled={isCancelling === appointment.id}
-                          className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
-                        >
-                          {isCancelling === appointment.id ? '...' : 'Cancel'}
-                        </button>
-                      </>
-                    )}
-                    {(status === 'completed' || status === 'cancelled' || status === 'declined') && (
-                      <span className={`px-3 py-1 rounded-lg ${
-                        status === 'completed' ? 'bg-green-500/10 text-green-500' :
-                        status === 'cancelled' ? 'bg-orange-500/10 text-orange-500' :
-                        'bg-rose-500/10 text-rose-500'
-                      }`}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => {
-                        setSelectedAppointment(appointment);
-                      }}
-                      className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500/20 transition-colors"
-                    >
-                      <Eye size={18} />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {appointments.length > displayCount && (
+          <div 
+            ref={loadMoreRef}
+            className="p-4 text-center"
+          >
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="px-4 py-2 bg-zinc-700/50 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50"
+            >
+              {isLoadingMore ? 'Loading...' : 'Load More'}
+            </button>
+          </div>
+        )}
       </div>
 
-      {appointments.length > displayCount && (
-        <div 
-          ref={loadMoreRef}
-          className="p-4 text-center"
-        >
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            className="px-4 py-2 bg-zinc-700/50 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50"
-          >
-            {isLoadingMore ? 'Loading...' : 'Load More'}
-          </button>
-        </div>
-      )}
-      {/* Services Modal */}
+      {/* Services Modal - Outside the table container */}
       {selectedAppointment && (
         <ServicesModal
           appointment={selectedAppointment}
           onClose={() => setSelectedAppointment(null)}
         />
       )}
-    </div>
+    </>
   );
 }
