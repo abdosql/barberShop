@@ -225,6 +225,39 @@ export default function AppointmentList({
     };
   };
 
+  const getUrgencyIndicator = (startTime: string) => {
+    const appointmentDate = new Date(startTime);
+    const today = new Date();
+    
+    // Reset hours to compare just dates
+    today.setHours(0, 0, 0, 0);
+    const appointmentDay = new Date(appointmentDate);
+    appointmentDay.setHours(0, 0, 0, 0);
+    
+    // Calculate days difference
+    const diffTime = appointmentDay.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return {
+        color: 'bg-rose-500',
+        pulseColor: 'bg-rose-500/50',
+        title: 'Urgent - Today'
+      };
+    } else if (diffDays <= 2) {
+      return {
+        color: 'bg-amber-500',
+        pulseColor: 'bg-amber-500/50',
+        title: 'Soon - Within 2 days'
+      };
+    }
+    return {
+      color: 'bg-emerald-500',
+      pulseColor: 'bg-emerald-500/50',
+      title: 'Scheduled'
+    };
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -327,6 +360,7 @@ export default function AppointmentList({
           <table className="w-full">
             <thead className="sticky top-0 bg-zinc-900/95 backdrop-blur-sm z-10">
               <tr className="border-b border-zinc-700">
+                <th className="px-4 py-3 w-8" title="Appointment Priority">•</th>
                 <th className="text-left p-4 text-zinc-400 font-medium">Client</th>
                 <th className="text-left p-4 text-zinc-400 font-medium">Phone</th>
                 <th className="text-left p-4 text-zinc-400 font-medium">Duration</th>
@@ -343,16 +377,21 @@ export default function AppointmentList({
               {visibleAppointments.map((appointment, index) => {
                 const client = getClientName(appointment);
                 const isTodayAppointment = isToday(appointment.startTime);
+                const urgency = getUrgencyIndicator(appointment.startTime);
+                
                 return (
                   <motion.tr 
                     key={appointment.id}
                     variants={itemVariants}
-                    className={`border-b border-zinc-700/50 hover:bg-zinc-700/20 ${
-                      status === 'accepted' && isTodayAppointment 
-                        ? 'bg-blue-500/10 hover:bg-blue-500/20' 
-                        : ''
-                    }`}
+                    className="border-b border-zinc-700/50"
                   >
+                    <td className="px-4 py-3">
+                      <div className="relative flex items-center justify-center">
+                        <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
+                          <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
+                        </div>
+                      </div>
+                    </td>
                     <td className="p-4">
                       <div className="font-medium text-white">{client.fullName}</div>
                     </td>
@@ -433,16 +472,21 @@ export default function AppointmentList({
           {visibleAppointments.map((appointment, index) => {
             const client = getClientName(appointment);
             const isTodayAppointment = isToday(appointment.startTime);
+            const urgency = getUrgencyIndicator(appointment.startTime);
+            
             return (
               <motion.div
                 key={appointment.id}
                 variants={itemVariants}
-                className={`p-4 space-y-4 ${
-                  status === 'accepted' && isTodayAppointment 
-                    ? 'bg-blue-500/10' 
-                    : ''
-                }`}
+                className="relative border border-zinc-800 rounded-xl overflow-hidden p-4 space-y-4"
               >
+                <div className="absolute top-4 left-4">
+                  <div className="relative flex items-center justify-center">
+                    <div className={`w-2 h-2 rounded-full ${urgency.color}`} title={urgency.title}>
+                      <div className={`absolute w-2 h-2 rounded-full ${urgency.pulseColor} animate-ping`}></div>
+                    </div>
+                  </div>
+                </div>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium text-white">{client.fullName}</div>
