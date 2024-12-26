@@ -109,12 +109,9 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000 http://145.223.88.184:8000 http://jalalbarber.com
+        cors_origins *
         anonymous
         subscriptions
-    networks:
-      - app_network
-    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
     ports:
       - "9999:80"
     volumes:
@@ -122,6 +119,9 @@ services:
       - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - app_network
+    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
 
 networks:
   app_network:
