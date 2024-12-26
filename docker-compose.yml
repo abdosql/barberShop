@@ -117,7 +117,7 @@ services:
     ports:
       - "9999:80"
     volumes:
-      - mercure_data:/data
+      - mercure_data_volume:/data
       - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
@@ -133,5 +133,6 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
-  notification_sessions:
   mercure_data:
+    name: mercure_data_volume
+  notification_sessions:
