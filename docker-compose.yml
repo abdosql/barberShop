@@ -109,13 +109,14 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins *
+        cors_origins http://145.223.88.184 http://145.223.88.184:8000 http://jalalbarber.com http://145.223.88.184:9999
+        cors_credentials true
         anonymous
         subscriptions
     ports:
       - "9999:80"
     volumes:
-      - ./backend:/var/www/html
+      - mercure_data:/data
       - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
@@ -132,3 +133,4 @@ volumes:
   caddy_data:
   caddy_config:
   notification_sessions:
+  mercure_data:
