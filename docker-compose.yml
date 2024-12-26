@@ -13,7 +13,7 @@ services:
       - ./backend/.env.${APP_ENV:-development}
     environment:
       - APP_ENV=${APP_ENV:-dev}
-      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-http://localhost:5173 http://localhost:4173 http://localhost:8000 http://145.223.88.184:8000 http://jalalbarber.com}
       - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
       - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
       - JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3
@@ -39,7 +39,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-http://localhost:5173 http://localhost:4173 http://localhost:8000}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-http://localhost:5173 http://localhost:4173 http://localhost:8000 http://145.223.88.184:8000 http://jalalbarber.com}
       - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL:-http://localhost:9999/.well-known/mercure}
     depends_on:
       - backend
@@ -55,7 +55,7 @@ services:
     env_file:
       - ./frontend/.env.${APP_ENV:-development}
     ports:
-      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
+      - "80:80"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -103,13 +103,13 @@ services:
   mercure:
     image: dunglas/mercure
     restart: unless-stopped
-    container_name: barbershop-mercure
+    container_name: mercure_hub
     environment:
-      SERVER_NAME: ':80'
+      SERVER_NAME: ':9999'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000 http://54.37.66.72:4173 http://54.37.66.72:8000 
+        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000 http://145.223.88.184:8000 http://jalalbarber.com
         anonymous
         subscriptions
     networks:
