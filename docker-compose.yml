@@ -119,7 +119,6 @@ services:
     volumes:
       - mercure_data:/data
       - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
-      - caddy_data:/data
       - caddy_config:/config
     networks:
       - app_network
