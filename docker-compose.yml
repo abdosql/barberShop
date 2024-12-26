@@ -55,9 +55,11 @@ services:
       - ./frontend/.env.${APP_ENV:-development}
     ports:
       - "80:80"  # Frontend on port 80
+      - "443:443"  # SSL port
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./certbot/conf:/etc/nginx/ssl:ro  # SSL certificates
     networks:
       - app_network
 
