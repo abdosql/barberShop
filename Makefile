@@ -12,7 +12,7 @@ prod:
 	FRONTEND_TARGET=production \
 	docker compose --env-file ./frontend/.env.production \
 	               --env-file ./backend/.env.production \
-	               --env-file ./notificagtion/.env \
+	               --env-file ./notification/.env \
 	               up --build -d
 	
 # Stop all containers
