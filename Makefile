@@ -10,9 +10,9 @@ prod:
 	@echo "Starting production environment..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	docker compose --env-file ./frontend/.env.production \
+	docker-compose --env-file ./frontend/.env.production \
 	               --env-file ./backend/.env.production \
-	               --env-file ./notification/.env \
+	               --env-file ./notificagtion/.env \
 	               up --build -d
 	
 # Stop all containers
