@@ -54,12 +54,12 @@ services:
     env_file:
       - ./frontend/.env.${APP_ENV:-development}
     ports:
-      - "80:80"  # Frontend on port 80
-      - "443:443"  # SSL port
+      - "80:80"
+      - "443:443"
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - ./certbot/conf:/etc/nginx/ssl:ro  # SSL certificates
+      - ./certbot/conf:/etc/nginx/ssl:ro
     networks:
       - app_network
 
@@ -117,7 +117,7 @@ services:
     ports:
       - "9999:80"
     volumes:
-      - mercure_data_volume:/data
+      - mercure_data:/data
       - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
@@ -133,6 +133,5 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
-  mercure_data:
-    name: mercure_data_volume
   notification_sessions:
+  mercure_data:

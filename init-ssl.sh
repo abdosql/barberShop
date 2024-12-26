@@ -4,11 +4,21 @@
 mkdir -p ./certbot/conf
 mkdir -p ./certbot/www
 
-# Run certbot
+# Stop any running containers
+docker-compose down
+
+# Get SSL certificate
 docker run -it --rm \
-  -v "$PWD/certbot/conf:/etc/letsencrypt" \
-  -v "$PWD/certbot/www:/var/www/certbot" \
+  -v "./certbot/conf:/etc/letsencrypt" \
+  -v "./certbot/www:/var/www/certbot" \
   certbot/certbot certonly \
-  --webroot --webroot-path /var/www/certbot \
-  -d jalalbarber.com -d www.jalalbarber.com \
-  --email jalalbelbachir20@gmail.com --agree-tos --no-eff-email
+  --standalone \
+  --preferred-challenges http \
+  --email your-email@example.com \
+  --agree-tos \
+  --no-eff-email \
+  -d jalalbarber.com \
+  -d www.jalalbarber.com
+
+# Start containers
+docker-compose up -d
