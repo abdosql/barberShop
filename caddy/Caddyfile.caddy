@@ -1,14 +1,10 @@
 :80 {
    root * /var/www/html/public
    php_fastcgi backend:9000
-   file_server
    encode gzip
 
    # CORS configuration
    header {
-       Strict-Transport-Security "max-age=31536000; includeSubDomains"
-       X-Content-Type-Options "nosniff"
-       Referrer-Policy "no-referrer-when-downgrade"
        Access-Control-Allow-Origin "*"
        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
        Access-Control-Allow-Headers "*"
@@ -24,48 +20,9 @@
        respond 204
    }
 
-   handle_errors {
-       respond "{http.error.status_code} {http.error.status_text}"
-   }
-
    log {
        output stdout
        format console
        level INFO
    }
-}
-
-jalalbarber.com {
-    # Frontend
-    handle /* {
-        reverse_proxy frontend:80
-    }
-
-    # Backend API
-    handle /api/* {
-        reverse_proxy backend:9000 {
-            header_up X-Real-IP {remote_host}
-        }
-    }
-
-    # CORS configuration
-    header {
-        Access-Control-Allow-Origin "*"
-        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "*"
-        Access-Control-Allow-Credentials "true"
-        Access-Control-Max-Age "3600"
-        defer
-    }
-
-    log {
-        output stdout
-        format console
-        level INFO
-    }
-}
-
-# Redirect www to non-www
-www.jalalbarber.com {
-    redir https://jalalbarber.com{uri} permanent
 }
