@@ -29,7 +29,7 @@ export default function Footer() {
               <>
                 <span className="text-zinc-400">Built by</span>
                 <a
-                  href="...."
+                  href="https://mharziabdelilah.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`group text-blue-400 hover:text-blue-300 transition-all duration-300 inline-flex items-center gap-1 font-medium ${directionClass}`}
