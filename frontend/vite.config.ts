@@ -18,7 +18,8 @@ export default defineConfig({
     // Enable HMR
     hmr: {
       overlay: true,
-      clientPort: 5173
+      clientPort: 5173,
+      host: 'localhost'
     },
     // Watch for file changes more aggressively
     watch: {

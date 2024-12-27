@@ -3,7 +3,12 @@
 # Development environment
 dev:
 	@echo "Starting development environment..."
-	set APP_ENV=development && docker compose up --build -d
+	APP_ENV=development \
+	FRONTEND_TARGET=development \
+	docker compose --env-file ./frontend/.env.development \
+	               --env-file ./backend/.env.development \
+	               --env-file ./notification/.env \
+	               up --build -d
 
 # Production environment
 prod:
@@ -41,7 +46,7 @@ enter-frontend:
 # Show help
 help:
 	@echo "Available commands:"
-	@echo "  make dev      - Start development environment (localhost:5173)"
-	@echo "  make prod     - Start production environment (54.37.66.72:4173)"
+	@echo "  make dev      - Start development environment (frontend: localhost:80, backend: localhost/api)"
+	@echo "  make prod     - Start production environment (frontend: 54.37.66.72, backend: 54.37.66.72/api)"
 	@echo "  make down     - Stop all containers"
 	@echo "  make build    - Build containers without starting"

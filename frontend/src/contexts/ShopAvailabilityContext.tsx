@@ -36,6 +36,7 @@ export function ShopAvailabilityProvider({ children }: { children: React.ReactNo
     const url = new URL(MERCURE_URL);
     const scheme = url.protocol.replace(':', '');
     const host = url.hostname;
+
     url.searchParams.append('topic', `${scheme}://${host}/shop-status/`);
     url.searchParams.append('topic', `${scheme}://${host}/shop-status/*`);
 
