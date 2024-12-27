@@ -31,18 +31,23 @@ services:
       dockerfile: Dockerfile
     container_name: caddy_server
     ports:
-      - "8000:80"
+      - "80:80"
       - "443:443"
+      - "9999:9999"
     volumes:
       - ./backend:/var/www/html
-      - ./caddy/Caddyfile.caddy:/etc/caddy/Caddyfile
+      - ./frontend/dist:/srv
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-http://localhost:5173 http://localhost:4173 http://localhost:8000}
-      - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL:-http://localhost:9999/.well-known/mercure}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-http://localhost:80}
+      - MERCURE_PUBLISHER_JWT_KEY=${MERCURE_PUBLISHER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_SUBSCRIBER_JWT_KEY=${MERCURE_SUBSCRIBER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_EXTRA_DIRECTIVES=anonymous
     depends_on:
       - backend
+      - frontend
     networks:
       - app_network
 
@@ -51,14 +56,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: ${FRONTEND_TARGET:-development}
+      args:
+        - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
     container_name: barbershop-frontend
     env_file:
       - ./frontend/.env.${APP_ENV:-development}
-    ports:
-      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    ports:
+      - "5173:5173"
     networks:
       - app_network
 
@@ -100,35 +107,12 @@ services:
     depends_on:
       - backend
 
-  mercure:
-    image: dunglas/mercure
-    restart: unless-stopped
-    container_name: barbershop-mercure
-    environment:
-      SERVER_NAME: ':80'
-      MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
-      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
-      MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://localhost:5173 http://localhost:4173 http://localhost:8000 http://54.37.66.72:4173 http://54.37.66.72:8000 
-        anonymous
-        subscriptions
-    networks:
-      - app_network
-    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
-    ports:
-      - "9999:80"
-    volumes:
-      - ./backend:/var/www/html
-      - ./caddy/Caddyfile.mercure:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-
-networks:
-  app_network:
-    driver: bridge
-
 volumes:
   postgres_data:
   caddy_data:
   caddy_config:
   notification_sessions:
+
+networks:
+  app_network:
+    driver: bridge

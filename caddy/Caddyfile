@@ -1,76 +1,63 @@
-:80 {
-   root * /var/www/html/public
-   php_fastcgi backend:9000
-   file_server
-   encode gzip
-
-   # CORS configuration
-   header {
-       Strict-Transport-Security "max-age=31536000; includeSubDomains"
-       X-Content-Type-Options "nosniff"
-       Referrer-Policy "no-referrer-when-downgrade"
-       Access-Control-Allow-Origin "*"
-       Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-       Access-Control-Allow-Headers "*"
-       Access-Control-Allow-Credentials "true"
-       Access-Control-Max-Age "3600"
-       defer
-   }
-
-   @options {
-       method OPTIONS
-   }
-   handle @options {
-       respond 204
-   }
-
-   handle_errors {
-       respond "{http.error.status_code} {http.error.status_text}"
-   }
-
-   log {
-       output stdout
-       format console
-       level INFO
-   }
+{
+    admin off
+    auto_https off
+    debug
 }
 
 :80 {
-   log {
-       format filter {
-           wrap json
-           fields {
-               uri query {
-                   replace authorization REDACTED
-               }
-           }
-       }
-   }
+    # Common headers for security
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Credentials "true"
+        Access-Control-Max-Age "3600"
+        defer
+    }
 
-   encode zstd gzip
+    # Handle OPTIONS requests
+    @options {
+        method OPTIONS
+    }
+    handle @options {
+        respond 204
+    }
 
-   mercure {
-       transport_url {$MERCURE_TRANSPORT_URL:bolt://mercure.db}
-       publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-       subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-       {$MERCURE_EXTRA_DIRECTIVES}
-   }
+    # Backend API routes
+    handle /api/* {
+        root * /var/www/html/public
+        php_fastcgi backend:9000
+        file_server
+    }
 
-   skip_log /robots.txt
-   skip_log /healthz
-   skip_log /favicon.ico
+    # Frontend routes - proxy to Vite dev server
+    handle {
+        reverse_proxy frontend:5173
+    }
 
-   header / Content-Type "text/html; charset=utf-8"
-   respond / `<!DOCTYPE html>
-<html lang=en>
-<meta charset="utf-8">
-<meta name="robots" content="noindex">
-<title>Welcome to Mercure</title>
-<h1>Welcome to Mercure</h1>
-<p>The URL of your hub is <code>/.well-known/mercure</code>.
-Read the documentation on <a href="https://mercure.rocks">Mercure.rocks, real-time apps made easy</a>.`
-   respond /robots.txt `User-agent: *
-Disallow: /`
-   respond /healthz 200
-   respond "Not Found" 404
+    # Error handling
+    handle_errors {
+        respond "{http.error.status_code} {http.error.status_text}"
+    }
+
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+}
+
+# Mercure Hub
+:9999 {
+    mercure {
+        publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+        subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+        cors_origins {$CORS_ALLOW_ORIGIN}
+        anonymous
+        subscriptions
+        transport_url bolt:///data/mercure.db
+    }
 }
