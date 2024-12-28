@@ -1,4 +1,4 @@
-.PHONY: dev prod down build setup-db enter-backend enter-frontend help
+.PHONY: dev prod prod-ssl down build setup-db enter-backend enter-frontend help
 
 # Development environment
 dev:
@@ -19,7 +19,18 @@ prod:
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
 	               up --build -d
-	
+
+# Production environment with SSL
+prod-ssl:
+	@echo "Starting production environment with SSL..."
+	APP_ENV=production \
+	FRONTEND_TARGET=production \
+	CADDY_FILE=Caddyfile.production.ssl \
+	docker compose --env-file ./frontend/.env.production.ssl \
+	               --env-file ./backend/.env.production.ssl \
+	               --env-file ./notification/.env \
+	               up --build -d
+
 # Stop all containers
 down:
 	@echo "Stopping all containers..."
@@ -48,5 +59,6 @@ help:
 	@echo "Available commands:"
 	@echo "  make dev      - Start development environment (frontend: localhost:80, backend: localhost/api)"
 	@echo "  make prod     - Start production environment (frontend: 54.37.66.72, backend: 54.37.66.72/api)"
+	@echo "  make prod-ssl - Start production environment with SSL (domain: jalalbarber.com)"
 	@echo "  make down     - Stop all containers"
 	@echo "  make build    - Build containers without starting"

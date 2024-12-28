@@ -35,12 +35,14 @@ services:
       - "80:80"
       - "443:443"
       - "9999:9999"
+      - "2019:2019"
     volumes:
       - ./backend:/var/www/html
       - ./frontend:/var/www/frontend
-      - ./caddy/Caddyfile.${APP_ENV:-development}:/etc/caddy/Caddyfile
+      - ./caddy/${CADDY_FILE:-Caddyfile.${APP_ENV:-development}}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - caddy_certificates:/root/.local/share/caddy
     environment:
       - APP_ENV=${APP_ENV:-development}
       - FRONTEND_PORT=${FRONTEND_PORT:-5173}
@@ -126,6 +128,7 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  caddy_certificates:
   notification_sessions:
 
 networks:
