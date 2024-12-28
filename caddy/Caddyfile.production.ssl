@@ -2,7 +2,7 @@
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
     # Enable automatic HTTPS
-    auto_https on
+    auto_https ignore_loaded_certs
     # Enable debug for troubleshooting
     debug
 }
