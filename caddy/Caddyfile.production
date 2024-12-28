@@ -33,11 +33,12 @@
         file_server
     }
 
-    # Frontend routes - serve built static files
+    # Frontend routes - reverse proxy to production frontend
     handle {
-        root * /var/www/frontend/dist
-        try_files {path} /index.html
-        file_server
+        reverse_proxy frontend:{$FRONTEND_PORT} {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+        }
     }
 
     # Error handling
