@@ -7,7 +7,7 @@
 :80 {
     # Common headers for security
     header {
-        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
         Access-Control-Allow-Credentials "true"
@@ -33,9 +33,11 @@
         file_server
     }
 
-    # Frontend routes - proxy to Vite dev server
+    # Frontend routes - serve built static files
     handle {
-        reverse_proxy frontend:5173
+        root * /var/www/frontend/dist
+        try_files {path} /index.html
+        file_server
     }
 
     # Error handling
@@ -91,4 +93,4 @@
         subscriptions
         transport_url bolt:///data/mercure.db
     }
-}
+} 

@@ -37,15 +37,21 @@ services:
       - "9999:9999"
     volumes:
       - ./backend:/var/www/html
-      - ./frontend/dist:/srv
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./frontend:/var/www/frontend
+      - ./caddy/Caddyfile.${APP_ENV:-development}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     environment:
+      - APP_ENV=${APP_ENV:-development}
+      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
       - MERCURE_PUBLISHER_JWT_KEY=${MERCURE_PUBLISHER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}
       - MERCURE_SUBSCRIBER_JWT_KEY=${MERCURE_SUBSCRIBER_JWT_KEY:-!ChangeThisMercureHubJWTSecretKey!}
-      - MERCURE_EXTRA_DIRECTIVES=anonymous
+      - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
+      - VITE_MERCURE_HOST=${VITE_MERCURE_HOST}
     depends_on:
       - backend
       - frontend

@@ -1,4 +1,4 @@
-.PHONY: dev prod down build
+.PHONY: dev prod down build setup-db enter-backend enter-frontend help
 
 # Development environment
 dev:
