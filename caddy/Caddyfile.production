@@ -1,10 +1,14 @@
 {
-    admin off
-    auto_https off
+    # Enable admin API for SSL management
+    admin 0.0.0.0:2019
+    # Enable automatic HTTPS
+    auto_https ignore_loaded_certs
+    # Enable debug for troubleshooting
     debug
 }
 
-:80 {
+# Main domain configuration
+jalalbarber.com {
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -15,6 +19,9 @@
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
+        # Security headers
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
         defer
     }
 
@@ -51,10 +58,13 @@
         format console
         level INFO
     }
+
+    # Enable compression
+    encode gzip
 }
 
-# Mercure Hub
-:9999 {
+# Mercure Hub subdomain configuration
+mercure.jalalbarber.com {
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -94,4 +104,7 @@
         subscriptions
         transport_url bolt:///data/mercure.db
     }
+
+    # Enable compression for Mercure
+    encode gzip
 } 

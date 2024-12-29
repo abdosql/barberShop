@@ -6,8 +6,6 @@ dev:
 	APP_ENV=development \
 	FRONTEND_TARGET=development \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.development \
-	ENV_FILE_PATH_FRONTEND=./frontend/.env.development \
-	ENV_FILE_PATH_BACKEND=./backend/.env.development \
 	docker compose --env-file ./frontend/.env.development \
 	               --env-file ./backend/.env.development \
 	               --env-file ./notification/.env \
@@ -19,26 +17,8 @@ prod:
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.production \
-	ENV_FILE_PATH_FRONTEND=./frontend/.env.production \
-	ENV_FILE_PATH_BACKEND=./backend/.env.production \
 	docker compose --env-file ./frontend/.env.production \
 	               --env-file ./backend/.env.production \
-	               --env-file ./notification/.env \
-	               up --build -d
-
-# Production environment with SSL
-prod-ssl:
-	@echo "Starting production SSL environment..."
-	@if [ ! -f "./caddy/Caddyfile.production.ssl" ]; then \
-		cp ./envprod/Caddyfile.production ./caddy/Caddyfile.production.ssl; \
-	fi
-	APP_ENV=production \
-	FRONTEND_TARGET=production \
-	CADDY_CONFIG_PATH=./caddy/Caddyfile.production.ssl \
-	ENV_FILE_PATH_FRONTEND=./envprod/frontend/.env.production \
-	ENV_FILE_PATH_BACKEND=./envprod/backend/.env.production \
-	docker compose --env-file ./envprod/frontend/.env.production \
-	               --env-file ./envprod/backend/.env.production \
 	               --env-file ./notification/.env \
 	               up --build -d
 
