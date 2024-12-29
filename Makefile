@@ -5,6 +5,8 @@ dev:
 	@echo "Starting development environment..."
 	APP_ENV=development \
 	FRONTEND_TARGET=development \
+	FRONTEND_ENV_FILE=./frontend/.env.development \
+	BACKEND_ENV_FILE=./backend/.env.development \
 	docker compose --env-file ./frontend/.env.development \
 	               --env-file ./backend/.env.development \
 	               --env-file ./notification/.env \
@@ -15,6 +17,8 @@ prod:
 	@echo "Starting production environment..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
+	FRONTEND_ENV_FILE=./frontend/.env.production \
+	BACKEND_ENV_FILE=./backend/.env.production \
 	docker compose --env-file ./frontend/.env.production \
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
@@ -25,7 +29,8 @@ prod-ssl:
 	@echo "Starting production environment with SSL..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	SSL_SUFFIX=.ssl \
+	FRONTEND_ENV_FILE=./frontend/.env.production.ssl \
+	BACKEND_ENV_FILE=./backend/.env.production.ssl \
 	docker compose --env-file ./frontend/.env.production.ssl \
 	               --env-file ./backend/.env.production.ssl \
 	               --env-file ./notification/.env \

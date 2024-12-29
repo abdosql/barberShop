@@ -10,7 +10,7 @@ services:
       - ./backend:/var/www/html
       - /var/www/html/docker
     env_file:
-      - ./backend/.env.${APP_ENV}${SSL_SUFFIX}
+      - ${BACKEND_ENV_FILE:-./backend/.env.development}
     environment:
       - APP_ENV=${APP_ENV:-dev}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
@@ -70,7 +70,7 @@ services:
         - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
     container_name: barbershop-frontend
     env_file:
-      - ./frontend/.env.${APP_ENV}${SSL_SUFFIX}
+      - ${FRONTEND_ENV_FILE:-./frontend/.env.development}
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
