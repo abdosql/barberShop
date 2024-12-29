@@ -27,7 +27,8 @@ prod-ssl:
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
 	ENV_PATH=./envprod \
-	docker compose up --build -d
+	docker compose --env-file ./notification/.env \
+	               up --build -d
 	
 # Stop all containers
 down:

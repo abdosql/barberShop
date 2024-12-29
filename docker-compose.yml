@@ -39,7 +39,7 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ./frontend:/var/www/frontend
-      - ${ENV_PATH:-./caddy}/Caddyfile.${APP_ENV:-development}:/etc/caddy/Caddyfile
+      - ${ENV_PATH:-./caddy}/Caddyfile.${APP_ENV:-development}:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
       - ./caddy/ssl:/etc/ssl/caddy
