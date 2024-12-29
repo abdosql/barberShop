@@ -23,12 +23,14 @@ prod:
 # Production environment with SSL
 prod-ssl:
 	@echo "Starting production environment with SSL..."
-	APP_ENV=production.ssl \
+	@echo "Building frontend with no cache..."
+	docker compose build --no-cache frontend
+	APP_ENV=production \
 	FRONTEND_TARGET=production \
 	docker compose --env-file ./frontend/.env.production.ssl \
 	               --env-file ./backend/.env.production.ssl \
 	               --env-file ./notification/.env \
-	               up --build -d
+	               up -d
 
 # Stop all containers
 down:
