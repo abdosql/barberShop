@@ -26,7 +26,7 @@ readonly class ShopStatusCollectionProvider implements ProviderInterface
         $status = $repository->findOneBy([]) ?? $this->createInitialStatus();
         
         // Publish current status
-        //$this->statusPublisher->publish($status);
+        $this->statusPublisher->publish($status);
         
         return [$status];
     }
@@ -40,7 +40,7 @@ readonly class ShopStatusCollectionProvider implements ProviderInterface
         $this->entityManager->persist($status);
         $this->entityManager->flush();
 
-        //$this->statusPublisher->publish($status);
+        $this->statusPublisher->publish($status);
         
         return $status;
     }

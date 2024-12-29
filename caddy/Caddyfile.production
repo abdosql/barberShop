@@ -107,4 +107,30 @@ mercure.jalalbarber.com {
 
     # Enable compression for Mercure
     encode gzip
+}
+
+# Internal Mercure Hub (for Docker network)
+:9999 {
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
+        Access-Control-Allow-Credentials true
+        Access-Control-Expose-Headers "*"
+        Access-Control-Max-Age "3600"
+        Cache-Control "no-cache"
+        Content-Type "text/event-stream"
+        Connection "keep-alive"
+        X-Accel-Buffering "no"
+        defer
+    }
+
+    mercure {
+        publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+        subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+        cors_origins "*"
+        anonymous
+        subscriptions
+        transport_url bolt:///data/mercure.db
+    }
 } 
