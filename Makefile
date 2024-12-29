@@ -24,14 +24,16 @@ prod:
 prod-ssl:
 	@echo "Starting production environment with SSL..."
 	@echo "Building frontend with no cache..."
-	docker compose build --no-cache frontend
+	docker compose build --no-cache frontend && \
+	ENV_FILE_SUFFIX=.ssl \
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	ENV_FILE_SUFFIX=.ssl \
-	docker compose --env-file ./frontend/.env.production.ssl \
-	               --env-file ./backend/.env.production.ssl \
-	               --env-file ./notification/.env \
-	               up -d
+	VITE_MERCURE_HOST=mercure.jalalbarber.com \
+	docker compose \
+		--env-file ./frontend/.env.production.ssl \
+		--env-file ./backend/.env.production.ssl \
+		--env-file ./notification/.env \
+		up -d
 
 # Stop all containers
 down:
