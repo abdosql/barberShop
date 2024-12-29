@@ -8,7 +8,7 @@ services:
       - ./backend:/var/www/html
       - /var/www/html/docker
     env_file:
-      - ${BACKEND_ENV_FILE:-./backend/.env.${APP_ENV}${ENV_FILE_SUFFIX:-}}
+      - ./backend/.env.${APP_ENV}${ENV_FILE_SUFFIX}
     environment:
       - APP_ENV=${APP_ENV:-dev}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
@@ -37,7 +37,7 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ./frontend:/var/www/frontend
-      - ./caddy/Caddyfile.${APP_ENV}${ENV_FILE_SUFFIX:-}:/etc/caddy/Caddyfile
+      - ./caddy/Caddyfile.${APP_ENV}${ENV_FILE_SUFFIX}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
       - caddy_certificates:/root/.local/share/caddy
@@ -67,7 +67,7 @@ services:
         - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
     container_name: barbershop-frontend
     env_file:
-      - ./frontend/.env.${APP_ENV}${ENV_FILE_SUFFIX:-}
+      - ./frontend/.env.${APP_ENV}${ENV_FILE_SUFFIX}
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
