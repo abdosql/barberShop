@@ -25,8 +25,9 @@ prod-ssl:
 	@echo "Starting production environment with SSL..."
 	@echo "Building frontend with no cache..."
 	docker compose build --no-cache frontend
-	APP_ENV=production \
+	APP_ENV=production.ssl \
 	FRONTEND_TARGET=production \
+	CADDY_FILE=Caddyfile.production.ssl \
 	docker compose --env-file ./frontend/.env.production.ssl \
 	               --env-file ./backend/.env.production.ssl \
 	               --env-file ./notification/.env \
