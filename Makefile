@@ -5,7 +5,7 @@ dev:
 	@echo "Starting development environment..."
 	APP_ENV=development \
 	FRONTEND_TARGET=development \
-	ENV_PATH=. \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.development \
 	docker compose --env-file ./frontend/.env.development \
 	               --env-file ./backend/.env.development \
 	               --env-file ./notification/.env \
@@ -16,6 +16,7 @@ prod:
 	@echo "Starting production environment..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.production \
 	docker compose --env-file ./frontend/.env.production \
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
@@ -23,13 +24,18 @@ prod:
 
 # Production environment with SSL
 prod-ssl:
-	@echo "Starting production environment with SSL..."
+	@echo "Starting production SSL environment..."
+	@if [ ! -f "./caddy/Caddyfile.production.ssl" ]; then \
+		cp ./envprod/Caddyfile.production ./caddy/Caddyfile.production.ssl; \
+	fi
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	ENV_PATH=./envprod \
-	docker compose --env-file ./notification/.env \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.production.ssl \
+	docker compose --env-file ./envprod/frontend/.env.production \
+	               --env-file ./envprod/backend/.env.production \
+	               --env-file ./notification/.env \
 	               up --build -d
-	
+
 # Stop all containers
 down:
 	@echo "Stopping all containers..."

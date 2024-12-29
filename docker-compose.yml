@@ -10,7 +10,7 @@ services:
       - ./backend:/var/www/html
       - /var/www/html/docker
     env_file:
-      - ${ENV_PATH}/backend/.env.${APP_ENV:-development}
+      - ./backend/.env.${APP_ENV:-development}
     environment:
       - APP_ENV=${APP_ENV:-dev}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
@@ -35,14 +35,12 @@ services:
       - "80:80"
       - "443:443"
       - "9999:9999"
-      - "2019:2019"
     volumes:
       - ./backend:/var/www/html
       - ./frontend:/var/www/frontend
-      - ${ENV_PATH:-./caddy}/Caddyfile.${APP_ENV:-development}:/etc/caddy/Caddyfile:ro
+      - ${CADDY_CONFIG_PATH:-./caddy/Caddyfile.development}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - ./caddy/ssl:/etc/ssl/caddy
     environment:
       - APP_ENV=${APP_ENV:-development}
       - FRONTEND_PORT=${FRONTEND_PORT:-5173}
@@ -69,7 +67,7 @@ services:
         - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
     container_name: barbershop-frontend
     env_file:
-      - ${ENV_PATH}/frontend/.env.${APP_ENV:-development}
+      - ./frontend/.env.${APP_ENV:-development}
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
