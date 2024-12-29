@@ -1,4 +1,4 @@
-.PHONY: dev prod down build setup-db enter-backend enter-frontend help
+.PHONY: dev prod down build setup-db enter-backend enter-frontend help clean
 
 # Development environment
 dev:
@@ -59,6 +59,13 @@ enter-backend:
 enter-frontend:
 	@docker compose exec frontend sh
 
+# Deep clean everything
+clean:
+	@echo "🧹 Performing deep clean of all Docker resources..."
+	@docker compose down --volumes --remove-orphans
+	@docker system prune --all --force --volumes
+	@echo "✨ Clean complete - all Docker resources have been removed"
+
 # Show help
 help:
 	@echo "Available commands:"
@@ -66,3 +73,4 @@ help:
 	@echo "  make prod     - Start production environment (frontend: 54.37.66.72, backend: 54.37.66.72/api)"
 	@echo "  make down     - Stop all containers"
 	@echo "  make build    - Build containers without starting"
+	@echo "  make clean    - Remove all Docker containers, images, volumes, and cached data"
