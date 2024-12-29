@@ -25,8 +25,7 @@ prod-ssl:
 	@echo "Starting production environment with SSL..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	CADDY_FILE=Caddyfile.production.ssl \
-	ENV_PATH=./frontend/envprod \
+	ENV_PATH=./envprod \
 	docker compose up --build -d
 	
 # Stop all containers
