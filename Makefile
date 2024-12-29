@@ -29,12 +29,18 @@ prod-ssl:
 	@echo "Starting production environment with SSL..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	FRONTEND_ENV_FILE=./frontend/.env.production.ssl \
-	BACKEND_ENV_FILE=./backend/.env.production.ssl \
-	docker compose --env-file ./frontend/.env.production.ssl \
-	               --env-file ./backend/.env.production.ssl \
-	               --env-file ./notification/.env \
-	               up --build -d
+	APP_SECRET=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3 \
+	APP_DEBUG=0 \
+	CORS_ALLOW_ORIGIN="https://jalalbarber.com https://mercure.jalalbarber.com" \
+	TRUSTED_HOSTS=^jalalbarber\.com$$ \
+	JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3 \
+	MERCURE_PUBLIC_URL=https://mercure.jalalbarber.com/.well-known/mercure \
+	VITE_API_URL=https://jalalbarber.com \
+	VITE_MERCURE_PUBLIC_URL=https://mercure.jalalbarber.com/.well-known/mercure \
+	VITE_MERCURE_HOST=mercure.jalalbarber.com \
+	APP_URL=https://jalalbarber.com \
+	CADDY_FILE=Caddyfile.production.ssl \
+	docker compose up --build -d
 
 # Stop all containers
 down:
