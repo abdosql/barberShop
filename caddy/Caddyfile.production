@@ -68,7 +68,7 @@ mercure.jalalbarber.com {
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
@@ -88,7 +88,7 @@ mercure.jalalbarber.com {
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            Access-Control-Allow-Headers "*"
+            Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
             Access-Control-Allow-Credentials true
             Access-Control-Max-Age "3600"
             defer
