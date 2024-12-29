@@ -5,45 +5,31 @@ dev:
 	@echo "Starting development environment..."
 	APP_ENV=development \
 	FRONTEND_TARGET=development \
-	FRONTEND_ENV_FILE=./frontend/.env.development \
-	BACKEND_ENV_FILE=./backend/.env.development \
-	CADDY_CONFIG_FILE=./caddy/Caddyfile.development \
-	docker compose \
-		--env-file ./frontend/.env.development \
-		--env-file ./backend/.env.development \
-		--env-file ./notification/.env \
-		up --build -d
+	docker compose --env-file ./frontend/.env.development \
+	               --env-file ./backend/.env.development \
+	               --env-file ./notification/.env \
+	               up --build -d
 
 # Production environment
 prod:
 	@echo "Starting production environment..."
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	FRONTEND_ENV_FILE=./frontend/.env.production \
-	BACKEND_ENV_FILE=./backend/.env.production \
-	CADDY_CONFIG_FILE=./caddy/Caddyfile.production \
-	docker compose \
-		--env-file ./frontend/.env.production \
-		--env-file ./backend/.env.production \
-		--env-file ./notification/.env \
-		up --build -d
+	docker compose --env-file ./frontend/.env.production \
+	               --env-file ./backend/.env.production \
+	               --env-file ./notification/.env \
+	               up --build -d
 
 # Production environment with SSL
 prod-ssl:
 	@echo "Starting production environment with SSL..."
-	@echo "Building frontend with no cache..."
-	docker compose build --no-cache frontend && \
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	VITE_MERCURE_HOST=mercure.jalalbarber.com \
-	FRONTEND_ENV_FILE=./frontend/.env.production.ssl \
-	BACKEND_ENV_FILE=./backend/.env.production.ssl \
-	CADDY_CONFIG_FILE=./caddy/Caddyfile.production.ssl \
-	docker compose \
-		--env-file ./frontend/.env.production.ssl \
-		--env-file ./backend/.env.production.ssl \
-		--env-file ./notification/.env \
-		up -d
+	SSL_SUFFIX=.ssl \
+	docker compose --env-file ./frontend/.env.production.ssl \
+	               --env-file ./backend/.env.production.ssl \
+	               --env-file ./notification/.env \
+	               up --build -d
 
 # Stop all containers
 down:
