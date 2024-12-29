@@ -5,6 +5,7 @@ dev:
 	@echo "Starting development environment..."
 	APP_ENV=development \
 	FRONTEND_TARGET=development \
+	ENV_PATH=. \
 	docker compose --env-file ./frontend/.env.development \
 	               --env-file ./backend/.env.development \
 	               --env-file ./notification/.env \
