@@ -23,7 +23,7 @@ prod:
 # Production environment with SSL
 prod-ssl:
 	@echo "Starting production environment with SSL..."
-	APP_ENV=production \
+	APP_ENV=production.ssl \
 	FRONTEND_TARGET=production \
 	docker compose --env-file ./frontend/.env.production.ssl \
 	               --env-file ./backend/.env.production.ssl \
