@@ -108,3 +108,106 @@ mercure.jalalbarber.com {
     # Enable compression for Mercure
     encode gzip
 } 
+
+
+
+
+
+no ssl
+{
+    admin off
+    auto_https off
+    debug
+}
+
+:80 {
+    # Common headers for security
+    header {
+        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
+        Access-Control-Allow-Credentials "true"
+        Access-Control-Max-Age "3600"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+        defer
+    }
+
+    # Handle OPTIONS requests
+    @options {
+        method OPTIONS
+    }
+    handle @options {
+        respond 204
+    }
+
+    # Backend API routes
+    handle /api/* {
+        root * /var/www/html/public
+        php_fastcgi backend:9000
+        file_server
+    }
+
+    # Frontend routes - reverse proxy to production frontend
+    handle {
+        reverse_proxy frontend:{$FRONTEND_PORT} {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+        }
+    }
+
+    # Error handling
+    handle_errors {
+        respond "{http.error.status_code} {http.error.status_text}"
+    }
+
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+}
+
+# Mercure Hub
+:9999 {
+    header {
+        Access-Control-Allow-Origin {http.request.header.Origin}
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Credentials true
+        Access-Control-Expose-Headers "*"
+        Access-Control-Max-Age "3600"
+        # Required for EventSource connections
+        Cache-Control "no-cache"
+        Content-Type "text/event-stream"
+        Connection "keep-alive"
+        X-Accel-Buffering "no"
+        defer
+    }
+
+    # Handle OPTIONS requests for Mercure
+    @options {
+        method OPTIONS
+    }
+    handle @options {
+        header {
+            Access-Control-Allow-Origin {http.request.header.Origin}
+            Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            Access-Control-Allow-Headers "*"
+            Access-Control-Allow-Credentials true
+            Access-Control-Max-Age "3600"
+            defer
+        }
+        respond 204
+    }
+
+    mercure {
+        publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+        subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+        cors_origins {$CORS_ALLOW_ORIGIN}
+        anonymous
+        subscriptions
+        transport_url bolt:///data/mercure.db
+    }
+} 

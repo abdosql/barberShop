@@ -9,20 +9,18 @@ services:
     volumes:
       - ./backend:/var/www/html
       - /var/www/html/docker
+    env_file:
+      - ./backend/.env.${APP_ENV:-development}
     environment:
       - APP_ENV=${APP_ENV:-dev}
-      - APP_SECRET=${APP_SECRET:-!ChangeThis!}
-      - APP_DEBUG=${APP_DEBUG:-1}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
-      - TRUSTED_HOSTS=${TRUSTED_HOSTS}
       - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
       - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
-      - JWT_PASSPHRASE=${JWT_PASSPHRASE}
+      - JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3
       - DATABASE_URL=postgresql://user:password@database:5432/app_db
       - MERCURE_URL=http://caddy:9999/.well-known/mercure
       - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
       - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      - APP_URL=${APP_URL}
     depends_on:
       - database
     networks:
@@ -71,6 +69,8 @@ services:
       args:
         - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
     container_name: barbershop-frontend
+    env_file:
+      - ./frontend/.env.${APP_ENV:-development}
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
