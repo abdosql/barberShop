@@ -27,7 +27,6 @@ prod-ssl:
 	docker compose build --no-cache frontend
 	APP_ENV=production \
 	FRONTEND_TARGET=production \
-	CADDY_FILE=Caddyfile.production.ssl \
 	ENV_FILE_SUFFIX=.ssl \
 	docker compose --env-file ./frontend/.env.production.ssl \
 	               --env-file ./backend/.env.production.ssl \
