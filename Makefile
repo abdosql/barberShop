@@ -3,7 +3,8 @@
 # Development environment
 dev:
 	@echo "Starting development environment..."
-	APP_ENV=development \
+	ENV_MODE=development \
+	APP_ENV=dev \
 	FRONTEND_TARGET=development \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.development \
 	docker compose --env-file ./frontend/.env.development \
@@ -14,7 +15,8 @@ dev:
 # Production environment
 prod:
 	@echo "Starting production environment..."
-	APP_ENV=production \
+	ENV_MODE=production \
+	APP_ENV=prod \
 	FRONTEND_TARGET=production \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.production \
 	docker compose --env-file ./frontend/.env.production \
@@ -52,6 +54,7 @@ clean:
 	@docker system prune --all --force --volumes
 	@echo "✨ Clean complete - all Docker resources have been removed"
 
+
 # Show help
 help:
 	@echo "Available commands:"
@@ -60,3 +63,5 @@ help:
 	@echo "  make down     - Stop all containers"
 	@echo "  make build    - Build containers without starting"
 	@echo "  make clean    - Remove all Docker containers, images, volumes, and cached data"
+	@echo "  make shop-status       - Get current shop status"
+	@echo "  make shop-status-update - Update shop status (set to open)"
