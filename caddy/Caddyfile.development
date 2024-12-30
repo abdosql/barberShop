@@ -26,10 +26,20 @@
         respond 204
     }
 
-    # Backend API routes
-    handle /api/* {
+    # API Platform and Symfony routes
+    handle /api* {
         root * /var/www/html/public
-        php_fastcgi backend:9000
+        try_files {path} {path}/ /index.php?{query}
+        php_fastcgi backend:9000 {
+            env APP_ENV development
+        }
+        encode gzip
+        file_server
+    }
+
+    # Serve bundles directory for API Platform assets
+    handle /bundles* {
+        root * /var/www/html/public
         file_server
     }
 
