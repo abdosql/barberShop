@@ -51,7 +51,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   // Combine related state into a single object
   const [formState, setFormState] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA'), 
     time: '',
     selectedServices: [] as string[],
     isSubmitting: false,
@@ -90,7 +90,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
     console.log("here");
     // Check if the slot is in the past for today
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
     if (formState.date === today) {
       // Get current time
       const now = new Date();
@@ -295,7 +295,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         ...prev,
         selectedServices: [],
         time: '',
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleDateString('en-CA'), 
         showSocial: true
       }));
 
