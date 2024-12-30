@@ -23,16 +23,38 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    # WhatsApp Provider Configuration
+    App\Notification\Provider\WhatsAppProvider:
+        arguments:
+            $baseUrl: 'https://graph.facebook.com'
+        tags: ['app.notification_provider']
+
+    App\Notification\Template\WhatsAppTemplateRegistry:
+        calls:
+            - method: addTemplate
+              arguments:
+                  - '@App\Notification\Template\HelloWorldTemplate'
+            - method: addTemplate
+              arguments:
+                  - '@App\Notification\Template\AppointmentReminderTemplate'
+
+    App\Notification\Template\HelloWorldTemplate: ~
+
+    App\Notification\Template\AppointmentReminderTemplate:
+        arguments:
+            $latitude: '%env(float:BARBERSHOP_LATITUDE)%'
+            $longitude: '%env(float:BARBERSHOP_LONGITUDE)%'
+            $locationName: '%env(BARBERSHOP_NAME)%'
+            $address: '%env(BARBERSHOP_ADDRESS)%'
+
     # Notification Factory Configuration
     App\Factory\NotificationFactory:
         arguments:
             $config:
                 whatsapp:
                     default_language: 'en'
-                    retry_attempts: 3
                 telegram:
                     parse_mode: 'HTML'
-                    retry_attempts: 3
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

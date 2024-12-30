@@ -7,24 +7,21 @@
 namespace App\Service\Appointment;
 
 use App\Entity\Appointment;
-use App\Entity\DailyTimeSlot;
-use App\Service\Notification\NotificationService;
+use App\Notification\NotificationFacade;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 readonly class AppointmentManager
 {
     public function __construct(
         private Security $security,
-        private NotificationService $notificationService,
         private TimeSlotManager $timeSlotManager,
+        private NotificationFacade $notificationFacade
     ) {}
 
     /**
-     * @throws TransportExceptionInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
@@ -47,10 +44,10 @@ readonly class AppointmentManager
         if ($requestMethod === 'PATCH') {
             $appointment->setUpdatedAt($now);
             if ($status === 'accepted') {
-                $this->sendNotification($appointment, $status);
+                $this->sendTestNotification($appointment);
             }
             if ($status === 'cancelled') {
-                $this->sendNotification($appointment, $status);
+                $this->sendTestNotification($appointment);
             }
 
             $appointment = $this->timeSlotManager->handleTimeSlots($appointment, $status);
@@ -59,37 +56,24 @@ readonly class AppointmentManager
         return $appointment;
     }
 
-
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
-    private function sendNotification(Appointment $appointment, string $status): void
+    private function sendTestNotification(Appointment $appointment): void
     {
         $user = $appointment->getUser();
-        $appointmentDate = $appointment->getStartTime();
-        $details = [
-            'phone_number' => '+212' . ltrim($user->getPhoneNumber(), '0'),
-            'customer_name' => $user->getFullName(),
-//                    'service' => implode(', ', $appointment->getAppointmentServices()),
-            'service' => "test",
-            'date_time' => $appointmentDate->format('Y-m-d H:i'),
-            'barber_name' => "Mike Smith",
-            'language' => "fr"
-        ];
+        if (!$user || !$user->getPhoneNumber()) {
+            return;
+        }
 
-        $this->notificationService->notify($details);
-    }
-
-    public function handleAppointmentServices(Appointment &$appointment): void
-    {
-        $appointmentServices = $appointment->getAppointmentServices();
-
-        foreach ($appointmentServices as $appointmentService)
-        {
-            $appointmentService->setPrice($appointment->getTotalPrice());
+        $phoneNumber = '212' . ltrim($user->getPhoneNumber(), '0');
+        
+        try {
+            $this->notificationFacade->send(
+                'whatsapp',
+                $phoneNumber,
+                ['recipient_id' => $phoneNumber],
+                ['template' => 'hello_world']
+            );
+        } catch (\Throwable $e) {
+            error_log(sprintf('Failed to send WhatsApp notification: %s', $e->getMessage()));
         }
     }
 }
