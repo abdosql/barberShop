@@ -31,6 +31,7 @@ interface TimeSlotsProps {
 }
 
 export default function TimeSlots({ onSelect, selectedServices, totalDuration, selectedDate, onNext, refreshTrigger }: TimeSlotsProps) {
+  console.log('TimeSlots component rendering', { selectedDate, totalDuration });
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,33 +51,66 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   // Function to check if a time slot is available
   const isTimeSlotAvailable = (timeSlot: TimeSlot, selectedDate: string) => {
     const formattedSelectedDate = formatDateForComparison(selectedDate);
-    
-    // Check if the slot is in the past for today
     const today = new Date().toISOString().split('T')[0];
-    if (selectedDate === today) {
-      const currentTime = new Date();
-      const slotTime = new Date(timeSlot.startTime);
-      if (slotTime < currentTime) {
+    
+    console.log('----------------------------------------');
+    console.log('Checking availability for slot:', timeSlot.startTime);
+    console.log('Selected date:', selectedDate);
+    console.log('Formatted selected date:', formattedSelectedDate);
+    console.log('Today:', today);
+    console.log('Is today?', formattedSelectedDate === today);
+    
+    // Extract just the time part from the slot
+    const slotTime = timeSlot.startTime.split('T')[1].split('+')[0];
+    const [slotHours, slotMinutes] = slotTime.split(':').map(Number);
+    console.log('Slot time parts - Hours:', slotHours, 'Minutes:', slotMinutes);
+    
+    // Create a date object for the selected date with the slot's time
+    const slotDateTime = new Date(selectedDate);
+    slotDateTime.setHours(slotHours, slotMinutes, 0, 0);
+    console.log('Full slot date time:', slotDateTime);
+    console.log('Slot time string:', slotDateTime.toLocaleTimeString());
+    
+    // Get current time
+    const currentTime = new Date();
+    console.log('Current time:', currentTime);
+    console.log('Current time string:', currentTime.toLocaleTimeString());
+    
+    // For today's slots, check if they're in the past
+    if (formattedSelectedDate === today) {
+      // Add 15 minutes buffer for immediate bookings
+      const bookingBuffer = new Date(currentTime.getTime() + 15 * 60000);
+      console.log('Booking buffer time:', bookingBuffer.toLocaleTimeString());
+      
+      const isBeforeBuffer = slotDateTime <= bookingBuffer;
+      console.log('Is slot before buffer?', isBeforeBuffer);
+      
+      if (isBeforeBuffer) {
+        console.log('❌ Slot disabled: Too close to current time');
         return false;
       }
     }
     
-    // If dailyTimeSlots is empty, the slot is available
-    if (timeSlot.dailyTimeSlots.length === 0) {
+    // Check daily time slots
+    if (!timeSlot.dailyTimeSlots || timeSlot.dailyTimeSlots.length === 0) {
+      console.log('✅ No daily slots - slot is available');
       return true;
     }
 
-    // Check if there's a dailyTimeSlot for the selected date
     const dailySlot = timeSlot.dailyTimeSlots.find(
-      slot => formatDateForComparison(slot.date) === formattedSelectedDate
+      slot => {
+        const slotDate = formatDateForComparison(slot.date);
+        console.log('Comparing daily slot date:', slotDate, 'with selected date:', formattedSelectedDate);
+        return slotDate === formattedSelectedDate;
+      }
     );
 
-    // If no dailyTimeSlot exists for this date, the slot is available
     if (!dailySlot) {
+      console.log('✅ No daily slot for this date - slot is available');
       return true;
     }
 
-    // If a dailyTimeSlot exists for this date, return its availability
+    console.log(dailySlot.is_available ? '✅' : '❌', 'Daily slot availability:', dailySlot.is_available);
     return dailySlot.is_available;
   };
 
@@ -142,6 +176,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
+      console.log('Fetching time slots...');
       setIsLoading(true);
       setSelectedTime(''); // Reset selection when refreshing
       try {
@@ -156,6 +191,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         }
 
         const data = await response.json();
+        console.log('Received time slots:', data.member);
         setTimeSlots(data.member);
       } catch (err) {
         console.error('Error fetching time slots:', err);
@@ -215,7 +251,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
   return (
     <div className="text-white">
-      <h2 className="text-2xl font-bold mb-6 text-center">Select Time</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Select Time TEST</h2>
       {totalDuration > 0 && (
         <div className="mb-4 text-center text-sm text-zinc-400">
           Selected duration: {Math.floor(totalDuration / 60)}h{totalDuration % 60 > 0 ? ` ${totalDuration % 60}min` : ''}
@@ -227,29 +263,32 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
           Time Slots
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {timeSlots.map((slot, index) => (
-            <button
-              key={slot.id}
-              onClick={() => handleTimeSelect(slot)}
-              disabled={isLoading || isSlotDisabled(slot, index)}
-              className={`p-4 rounded-xl border ${
-                selectedTime === formatTime(slot.startTime)
-                  ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                  : !isSlotDisabled(slot, index) && !isLoading
-                  ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
-                  : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
-              } transition-all duration-200`}
-            >
-              <Clock className={`h-5 w-5 mx-auto mb-1 ${isLoading || isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
-              <div className="text-sm">{formatTime(slot.startTime)}</div>
-              <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
-              {(isLoading || isSlotDisabled(slot, index)) && (
-                <div className="text-xs text-rose-500 mt-1">
-                  {isLoading ? 'Refreshing...' : !isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
-                </div>
-              )}
-            </button>
-          ))}
+          {timeSlots.map((slot, index) => {
+            console.log('Rendering slot:', slot.startTime, 'isDisabled:', isSlotDisabled(slot, index));
+            return (
+              <button
+                key={`${slot.id}-${selectedDate}`}
+                onClick={() => handleTimeSelect(slot)}
+                disabled={isLoading || isSlotDisabled(slot, index)}
+                className={`p-4 rounded-xl border ${
+                  selectedTime === formatTime(slot.startTime)
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-500'
+                    : !isSlotDisabled(slot, index) && !isLoading
+                    ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
+                    : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
+                } transition-all duration-200`}
+              >
+                <Clock className={`h-5 w-5 mx-auto mb-1 ${isLoading || isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
+                <div className="text-sm">{formatTime(slot.startTime)}</div>
+                <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
+                {(isLoading || isSlotDisabled(slot, index)) && (
+                  <div className="text-xs text-rose-500 mt-1">
+                    {isLoading ? 'Refreshing...' : !isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

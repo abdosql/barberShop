@@ -88,36 +88,38 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   // Memoized slot availability check
   const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
+    console.log("here");
     // Check if the slot is in the past for today
     const today = new Date().toISOString().split('T')[0];
     if (formState.date === today) {
-      const currentTime = new Date();
-      const slotStartTime = new Date(slot.startTime);
-      if (slotStartTime.getTime() < currentTime.getTime()) {
+      // Get current time
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Get slot time
+      const slotTime = new Date(slot.startTime);
+      const slotHour = slotTime.getHours();
+      const slotMinute = slotTime.getMinutes();
+      
+      // Add 15 minutes buffer
+      if (currentHour > slotHour || (currentHour === slotHour && currentMinute + 15 >= slotMinute)) {
         return true;
       }
     }
   
-    // First check the dailyTimeSlots availability
-    const isAvailableForDate = !slot.dailyTimeSlots.some(
-      dailySlot => 
-        new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && 
-        !dailySlot.is_available
+    // Check dailyTimeSlots availability
+    const hasUnavailableSlot = slot.dailyTimeSlots.some(dailySlot => 
+      new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && !dailySlot.is_available
     );
-
-    // If not available for this date, disable the slot
-    if (!isAvailableForDate) return true;
-
+  
+    if (hasUnavailableSlot) return true;
+  
     // If no services selected, slot is available
     if (totalDuration <= 0) return false;
-
-    const slotsNeeded = Math.ceil(totalDuration / 30);
-    console.log(`Checking slot ${formatTime(slot.startTime)}, needs ${slotsNeeded} slots`);
-    
-    const hasEnough = hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots, totalDuration, formState.date);
-    console.log(`Has enough slots: ${hasEnough}`);
-    
-    return !hasEnough;
+  
+    const slotsNeeded = Math.ceil(totalDuration / 30);    
+    return !hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots, totalDuration, formState.date);
   }, [totalDuration, timeSlots, formState.date]);
 
   // API calls moved to separate functions
