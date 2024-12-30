@@ -68,7 +68,7 @@ export default function Register() {
         },
         body: JSON.stringify({
           firstName,
-          lastName: lastName || firstName,
+          lastName,
           phoneNumber: phone,
           password,
           roles: ["ROLE_USER"]
