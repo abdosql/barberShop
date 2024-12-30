@@ -8,12 +8,14 @@ import { validatePhoneNumber, validatePassword } from '../../utils/validations';
 
 export default function Register() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
-    name?: string;
+    firstName?: string;
+    lastName?: string;
     phone?: string;
     password?: string;
     general?: string;
@@ -22,9 +24,14 @@ export default function Register() {
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    // Validate name
-    if (!name.trim()) {
-      newErrors.name = "Le nom est requis.";
+    // Validate first name
+    if (!firstName.trim()) {
+      newErrors.firstName = "Le prénom est requis.";
+    }
+
+    // Validate last name
+    if (!lastName.trim()) {
+      newErrors.lastName = "Le nom de famille est requis.";
     }
 
     // Validate phone number
@@ -52,10 +59,6 @@ export default function Register() {
       setIsLoading(false);
       return;
     }
-
-    // Split name into firstName and lastName
-    const [firstName, ...lastNameParts] = name.trim().split(' ');
-    const lastName = lastNameParts.join(' '); // Join remaining parts as lastName
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
@@ -87,8 +90,10 @@ export default function Register() {
                 newErrors.password = violation.message;
                 break;
               case 'firstName':
+                newErrors.firstName = violation.message;
+                break;
               case 'lastName':
-                newErrors.name = violation.message;
+                newErrors.lastName = violation.message;
                 break;
               default:
                 newErrors.general = "L'inscription a échoué. Veuillez réessayer.";
@@ -112,7 +117,7 @@ export default function Register() {
       navigate('/login', { 
         state: { 
           registrationSuccess: true,
-          name: firstName
+          name: firstName + ' ' + lastName
         } 
       });
 
@@ -161,10 +166,10 @@ export default function Register() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              {/* Name Input */}
+              {/* First Name Input */}
               <div>
-                <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
-                  Full Name
+                <label htmlFor="firstName" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
+                  First Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -172,18 +177,45 @@ export default function Register() {
                   </div>
                   <input
                     type="text"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border ${
-                      errors.name ? 'border-rose-500' : 'border-zinc-800'
+                      errors.firstName ? 'border-rose-500' : 'border-zinc-800'
                     } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder="Enter your name"
+                    placeholder="Enter your first name"
                     required
                   />
-                  {errors.name && (
-                    <p className="mt-1 text-xs text-rose-500">{errors.name}</p>
+                  {errors.firstName && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.firstName}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Last Name Input */}
+              <div>
+                <label htmlFor="lastName" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500" />
+                  </div>
+                  <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className={`block w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 border ${
+                      errors.lastName ? 'border-rose-500' : 'border-zinc-800'
+                    } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    placeholder="Enter your last name"
+                    required
+                  />
+                  {errors.lastName && (
+                    <p className="mt-1 text-xs text-rose-500">{errors.lastName}</p>
                   )}
                 </div>
               </div>
