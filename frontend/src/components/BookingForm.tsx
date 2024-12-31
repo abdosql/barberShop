@@ -88,36 +88,41 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
   // Memoized slot availability check
   const isSlotDisabled = useCallback((slot: TimeSlot, index: number) => {
-    console.log("here");
     // Check if the slot is in the past for today
     const today = new Date().toLocaleDateString('en-CA');
     if (formState.date === today) {
-      // Get current time
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       
-      // Get slot time
       const slotTime = new Date(slot.startTime);
       const slotHour = slotTime.getHours();
       const slotMinute = slotTime.getMinutes();
       
-      // Add 15 minutes buffer
       if (currentHour > slotHour || (currentHour === slotHour && currentMinute + 15 >= slotMinute)) {
         return true;
       }
     }
-  
-    // Check dailyTimeSlots availability
-    const hasUnavailableSlot = slot.dailyTimeSlots.some(dailySlot => 
-      new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && !dailySlot.is_available
+
+    // If the slot has no dailyTimeSlots, it's available by default
+    if (!slot.dailyTimeSlots || slot.dailyTimeSlots.length === 0) {
+      return false;
+    }
+
+    // Check if there's a dailyTimeSlot for the selected date
+    const dailySlotForDate = slot.dailyTimeSlots.find(
+      dailySlot => new Date(dailySlot.date).toLocaleDateString('en-CA') === formState.date
     );
-  
-    if (hasUnavailableSlot) return true;
-  
+
+    // If there's a dailyTimeSlot for this date and it's not available, disable the slot
+    if (dailySlotForDate && !dailySlotForDate.is_available) {
+      return true;
+    }
+
     // If no services selected, slot is available
     if (totalDuration <= 0) return false;
-  
+
+    // Check for enough consecutive slots
     const slotsNeeded = Math.ceil(totalDuration / 30);    
     return !hasEnoughConsecutiveSlots(index, slotsNeeded, timeSlots, totalDuration, formState.date);
   }, [totalDuration, timeSlots, formState.date]);
