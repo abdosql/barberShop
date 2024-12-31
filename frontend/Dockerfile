@@ -36,4 +36,5 @@ WORKDIR /app
 RUN npm install -g serve
 COPY --from=builder /app/dist .
 EXPOSE 4173
+# Use serve with no-cache headers for HTML
 CMD ["serve", "-s", ".", "-l", "4173", "--cors"]
