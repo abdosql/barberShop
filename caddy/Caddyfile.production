@@ -37,11 +37,32 @@ jalalbarber.com {
     handle /api/* {
         root * /var/www/html/public
         php_fastcgi backend:9000
+        # Prevent caching of API responses
+        header {
+            Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
+            Pragma "no-cache"
+            Expires "0"
+        }
         file_server
     }
 
     # Frontend routes - reverse proxy to production frontend
     handle {
+        # Add cache control for different types of assets
+        @static {
+            path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg
+        }
+        @html {
+            path *.html /
+        }
+        
+        header @static {
+            Cache-Control "public, max-age=31536000, immutable"
+        }
+        header @html {
+            Cache-Control "no-cache, must-revalidate"
+        }
+        
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}

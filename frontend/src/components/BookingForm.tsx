@@ -540,7 +540,14 @@ const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slot
 
 const fetchData = async (endpoint: string) => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
-    headers: { 'Accept': 'application/ld+json' }
+    headers: { 
+      'Accept': 'application/ld+json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
+    // Force cache revalidation
+    cache: 'no-store'
   });
 
   if (!response.ok) throw new Error('Network response was not ok');

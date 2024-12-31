@@ -35,6 +35,8 @@ export default defineConfig({
       }
     },
     // Clean output directory on each build
-    emptyOutDir: true
+    emptyOutDir: true,
+    // Generate source maps for better debugging
+    sourcemap: true
   }
 });
