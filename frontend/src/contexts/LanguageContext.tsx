@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import enTranslations from '../locales/en.json';
-import frTranslations from '../locales/fr.json';
-import arTranslations from '../locales/ar.json';
+import en from '../locales/en.json';
+import fr from '../locales/fr.json';
+import ar from '../locales/ar.json';
 
 type Language = 'en' | 'fr' | 'ar';
-type Translations = typeof enTranslations;
+type Translations = typeof en;
 
 interface LanguageContextType {
   language: Language;
@@ -15,25 +15,31 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => {
-    const savedLanguage = localStorage.getItem('language');
-    return (savedLanguage as Language) || 'en';
-  });
-
-  const [translations, setTranslations] = useState<Translations>(
-    language === 'en' ? enTranslations : 
-    language === 'fr' ? frTranslations : 
-    arTranslations
-  );
+  const [language, setLanguage] = useState(localStorage.getItem('language') || 'en');
+  const [translations, setTranslations] = useState(en);
 
   useEffect(() => {
+    // Update translations based on language
+    const loadTranslations = () => {
+      switch (language) {
+        case 'fr':
+          setTranslations(fr);
+          break;
+        case 'ar':
+          setTranslations(ar);
+          break;
+        default:
+          setTranslations(en);
+      }
+    };
+
+    loadTranslations();
     localStorage.setItem('language', language);
-    setTranslations(
-      language === 'en' ? enTranslations : 
-      language === 'fr' ? frTranslations : 
-      arTranslations
-    );
-    // Set RTL direction for Arabic
+    
+    // Set the language attribute on the HTML element
+    document.documentElement.lang = language;
+    
+    // Add appropriate text direction
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
 

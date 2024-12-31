@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ShopClosedPage from './components/ShopClosedPage';
 import SocialLinks from './components/SocialLinks';
 import LoadingSpinner from './components/LoadingSpinner';
+import './styles/globals.css';
 
 // Create a context for managing the social links modal
 export const SocialLinksContext = React.createContext({

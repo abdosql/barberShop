@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ServiceCardProps {
   name: string;
@@ -11,6 +12,8 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ name, price, duration, icon: Icon, isSelected, onClick }: ServiceCardProps) {
+  const { translations } = useLanguage();
+  
   return (
     <button
       onClick={onClick}
@@ -23,9 +26,9 @@ export default function ServiceCard({ name, price, duration, icon: Icon, isSelec
       <Icon className="h-5 w-5 mb-2 text-blue-500" />
       <h3 className="font-medium mb-1 text-white">{name}</h3>
       <div className="text-sm text-white">
-        <span>{duration} min</span>
+        <span>{duration} {translations.home.booking.min}</span>
         <span className="mx-2">•</span>
-        <span>{price} DH</span>
+        <span>{price} {translations.home.booking.currency}</span>
       </div>
     </button>
   );

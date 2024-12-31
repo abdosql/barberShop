@@ -1,0 +1,23 @@
+/* Base styles with font fallbacks */
+:root {
+  /* Default font stack for Latin scripts (English/French) */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  /* Font stack for Arabic */
+  --font-arabic: 'Noto Sans Arabic', var(--font-primary);
+}
+
+/* Global styles */
+body {
+  font-family: var(--font-primary);
+}
+
+/* Arabic language specific styles */
+html[lang="ar"] body {
+  font-family: var(--font-arabic);
+}
+
+/* Let the browser handle RTL automatically based on HTML lang attribute */
+html[lang="ar"] {
+  direction: rtl;
+} 

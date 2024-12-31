@@ -22,7 +22,7 @@ export default function Layout() {
   const renderBookingSection = () => {
     if (!isAuthenticated) {
       return (
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full max-w-lg mx-auto">
           <BookingForm readOnly />
           <div className="mt-6 text-center">
             <p className="text-zinc-400 mb-4">
@@ -61,7 +61,7 @@ export default function Layout() {
                 {/* Images Section - Right in Arabic */}
                 <div className="w-full lg:w-1/2 flex flex-col justify-center order-1 lg:order-2">
                   <div className={`text-center lg:${textAlignClass} mb-8 lg:mb-12`}>
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
+                    <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-white mb-4">
                       {translations.home.hero.title}
                       <span className="block text-blue-500">{translations.home.hero.subtitle}</span>
                     </h1>
