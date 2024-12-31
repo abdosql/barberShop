@@ -123,7 +123,10 @@ mercure.jalalbarber.com {
         cors_origins https://jalalbarber.com https://mercure.jalalbarber.com
         anonymous
         subscriptions
-        transport_url bolt:///data/mercure.db
+        transport {
+            type bolt
+            path /data/mercure.db
+        }
     }
 
     # Enable compression for Mercure
@@ -152,6 +155,9 @@ mercure.jalalbarber.com {
         cors_origins *
         anonymous
         subscriptions
-        transport_url bolt:///data/mercure.db
+        transport {
+            type bolt
+            path /data/mercure.db
+        }
     }
 } 
