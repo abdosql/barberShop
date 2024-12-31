@@ -47,7 +47,7 @@ interface TimeSlotResponse {
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
   const { token } = useAuth();
-  const [refreshTimeSlotsCount, setRefreshTimeSlotsCount] = useState(0);
+  const [refreshTimeSlots, setRefreshTimeSlots] = useState(0);
 
   // Combine related state into a single object
   const [formState, setFormState] = useState({
@@ -146,32 +146,12 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     }
   }, []);
 
-  // Move fetchData inside component
-  const fetchData = useCallback(async (endpoint: string) => {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
-      headers: { 
-        'Accept': 'application/ld+json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
-
-    if (!response.ok) throw new Error('Network response was not ok');
-    return response.json();
-  }, []);
-
-  // Rename to fetchTimeSlots to avoid naming conflict
   const fetchTimeSlots = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, timeSlots: true }));
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
         headers: {
           'Accept': 'application/ld+json',
-          // Add no-cache headers
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
         },
       });
 
@@ -185,6 +165,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
         return timeA - timeB;
       });
 
+      console.log('Fetched time slots:', sortedSlots);
       setTimeSlots(sortedSlots);
     } catch (err) {
       console.error('Error fetching time slots:', err);
@@ -202,7 +183,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   useEffect(() => {
     console.log('Fetching time slots, date:', formState.date);
     fetchTimeSlots();
-  }, [fetchTimeSlots, formState.date, refreshTimeSlotsCount]);
+  }, [fetchTimeSlots, formState.date, refreshTimeSlots]);
 
   useEffect(() => {
     // Reset selected time and fetch new time slots when date changes
@@ -226,7 +207,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     });
     
     // Trigger time slots refresh
-    setRefreshTimeSlotsCount(prev => prev + 1);
+    setRefreshTimeSlots(prev => prev + 1);
   };
 
   const formatDuration = (minutes: number) => {
@@ -325,7 +306,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
       // Then refresh time slots
       console.log('Appointment created, refreshing time slots');
-      setRefreshTimeSlotsCount(prev => prev + 1);
+      setRefreshTimeSlots(prev => prev + 1);
       await fetchTimeSlots(); // Immediately fetch new time slots
 
     } catch (err) {
@@ -350,23 +331,6 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     const localDate = new Date(today.getTime() - (offset * 60 * 1000));
     return localDate.toISOString().split('T')[0];
   };
-
-  // Update the function name here too
-  useEffect(() => {
-    // Initial fetch
-    fetchTimeSlots();
-
-    // Refresh every 30 seconds
-    const intervalId = setInterval(fetchTimeSlots, 30000);
-
-    // Cleanup
-    return () => clearInterval(intervalId);
-  }, [fetchTimeSlots]);
-
-  // Update the function name here too
-  useEffect(() => {
-    fetchTimeSlots();
-  }, [formState.date, fetchTimeSlots]);
 
   if (loading.services) {
     return <div className="text-center text-zinc-400">{translations.home.booking.loadingServices}</div>;
@@ -532,7 +496,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   );
 }
 
-// Keep utility functions outside
+// Utility functions moved outside component
 const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slots: TimeSlot[], totalDuration: number, date: string) => {
   // Check if we have enough slots remaining
   if (startIndex + slotsNeeded > slots.length) return false;
@@ -572,4 +536,13 @@ const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number, slot
 
   // Return true only if we have enough consecutive minutes
   return availableMinutes >= requiredMinutes;
+};
+
+const fetchData = async (endpoint: string) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+    headers: { 'Accept': 'application/ld+json' }
+  });
+
+  if (!response.ok) throw new Error('Network response was not ok');
+  return response.json();
 };
