@@ -135,15 +135,18 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="text-zinc-400 hover:text-white transition-colors"
+                  className="relative px-4 py-2 text-zinc-400 hover:text-white transition-all duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 hover:after:w-full after:transition-all after:duration-300"
                 >
                   {translations.navbar.login}
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400 transition-colors"
+                  className="relative overflow-hidden bg-blue-500 text-white px-6 py-2 rounded-lg group"
                 >
-                  {translations.navbar.register}
+                  <span className="relative z-10 transition-transform duration-300 group-hover:scale-110 inline-block">
+                    {translations.navbar.register}
+                  </span>
+                  <div className="absolute inset-0 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </Link>
               </div>
             )}
@@ -253,16 +256,19 @@ export default function Navbar() {
                 <Link
                   to="/login"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full flex items-center justify-center py-2 text-zinc-400 hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center py-2 text-zinc-400 hover:text-white transition-all duration-300 relative after:content-[''] after:absolute after:bottom-0 after:left-1/4 after:h-[2px] after:w-0 after:bg-blue-500 hover:after:w-1/2 after:transition-all after:duration-300"
                 >
                   {translations.navbar.login}
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full flex items-center justify-center py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition-colors"
+                  className="w-full flex items-center justify-center py-2 bg-blue-500 text-white rounded-lg relative overflow-hidden group"
                 >
-                  {translations.navbar.register}
+                  <span className="relative z-10 transition-transform duration-300 group-hover:scale-110 inline-block">
+                    {translations.navbar.register}
+                  </span>
+                  <div className="absolute inset-0 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </Link>
               </div>
             )}
