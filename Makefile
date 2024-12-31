@@ -23,11 +23,15 @@ prod:
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
 	               up --build -d
-
+	@echo "Resetting environment back to production..."
+	docker compose exec -e APP_ENV=prod backend php bin/console cache:clear
+	
 # Stop all containers
 down:
-	@echo "Stopping all containers..."
-	docker compose down
+	@echo "Stopping and removing containers, networks, volumes, and images..."
+	docker compose down -v --remove-orphans
+	@echo "Cleaning up frontend build artifacts..."
+	rm -rf frontend/dist frontend/node_modules
 
 # Build containers
 build:
@@ -39,7 +43,10 @@ setup-db:
 	@docker compose exec backend php bin/console d:d:d --force
 	@docker compose exec backend php bin/console d:d:c
 	@docker compose exec backend php bin/console d:m:m
-	@docker compose exec backend php bin/console d:f:l
+	@echo "Loading fixtures in dev environment..."
+	@docker compose exec -e APP_ENV=dev backend php bin/console d:f:l
+	@echo "Resetting environment back to production..."
+	@docker compose exec -e APP_ENV=prod backend php bin/console cache:clear
 
 enter-backend:
 	@docker compose exec backend bash
