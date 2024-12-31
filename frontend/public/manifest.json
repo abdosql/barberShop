@@ -1,20 +1,26 @@
 {
-  "name": "Jalal Barber",
-  "short_name": "JalalBarber",
+  "name": "Barber Shop",
+  "short_name": "Barber",
+  "description": "Book your barber appointments easily",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#18181B",
   "theme_color": "#18181B",
+  "orientation": "portrait",
+  "categories": ["business", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

@@ -42,55 +42,6 @@ jalalbarber.com {
 
     # Frontend routes - reverse proxy to production frontend
     handle {
-        # Add specific MIME types for static files
-        @javascript {
-            path *.js /sw.js
-        }
-        header @javascript {
-            Content-Type "application/javascript"
-            Cache-Control "no-cache"
-        }
-
-        @typescript {
-            path *.ts *.tsx
-        }
-        header @typescript {
-            Content-Type "application/javascript"
-            Cache-Control "no-cache"
-        }
-
-        @json {
-            path *.json /manifest.json
-        }
-        header @json {
-            Content-Type "application/json"
-            Cache-Control "no-cache"
-        }
-
-        @css {
-            path *.css
-        }
-        header @css {
-            Content-Type "text/css"
-            Cache-Control "no-cache"
-        }
-
-        @html {
-            path *.html
-        }
-        header @html {
-            Content-Type "text/html; charset=utf-8"
-            Cache-Control "no-cache"
-        }
-
-        # Service Worker specific
-        @serviceworker {
-            path /sw.js
-        }
-        header @serviceworker {
-            Service-Worker-Allowed "/"
-        }
-
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}

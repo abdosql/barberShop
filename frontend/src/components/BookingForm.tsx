@@ -202,7 +202,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   useEffect(() => {
     console.log('Fetching time slots, date:', formState.date);
     fetchTimeSlots();
-  }, [fetchTimeSlots, formState.date]);
+  }, [fetchTimeSlots, formState.date, refreshTimeSlotsCount]);
 
   useEffect(() => {
     // Reset selected time and fetch new time slots when date changes
@@ -350,6 +350,23 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     const localDate = new Date(today.getTime() - (offset * 60 * 1000));
     return localDate.toISOString().split('T')[0];
   };
+
+  // Update the function name here too
+  useEffect(() => {
+    // Initial fetch
+    fetchTimeSlots();
+
+    // Refresh every 30 seconds
+    const intervalId = setInterval(fetchTimeSlots, 30000);
+
+    // Cleanup
+    return () => clearInterval(intervalId);
+  }, [fetchTimeSlots]);
+
+  // Update the function name here too
+  useEffect(() => {
+    fetchTimeSlots();
+  }, [formState.date, fetchTimeSlots]);
 
   if (loading.services) {
     return <div className="text-center text-zinc-400">{translations.home.booking.loadingServices}</div>;
