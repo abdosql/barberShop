@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Facebook, Instagram, X } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SocialLinksProps {
   isOpen: boolean;
@@ -7,6 +8,8 @@ interface SocialLinksProps {
 }
 
 export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
+  const { translations } = useLanguage();
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -30,13 +33,13 @@ export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
       icon: Facebook,
       href: "https://facebook.com/your-page",
       color: "hover:text-blue-500",
-      label: "Facebook"
+      label: translations.social.links.facebook
     },
     {
       icon: Instagram,
       href: "https://instagram.com/your-handle",
       color: "hover:text-pink-500",
-      label: "Instagram"
+      label: translations.social.links.instagram
     },
     {
       component: () => (
@@ -50,7 +53,7 @@ export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
       ),
       href: "https://tiktok.com/@your-handle",
       color: "hover:text-white",
-      label: "TikTok"
+      label: translations.social.links.tiktok
     }
   ];
 
@@ -64,18 +67,20 @@ export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
           <div 
             className="bg-zinc-900 p-4 sm:p-6 rounded-2xl shadow-xl w-full max-w-[280px] sm:max-w-sm mx-auto"
             onClick={e => {
-              e.stopPropagation(); // This prevents the click from reaching the parent
+              e.stopPropagation(); // Prevent event bubbling
             }}
           >
             <div className="flex justify-between items-center mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-bold text-white">Follow Us</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-white">
+                {translations.social.title}
+              </h3>
               <button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent event bubbling
+                  e.stopPropagation();
                   onClose();
                 }}
                 className="text-zinc-400 hover:text-white transition-colors p-2"
-                aria-label="Close"
+                aria-label={translations.social.close}
               >
                 <X className="w-5 h-5" />
               </button>

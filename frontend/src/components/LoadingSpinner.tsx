@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Scissors } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const LoadingSpinner = () => {
+  const { translations } = useLanguage();
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white flex flex-col items-center justify-center">
       <motion.div
@@ -55,7 +58,7 @@ const LoadingSpinner = () => {
         transition={{ delay: 0.2 }}
         className="mt-6 text-lg text-zinc-400 font-medium"
       >
-        Loading...
+        {translations.common.loadingSpinner.loading}
       </motion.p>
     </div>
   );

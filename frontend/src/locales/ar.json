@@ -1,128 +1,173 @@
 {
   "common": {
     "close": "سد",
-    "delete": "امسح",
+    "delete": "مسح",
     "cancel": "لغي",
     "confirm": "أكد",
     "back": "رجع",
-    "next": "اللي جاي",
-    "loading": "كيتزاد...",
+    "next": "زيد",
+    "loading": "كيتشارجا...",
     "showing": "كيبان",
     "of": "من",
-    "deleting": "كيتمسح..."
+    "deleting": "كيتمسح...",
+    "loadingSpinner": {
+      "loading": "كيتشارجا..."
+    }
   },
   "navbar": {
-    "adminPanel": "لوحة ديال المدير",
-    "login": "دخول",
-    "register": "سجل"
+    "adminPanel": "لوحة المدير",
+    "login": "دخل",
+    "register": "تسجل",
+    "contact": "تواصل معانا",
+    "logout": "خرج",
+    "guest": "ضيف",
+    "brandName": "صالون الحلاقة",
+    "qrCode": {
+      "title": "كود QR",
+      "install": "نزل التطبيق"
+    }
   },
   "home": {
     "hero": {
-      "title": "حلاقة بروفيسيونال",
-      "subtitle": "غير بكليك",
-      "description": "حجز موعد الحلاقة و تفتيف اللحية مع الحلاقين لي عندنا"
+      "title": "حلاقة محترفة",
+      "subtitle": "على بعد كليك",
+      "description": "حجز موعد الحلاقة والحية مع الحلاقين المحترفين ديالنا",
+      "professionalGrooming": "حلاقة محترفة",
+      "clickAway": "على بعد كليك",
+      "bookPremium": "حجز موعد الحلاقة والحية مع الحلاقين المحترفين ديالنا"
     },
     "booking": {
       "selectServices": "ختار الخدمات",
-      "selectDate": "ختار نهار",
+      "selectDate": "ختار النهار",
       "selectTime": "ختار الوقت",
-      "totalDuration": "الوقت كلو",
-      "totalPrice": "التمن كلو",
+      "totalDuration": "المدة الإجمالية",
+      "totalPrice": "الثمن الإجمالي",
       "bookAppointment": "حجز موعد",
-      "chooseTime": "ختار شي وقت"
+      "chooseTime": "ختار الوقت",
+      "loadingServices": "كنحملو الخدمات...",
+      "bookingInProgress": "الحجز جاري...",
+      "bookingError": "ما نجحش الحجز. عاود حاول.",
+      "timeSlotNotFound": "ما كاينش هاد الوقت",
+      "currency": "درهم",
+      "min": "دقيقة",
+      "steps": {
+        "step": "خطوة",
+        "services": "الخدمات",
+        "time": "الوقت",
+        "summary": "الملخص"
+      },
+      "notAvailable": "ما متاحش",
+      "requiredTimeSlots": "الأوقات المطلوبة"
     },
     "services": {
-      "haircut": "حلاقة",
-      "beardTrim": "تفتيف اللحية",
-      "hairStyling": "كوافاج",
-      "cleanShave": "حلاقة اللحية",
-      "kidsHaircut": "حلاقة الدراري",
-      "hairColor": "صباغة",
-      "facial": "سوان الوجه",
-      "headMassage": "تدليك الراس"
+      "title": "ختار الخدمات ديالك",
+      "selected": "مختار",
+      "selectedServices": "الخدمات المختارة",
+      "totalDuration": "المدة الإجمالية",
+      "totalPrice": "الثمن الإجمالي",
+      "continueWith": "كمل ب",
+      "service": "خدمة",
+      "services": "خدمات",
+      "loadingServices": "كنحملو الخدمات...",
+      "errorLoading": "ما قدرناش نحملو الخدمات",
+      "min": "دقيقة"
+    },
+    "timeSlots": {
+      "title": "ختار الوقت",
+      "selectedDuration": "المدة المختارة",
+      "hour": "ساعة",
+      "minutes": "دقيقة",
+      "timeSlots": "الأوقات المتاحة",
+      "to": "ل",
+      "refreshing": "كنحدثو...",
+      "unavailable": "ما متاحش",
+      "notEnoughTime": "ما كاينش وقت كافي",
+      "noTimeSlots": "ما كاين حتى وقت متاح",
+      "loadingError": "ما قدرناش نحملو الأوقات",
+      "next": "زيد"
     }
   },
   "admin": {
     "dashboard": {
-      "title": "طابلو",
+      "title": "لوحة التحكم",
       "addService": "زيد خدمة",
-      "manageServices": "دبر الخدمات",
-      "pendingAppointments": "مواعيد فالانتظار",
-      "acceptedAppointments": "مواعيد مقبولين",
-      "declinedAppointments": "مواعيد مرفودين",
-      "cancelledAppointments": "مواعيد ملغيين",
-      "completedAppointments": "مواعيد مكملين",
+      "manageServices": "تدبير الخدمات",
+      "pendingAppointments": "المواعيد المعلقة",
+      "acceptedAppointments": "المواعيد المقبولة",
+      "declinedAppointments": "المواعيد المرفوضة",
+      "cancelledAppointments": "المواعيد الملغية",
+      "completedAppointments": "المواعيد المكملة",
       "overview": "نظرة عامة",
-      "pending": "فالانتظار",
+      "pending": "معلق",
       "today": "اليوم",
       "viewModes": {
         "accepted": "مقبول",
-        "declined": "مرفود",
+        "declined": "مرفوض",
         "cancelled": "ملغي",
         "completed": "مكمل"
       },
       "notifications": {
-        "appointmentConfirmed": "الموعد ديال {clientName} تأكد",
-        "appointmentDeclined": "الموعد ديال {clientName} ترفض",
-        "appointmentCancelled": "الموعد ديال {clientName} تلغى",
+        "appointmentConfirmed": "الموعد ديال {clientName} تأكد بنجاح.",
+        "appointmentDeclined": "الموعد ديال {clientName} ترفض.",
+        "appointmentCancelled": "الموعد ديال {clientName} تلغى.",
         "appointmentDeleted": "الموعد تمسح",
-        "fetchError": "ما يمكنش يتحملو المواعيد",
-        "realTimeError": "مشكل فالكونيكسيون",
-        "processingError": "مشكل فتحديث المواعيد",
-        "newAppointment": "جا موعد جديد",
-        "appointmentUpdated": "الموعد تبدل"
+        "fetchError": "ما قدرناش نجيبو المواعيد",
+        "realTimeError": "مشكل فالاتصال بالتحديثات المباشرة",
+        "processingError": "مشكل فمعالجة التحديث المباشر",
+        "newAppointment": "وصل موعد جديد",
+        "appointmentUpdated": "الموعد تحدث"
       },
       "shopStatus": {
-        "open": "الحانوت حال",
-        "closed": "الحانوت مسدود"
+        "open": "المحل محلول",
+        "closed": "المحل مسدود"
       },
-      "refresh": "حديث"
+      "refresh": "تحديث"
     },
     "stats": {
-      "totalClients": "مجموع الكليان",
+      "totalClients": "مجموع الزبناء",
       "todayAppointments": "مواعيد اليوم",
-      "pendingRequests": "طلبات فالانتظار",
+      "pendingRequests": "الطلبات المعلقة",
       "monthlyRevenue": "المدخول الشهري",
       "vsLastMonth": "مقارنة مع الشهر اللي فات",
       "totalAppointments": "مجموع المواعيد",
-      "completedAppointments": "مواعيد مكملين",
-      "cancelledAppointments": "مواعيد ملغيين",
+      "completedAppointments": "المواعيد المكملة",
+      "cancelledAppointments": "المواعيد الملغية",
       "fromLastMonth": "مقارنة مع الشهر اللي فات",
-      "errorFetching": "ما يمكنش يتحملو الإحصائيات",
+      "errorFetching": "ما قدرناش نجيبو الإحصائيات",
       "currency": "درهم"
     },
     "services": {
-      "title": "دبر الخدمات",
+      "title": "تدبير الخدمات",
       "confirmDelete": "واش متأكد بغيتي تمسح هاد الخدمة؟",
       "serviceName": "سمية الخدمة",
-      "price": "التمن",
+      "price": "الثمن",
       "description": "الوصف",
-      "duration": "الوقت",
+      "duration": "المدة",
       "addNew": "زيد خدمة جديدة",
-      "edit": "بدل الخدمة",
+      "edit": "عدل الخدمة",
       "delete": "مسح الخدمة",
       "save": "سجل",
       "cancel": "لغي",
       "durationMinutes": "دقايق",
       "priceAmount": "درهم",
       "validation": {
-        "nameRequired": "خاصك دخل سمية الخدمة",
-        "priceRequired": "خاصك دخل التمن",
-        "durationRequired": "خاصك دخل الوقت",
-        "descriptionRequired": "خاصك دخل الوصف"
+        "nameRequired": "خاصك تدخل سمية الخدمة",
+        "priceRequired": "خاصك تدخل الثمن",
+        "durationRequired": "خاصك تدخل المدة",
+        "descriptionRequired": "خاصك تدخل الوصف"
       },
       "modal": {
         "title": "خدمات الموعد",
-        "noServices": "ما كاينة حتى خدمة فهاد الموعد"
+        "noServices": "ما كاين حتى خدمة فهاد الموعد"
       },
-      "errorCreating": "ما يمكنش تزاد الخدمة",
+      "errorCreating": "ما قدرناش نزيدو الخدمة",
       "serviceNamePlaceholder": "دخل سمية الخدمة",
       "descriptionPlaceholder": "دخل وصف الخدمة",
       "addButton": "زيد الخدمة",
       "form": {
-        "priceLabel": "التمن",
+        "priceLabel": "الثمن",
         "pricePlaceholder": "0.00",
-        "durationLabel": "الوقت",
+        "durationLabel": "المدة",
         "durationPlaceholder": "30",
         "durationUnit": "دقيقة"
       }
@@ -130,58 +175,58 @@
     "appointments": {
       "title": "المواعيد",
       "noAppointments": "ما كاين حتى موعد",
-      "loadMore": "زيد شوف",
-      "client": "كليان",
-      "date": "التاريخ",
+      "loadMore": "حمل المزيد",
+      "client": "الزبون",
+      "date": "النهار",
       "time": "الوقت",
       "services": "الخدمات",
-      "duration": "الوقت",
-      "price": "التمن",
+      "duration": "المدة",
+      "price": "الثمن",
       "status": {
-        "pending": "فالانتظار",
+        "pending": "معلق",
         "accepted": "مقبول",
-        "declined": "مرفود",
+        "declined": "مرفوض",
         "cancelled": "ملغي",
         "completed": "مكمل"
       },
       "actions": {
         "accept": "قبل",
-        "accepting": "كيقبل...",
+        "accepting": "كنقبل...",
         "decline": "رفض",
-        "declining": "كيرفض...",
+        "declining": "كنرفض...",
         "complete": "كمل",
-        "completing": "كيكمل...",
+        "completing": "كنكمل...",
         "cancel": "لغي",
-        "cancelling": "كيلغي...",
+        "cancelling": "كنلغي...",
         "viewServices": "شوف الخدمات"
       },
-      "loading": "كيتحملو المواعيد...",
+      "loading": "كنحملو المواعيد...",
       "table": {
-        "client": "كليان",
-        "phone": "تيليفون",
-        "duration": "الوقت",
-        "dateTime": "التاريخ و الوقت",
-        "price": "التمن",
-        "actions": "الإجراءات"
+        "client": "الزبون",
+        "phone": "التيليفون",
+        "duration": "المدة",
+        "dateTime": "النهار والوقت",
+        "price": "الثمن",
+        "actions": "العمليات"
       },
       "filters": {
         "today": "اليوم",
-        "all": "كلشي"
+        "all": "الكل"
       },
       "emptyStates": {
         "title": {
-          "pending": "ما كاين حتى موعد فالانتظار",
+          "pending": "ما كاين حتى موعد معلق",
           "accepted": "ما كاين حتى موعد مقبول",
           "cancelled": "ما كاين حتى موعد ملغي",
           "completed": "ما كاين حتى موعد مكمل",
-          "declined": "ما كاين حتى موعد مرفود"
+          "declined": "ما كاين حتى موعد مرفوض"
         },
         "description": {
-          "pending": "دابا ما كاين حتى موعد فالانتظار. المواعيد الجداد غادي يبانو هنا",
-          "accepted": "ما كاين حتى موعد مقبول. المواعيد غادي يبانو هنا من بعد ما يتقبلو",
-          "cancelled": "ما كاين حتى موعد ملغي. المواعيد الملغيين غادي يبانو هنا",
-          "completed": "ما كاين حتى موعد مكمل. المواعيد المكملين غادي يبانو هنا",
-          "declined": "ما كاين حتى موعد مرفود. المواعيد المرفودين غادي يبانو هنا"
+          "pending": "حاليا ما كاين حتى موعد معلق. المواعيد الجداد غادي يبانو هنا.",
+          "accepted": "ما كاين حتى موعد مقبول. المواعيد غادي يبانو هنا من بعد القبول.",
+          "cancelled": "ما كاين حتى موعد ملغي. المواعيد الملغية غادي يبانو هنا.",
+          "completed": "ما كاين حتى موعد مكمل. المواعيد المكملة غادي يبانو هنا.",
+          "declined": "ما كاين حتى موعد مرفوض. المواعيد المرفوضة غادي يبانو هنا."
         }
       }
     }
@@ -189,40 +234,59 @@
   "auth": {
     "login": {
       "welcomeBack": "مرحبا بيك",
-      "signInAccount": "دخل لحسابك",
-      "phoneNumber": "نمرة التيليفون",
-      "password": "مو دو باص",
-      "rememberMe": "تعرف عليا",
+      "signInAccount": "دخل للحساب ديالك",
+      "phoneNumber": "رقم التيليفون",
+      "password": "كلمة السر",
+      "rememberMe": "تفكرني",
       "forgot": "نسيتي؟",
       "signIn": "دخل",
       "newHere": "جديد هنا؟",
-      "createAccount": "دير حساب",
-      "enterPhone": "دخل النمرة ديالك",
-      "enterPassword": "دخل مو دو باص ديالك"
+      "createAccount": "خلق حساب",
+      "enterPhone": "دخل رقم التيليفون ديالك",
+      "enterPassword": "دخل كلمة السر ديالك"
     },
     "register": {
-      "joinBarber": "نقدم للحلاقة ديالنا",
-      "createToStart": "دير حساب باش تبدا",
-      "fullName": "السمية كاملة",
-      "firstName": "السمية الأولى",
-      "lastName": "الكنية",
-      "phoneNumber": "نمرة التيليفون",
-      "password": "مو دو باص",
-      "createPassword": "دير مو دو باص",
-      "enterName": "دخل السمية كاملة",
-      "enterFirstName": "دخل السمية الأولى",
-      "enterLastName": "دخل الكنية",
-      "enterPhone": "دخل النمرة ديالك",
-      "createBtn": "دير حساب",
-      "creatingAccount": "كيتصنع الحساب...",
+      "joinBarber": "نضم لصالون الحلاقة ديالنا",
+      "createToStart": "خلق حساب باش تبدا",
+      "fullName": "الاسم الكامل",
+      "firstName": "الاسم الشخصي",
+      "lastName": "الاسم العائلي",
+      "phoneNumber": "رقم التيليفون",
+      "password": "كلمة السر",
+      "createPassword": "خلق كلمة السر",
+      "enterName": "دخل الاسم الكامل ديالك",
+      "enterFirstName": "دخل الاسم الشخصي ديالك",
+      "enterLastName": "دخل الاسم العائلي ديالك",
+      "enterPhone": "دخل رقم التيليفون ديالك",
+      "createBtn": "خلق حساب",
+      "creatingAccount": "كنخلق الحساب...",
       "haveAccount": "عندك حساب؟",
       "signIn": "دخل",
       "errors": {
-        "firstNameRequired": "خاصك دخل السمية الأولى",
-        "lastNameRequired": "خاصك دخل الكنية",
-        "phoneExists": "هاد النمرة كاينة",
-        "registrationFailed": "ما يمكنش دير الحساب. عاود جرب"
+        "firstNameRequired": "خاصك تدخل الاسم الشخصي.",
+        "lastNameRequired": "خاصك تدخل الاسم العائلي.",
+        "phoneExists": "هاد رقم التيليفون كاين.",
+        "registrationFailed": "ما نجحش التسجيل. عاود حاول."
       }
+    },
+    "logout": "خرج",
+    "roles": {
+      "admin": "مدير",
+      "user": "مستخدم"
+    }
+  },
+  "footer": {
+    "builtBy": "مصنوع من طرف",
+    "allRightsReserved": "جميع الحقوق محفوظة",
+    "madeBy": "من صنع"
+  },
+  "social": {
+    "title": "تابعنا",
+    "close": "سد",
+    "links": {
+      "facebook": "فيسبوك",
+      "instagram": "إنستغرام",
+      "tiktok": "تيك توك"
     }
   }
 }

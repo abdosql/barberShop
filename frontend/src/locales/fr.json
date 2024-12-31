@@ -9,18 +9,32 @@
     "loading": "Chargement...",
     "showing": "Affichage",
     "of": "de",
-    "deleting": "Suppression..."
+    "deleting": "Suppression...",
+    "loadingSpinner": {
+      "loading": "Chargement en cours..."
+    }
   },
   "navbar": {
     "adminPanel": "Panneau d'administration",
     "login": "Connexion",
-    "register": "S'inscrire"
+    "register": "S'inscrire",
+    "contact": "Contact",
+    "logout": "Déconnexion",
+    "guest": "Invité",
+    "brandName": "Barbershop",
+    "qrCode": {
+      "title": "Code QR",
+      "install": "Installer l'application"
+    }
   },
   "home": {
     "hero": {
       "title": "Coiffure Professionnelle",
       "subtitle": "À un clic",
-      "description": "Réservez votre prochaine coupe de cheveux et taille de barbe avec nos barbiers experts"
+      "description": "Réservez votre prochaine coupe de cheveux et taille de barbe avec nos barbiers experts",
+      "professionalGrooming": "Coiffure Professionnelle",
+      "clickAway": "À un clic",
+      "bookPremium": "Réservez votre prochaine coupe de cheveux premium et taille de barbe avec nos barbiers experts"
     },
     "booking": {
       "selectServices": "Sélectionner les services",
@@ -29,17 +43,48 @@
       "totalDuration": "Durée totale",
       "totalPrice": "Prix total",
       "bookAppointment": "Réserver un rendez-vous",
-      "chooseTime": "Choisir une heure"
+      "chooseTime": "Choisir une heure",
+      "loadingServices": "Chargement des services...",
+      "bookingInProgress": "Réservation en cours...",
+      "bookingError": "Échec de la réservation. Veuillez réessayer.",
+      "timeSlotNotFound": "Créneau horaire non trouvé",
+      "currency": "DH",
+      "min": "min",
+      "steps": {
+        "step": "Étape",
+        "services": "Services",
+        "time": "Horaire",
+        "summary": "Résumé"
+      },
+      "notAvailable": "Non disponible",
+      "requiredTimeSlots": "Créneaux horaires requis"
     },
     "services": {
-      "haircut": "Coupe de cheveux",
-      "beardTrim": "Taille de barbe",
-      "hairStyling": "Coiffage",
-      "cleanShave": "Rasage",
-      "kidsHaircut": "Coupe enfant",
-      "hairColor": "Coloration",
-      "facial": "Soin du visage",
-      "headMassage": "Massage de la tête"
+      "title": "Sélectionnez vos services",
+      "selected": "Sélectionné",
+      "selectedServices": "Services sélectionnés",
+      "totalDuration": "Durée totale",
+      "totalPrice": "Prix total",
+      "continueWith": "Continuer avec",
+      "service": "service",
+      "services": "services",
+      "loadingServices": "Chargement des services...",
+      "errorLoading": "Échec du chargement des services",
+      "min": "min"
+    },
+    "timeSlots": {
+      "title": "Sélectionner l'heure",
+      "selectedDuration": "Durée sélectionnée",
+      "hour": "h",
+      "minutes": "min",
+      "timeSlots": "Créneaux horaires",
+      "to": "à",
+      "refreshing": "Actualisation...",
+      "unavailable": "Indisponible",
+      "notEnoughTime": "Pas assez de temps",
+      "noTimeSlots": "Aucun créneau disponible",
+      "loadingError": "Échec du chargement des créneaux horaires",
+      "next": "Suivant"
     }
   },
   "admin": {
@@ -242,6 +287,20 @@
     "roles": {
       "admin": "Administrateur",
       "user": "Utilisateur"
+    }
+  },
+  "footer": {
+    "builtBy": "Créé par",
+    "allRightsReserved": "Tous droits réservés",
+    "madeBy": "Réalisé par"
+  },
+  "social": {
+    "title": "Suivez-nous",
+    "close": "Fermer",
+    "links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
     }
   }
 } 

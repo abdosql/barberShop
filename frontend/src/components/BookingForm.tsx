@@ -238,7 +238,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       const initialTimeSlot = timeSlots.find(slot => formatTime(slot.startTime) === formState.time);
       
       if (!initialTimeSlot) {
-        throw new Error('Selected time slot not found');
+        throw new Error(translations.home.booking.timeSlotNotFound);
       }
 
       // Calculate end time based on total duration
@@ -306,7 +306,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
 
     } catch (err) {
       console.error('Error creating appointment:', err);
-      setError(err instanceof Error ? err.message : 'Failed to book appointment. Please try again.');
+      setError(err instanceof Error ? err.message : translations.home.booking.bookingError);
     } finally {
       setFormState(prev => ({ ...prev, isSubmitting: false }));
     }
@@ -328,7 +328,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   };
 
   if (loading.services) {
-    return <div className="text-center text-zinc-400">Loading services...</div>;
+    return <div className="text-center text-zinc-400">{translations.home.booking.loadingServices}</div>;
   }
 
   if (error) {
@@ -364,7 +364,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">{translations.home.booking.totalPrice}:</span>
-                <span className="font-medium text-blue-500">{totalPrice} DH</span>
+                <span className="font-medium text-blue-500">{totalPrice} {translations.home.booking.currency}</span>
               </div>
             </div>
           )}
@@ -416,7 +416,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               disabled={loading.timeSlots}
               className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="">Choose a time</option>
+              <option value="">{translations.home.booking.chooseTime}</option>
               {timeSlots.map((slot, index) => {
                 const isAvailable = !slot.dailyTimeSlots.some(
                   dailySlot => 
@@ -431,7 +431,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
                     disabled={!isAvailable || isSlotDisabled(slot, index)}
                   >
                     {formatTime(slot.startTime)}
-                    {!isAvailable ? ' (Not Available)' : ''}
+                    {!isAvailable ? ` (${translations.home.booking.notAvailable})` : ''}
                   </option>
                 );
               })}
@@ -439,7 +439,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
           </div>
           {totalDuration > 0 && (
             <p className="mt-2 text-sm text-zinc-400">
-              Required time slots: {Math.ceil(totalDuration / 30)}
+              {translations.home.booking.requiredTimeSlots}: {Math.ceil(totalDuration / 30)}
             </p>
           )}
         </div>
@@ -471,7 +471,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span className="text-lg">Booking your appointment...</span>
+                <span className="text-lg">{translations.home.booking.bookingInProgress}</span>
               </span>
             ) : (
               <span className="flex items-center gap-3 text-lg">

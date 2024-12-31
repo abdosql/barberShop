@@ -9,18 +9,32 @@
     "loading": "Loading...",
     "showing": "Showing",
     "of": "of",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "loadingSpinner": {
+      "loading": "Loading..."
+    }
   },
   "navbar": {
     "adminPanel": "Admin Panel",
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "contact": "Contact",
+    "logout": "Logout",
+    "guest": "Guest",
+    "brandName": "Barbershop",
+    "qrCode": {
+      "title": "QR Code",
+      "install": "Install the application"
+    }
   },
   "home": {
     "hero": {
-      "title": "Professional Haircuts",
-      "subtitle": "At a click",
-      "description": "Book your next haircut and beard trim with our expert barbers"
+      "title": "Professional Grooming",
+      "subtitle": "One Click Away",
+      "description": "Book your next haircut and beard trim with our expert barbers",
+      "professionalGrooming": "Professional Grooming",
+      "clickAway": "One Click Away",
+      "bookPremium": "Book your next premium haircut and beard trim with our expert barbers"
     },
     "booking": {
       "selectServices": "Select services",
@@ -29,17 +43,48 @@
       "totalDuration": "Total duration",
       "totalPrice": "Total price",
       "bookAppointment": "Book appointment",
-      "chooseTime": "Choose a time"
+      "chooseTime": "Choose a time",
+      "loadingServices": "Loading services...",
+      "bookingInProgress": "Booking in progress...",
+      "bookingError": "Booking failed. Please try again.",
+      "timeSlotNotFound": "Time slot not found",
+      "currency": "DH",
+      "min": "min",
+      "steps": {
+        "step": "Step",
+        "services": "Services",
+        "time": "Schedule",
+        "summary": "Summary"
+      },
+      "notAvailable": "Not available",
+      "requiredTimeSlots": "Required time slots"
     },
     "services": {
-      "haircut": "Haircut",
-      "beardTrim": "Beard Trim",
-      "hairStyling": "Hair Styling",
-      "cleanShave": "Clean Shave",
-      "kidsHaircut": "Kids Haircut",
-      "hairColor": "Hair Color",
-      "facial": "Facial",
-      "headMassage": "Head Massage"
+      "title": "Select your services",
+      "selected": "Selected",
+      "selectedServices": "Selected services",
+      "totalDuration": "Total duration",
+      "totalPrice": "Total price",
+      "continueWith": "Continue with",
+      "service": "service",
+      "services": "services",
+      "loadingServices": "Loading services...",
+      "errorLoading": "Failed to load services",
+      "min": "min"
+    },
+    "timeSlots": {
+      "title": "Select time",
+      "selectedDuration": "Selected duration",
+      "hour": "h",
+      "minutes": "min",
+      "timeSlots": "Time slots",
+      "to": "to",
+      "refreshing": "Refreshing...",
+      "unavailable": "Unavailable",
+      "notEnoughTime": "Not enough time",
+      "noTimeSlots": "No time slots available",
+      "loadingError": "Failed to load time slots",
+      "next": "Next"
     }
   },
   "admin": {
@@ -202,7 +247,7 @@
     },
     "register": {
       "joinBarber": "Join Our Barber",
-      "createToStart": "Create an account to get started",
+      "createToStart": "Create an account to start",
       "fullName": "Full name",
       "firstName": "First name",
       "lastName": "Last name",
@@ -223,6 +268,25 @@
         "phoneExists": "This phone number is already in use.",
         "registrationFailed": "Registration failed. Please try again."
       }
+    },
+    "logout": "Logout",
+    "roles": {
+      "admin": "Administrator",
+      "user": "User"
+    }
+  },
+  "footer": {
+    "builtBy": "Built by",
+    "allRightsReserved": "All rights reserved",
+    "madeBy": "Made by"
+  },
+  "social": {
+    "title": "Follow us",
+    "close": "Close",
+    "links": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok"
     }
   }
 }

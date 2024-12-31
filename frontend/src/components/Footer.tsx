@@ -3,7 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Footer() {
-  const { language } = useLanguage();
+  const { language, translations } = useLanguage();
   const directionClass = language === 'ar' ? 'flex-row-reverse' : 'flex-row';
 
   return (
@@ -15,7 +15,7 @@ export default function Footer() {
             {language === 'ar' ? (
               <>
                 <a
-                  href="...."
+                  href="https://mharziabdelilah.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`group text-blue-400 hover:text-blue-300 transition-all duration-300 inline-flex items-center gap-1 font-medium ${directionClass}`}
@@ -23,11 +23,11 @@ export default function Footer() {
                   Abdelilah
                   <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
                 </a>
-                <span className="text-zinc-400">بناه</span>
+                <span className="text-zinc-400">{translations.footer.madeBy}</span>
               </>
             ) : (
               <>
-                <span className="text-zinc-400">Built by</span>
+                <span className="text-zinc-400">{translations.footer.builtBy}</span>
                 <a
                   href="https://mharziabdelilah.com/"
                   target="_blank"
@@ -50,7 +50,7 @@ export default function Footer() {
 
           {/* Right side - Copyright */}
           <p className="text-zinc-500 text-sm">
-            © {new Date().getFullYear()} All rights reserved
+            © {new Date().getFullYear()} {translations.footer.allRightsReserved}
           </p>
         </div>
       </div>

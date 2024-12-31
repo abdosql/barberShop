@@ -1,6 +1,9 @@
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Hero() {
+  const { translations } = useLanguage();
+
   return (
     <div className="relative bg-zinc-900 pt-16">
       <div className="h-[400px] w-full absolute top-0 left-0 overflow-hidden">
@@ -14,11 +17,11 @@ export default function Hero() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-32 pb-64">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white text-center">
-          Professional Grooming
-          <span className="block text-amber-500">Just a Click Away</span>
+          {translations.home.hero.professionalGrooming}
+          <span className="block text-amber-500">{translations.home.hero.clickAway}</span>
         </h1>
         <p className="mt-6 text-xl text-zinc-400 text-center max-w-2xl mx-auto">
-          Book your next premium haircut and beard trim with our expert barbers
+          {translations.home.hero.bookPremium}
         </p>
       </div>
     </div>

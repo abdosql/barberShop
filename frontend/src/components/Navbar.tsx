@@ -45,18 +45,19 @@ export default function Navbar() {
             <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
               <Scissors className="w-4 h-4 text-blue-500" />
             </div>
-            <span className="text-white font-bold">Barbershop</span>
+            <span className="text-white font-bold">{translations.navbar.brandName}</span>
           </Link>
 
           {/* Desktop navigation menu */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
             
-            {/* QR Code - Always visible */}
+            {/* QR Code button */}
             <div className="relative group">
               <button
                 className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
                 onClick={() => setIsQRVisible(!isQRVisible)}
+                title={translations.navbar.qrCode.title}
               >
                 <QrCode className="w-4 h-4" />
               </button>
@@ -91,7 +92,7 @@ export default function Navbar() {
                           )}
                         </>
                       ) : (
-                        "Guest"
+                        translations.navbar.guest
                       )}
                     </p>
                     <p className="text-xs text-zinc-400">{userInfo.phoneNumber}</p>
@@ -105,6 +106,7 @@ export default function Navbar() {
                     <Link
                       to="/admin"
                       className="px-3 py-2 text-blue-400 hover:text-blue-300 transition rounded-lg hover:bg-zinc-800"
+                      title={translations.navbar.adminPanel}
                     >
                       <Settings className="w-4 h-4" />
                     </Link>
@@ -114,6 +116,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setShowSocial(true)}
                     className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
+                    title={translations.navbar.contact}
                   >
                     <Phone className="w-4 h-4" />
                   </button>
@@ -122,6 +125,7 @@ export default function Navbar() {
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
+                    title={translations.auth.logout}
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -149,10 +153,10 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <LanguageToggle />
             
-            {/* QR Code for mobile */}
             <button
               className="p-2 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
               onClick={() => setIsQRVisible(!isQRVisible)}
+              title={translations.navbar.qrCode.title}
             >
               <QrCode className="w-6 h-6" />
             </button>
@@ -204,7 +208,7 @@ export default function Navbar() {
                           )}
                         </>
                       ) : (
-                        "Guest"
+                        translations.navbar.guest
                       )}
                     </p>
                     <p className="text-xs text-zinc-400">{userInfo.phoneNumber}</p>
@@ -232,14 +236,14 @@ export default function Navbar() {
                     className="w-full flex items-center gap-3 px-4 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800/50"
                   >
                     <Phone className="w-5 h-5" />
-                    <span>Contact</span>
+                    <span>{translations.navbar.contact}</span>
                   </button>
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800/50"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
+                    <span>{translations.auth.logout}</span>
                   </button>
                 </div>
               </div>

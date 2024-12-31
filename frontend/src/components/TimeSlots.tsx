@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface DailyTimeSlot {
   "@type": string;
@@ -36,6 +37,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { translations } = useLanguage();
 
   // Calculate required slots based on total duration
   const calculateRequiredSlots = (duration: number) => {
@@ -176,9 +178,8 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
-      console.log('Fetching time slots...');
       setIsLoading(true);
-      setSelectedTime(''); // Reset selection when refreshing
+      setSelectedTime('');
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/time_slots?page=1`, {
           headers: {
@@ -187,22 +188,21 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch time slots');
+          throw new Error(translations.home.timeSlots.loadingError);
         }
 
         const data = await response.json();
-        console.log('Received time slots:', data.member);
         setTimeSlots(data.member);
       } catch (err) {
         console.error('Error fetching time slots:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load time slots');
+        setError(translations.home.timeSlots.loadingError);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchTimeSlots();
-  }, [selectedDate, refreshTrigger]);
+  }, [selectedDate, refreshTrigger, translations]);
 
   const handleTimeSelect = (slot: TimeSlot) => {
     if (isLoading) return; // Prevent selection while loading
@@ -224,7 +224,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   if (isLoading) {
     return (
       <div className="text-white">
-        <h2 className="text-2xl font-bold mb-6 text-center">Select Time</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">{translations.home.timeSlots.title}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 8 }).map((_, index) => (
             <div
@@ -233,7 +233,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
             >
               <Clock className="h-5 w-5 mx-auto mb-1 opacity-50" />
               <div className="text-sm animate-pulse bg-zinc-800 h-4 w-16 mx-auto rounded"></div>
-              <div className="text-xs text-zinc-500 mt-1">Loading...</div>
+              <div className="text-xs text-zinc-500 mt-1">{translations.common.loading}</div>
             </div>
           ))}
         </div>
@@ -246,49 +246,54 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   }
 
   if (timeSlots.length === 0) {
-    return <div className="text-center text-zinc-400">No time slots available</div>;
+    return <div className="text-center text-zinc-400">{translations.home.timeSlots.noTimeSlots}</div>;
   }
 
   return (
     <div className="text-white">
-      <h2 className="text-2xl font-bold mb-6 text-center">Select Time TEST</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">{translations.home.timeSlots.title}</h2>
       {totalDuration > 0 && (
         <div className="mb-4 text-center text-sm text-zinc-400">
-          Selected duration: {Math.floor(totalDuration / 60)}h{totalDuration % 60 > 0 ? ` ${totalDuration % 60}min` : ''}
+          {translations.home.timeSlots.selectedDuration}: {Math.floor(totalDuration / 60)}
+          {translations.home.timeSlots.hour}
+          {totalDuration % 60 > 0 ? ` ${totalDuration % 60}${translations.home.timeSlots.minutes}` : ''}
         </div>
       )}
 
       <div>
         <label className="block text-sm font-medium mb-2 text-zinc-400">
-          Time Slots
+          {translations.home.timeSlots.timeSlots}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {timeSlots.map((slot, index) => {
-            console.log('Rendering slot:', slot.startTime, 'isDisabled:', isSlotDisabled(slot, index));
-            return (
-              <button
-                key={`${slot.id}-${selectedDate}`}
-                onClick={() => handleTimeSelect(slot)}
-                disabled={isLoading || isSlotDisabled(slot, index)}
-                className={`p-4 rounded-xl border ${
-                  selectedTime === formatTime(slot.startTime)
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                    : !isSlotDisabled(slot, index) && !isLoading
-                    ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
-                    : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
-                } transition-all duration-200`}
-              >
-                <Clock className={`h-5 w-5 mx-auto mb-1 ${isLoading || isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
-                <div className="text-sm">{formatTime(slot.startTime)}</div>
-                <div className="text-xs text-zinc-500">to {formatTime(slot.endTime)}</div>
-                {(isLoading || isSlotDisabled(slot, index)) && (
-                  <div className="text-xs text-rose-500 mt-1">
-                    {isLoading ? 'Refreshing...' : !isTimeSlotAvailable(slot, selectedDate) ? 'Unavailable' : 'Not enough time'}
-                  </div>
-                )}
-              </button>
-            );
-          })}
+          {timeSlots.map((slot, index) => (
+            <button
+              key={`${slot.id}-${selectedDate}`}
+              onClick={() => handleTimeSelect(slot)}
+              disabled={isLoading || isSlotDisabled(slot, index)}
+              className={`p-4 rounded-xl border ${
+                selectedTime === formatTime(slot.startTime)
+                  ? 'border-amber-500 bg-amber-500/10 text-amber-500'
+                  : !isSlotDisabled(slot, index) && !isLoading
+                  ? 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
+                  : 'border-zinc-800 bg-zinc-900/50 text-zinc-600 cursor-not-allowed opacity-50'
+              } transition-all duration-200`}
+            >
+              <Clock className={`h-5 w-5 mx-auto mb-1 ${isLoading || isSlotDisabled(slot, index) ? 'opacity-50' : ''}`} />
+              <div className="text-sm">{formatTime(slot.startTime)}</div>
+              <div className="text-xs text-zinc-500">
+                {translations.home.timeSlots.to} {formatTime(slot.endTime)}
+              </div>
+              {(isLoading || isSlotDisabled(slot, index)) && (
+                <div className="text-xs text-rose-500 mt-1">
+                  {isLoading 
+                    ? translations.home.timeSlots.refreshing 
+                    : !isTimeSlotAvailable(slot, selectedDate) 
+                    ? translations.home.timeSlots.unavailable 
+                    : translations.home.timeSlots.notEnoughTime}
+                </div>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -298,7 +303,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         className="mt-4 w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium 
                  hover:bg-blue-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Next
+        {translations.common.next}
       </button>
     </div>
   );

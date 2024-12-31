@@ -3,6 +3,7 @@ import Services from './Services';
 import TimeSlots from './TimeSlots';
 import Summary from './Summary';
 import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface BookingState {
   services: string[];
@@ -16,6 +17,7 @@ interface BookingState {
 }
 
 export default function BookingSection() {
+  const { translations } = useLanguage();
   const [step, setStep] = useState(1);
   const [refreshTimeSlots, setRefreshTimeSlots] = useState(0);
   const [booking, setBooking] = useState<BookingState>({
@@ -77,11 +79,11 @@ export default function BookingSection() {
           {/* Hero Text */}
           <div className="text-center mb-16">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              Professional Grooming
-              <span className="block text-amber-500">Just a Click Away</span>
+              {translations.home.hero.professionalGrooming}
+              <span className="block text-amber-500">{translations.home.hero.clickAway}</span>
             </h1>
             <p className="mt-6 text-xl text-zinc-400 max-w-2xl mx-auto">
-              Book your next premium haircut and beard trim with our expert barbers
+              {translations.home.hero.bookPremium}
             </p>
           </div>
 
@@ -112,6 +114,7 @@ export default function BookingSection() {
                 <button
                   onClick={goBack}
                   className="absolute -left-16 top-0 p-2 text-zinc-400 hover:text-white transition-colors"
+                  title={translations.common.back}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </button>
