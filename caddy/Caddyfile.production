@@ -42,23 +42,48 @@ jalalbarber.com {
 
     # Frontend routes - reverse proxy to production frontend
     handle {
-        # Add proper MIME types
-        header /manifest.json "Content-Type" "application/json"
-        header /sw.js "Content-Type" "application/javascript"
-        
-        # Add cache control for service worker and manifest
+        # Set default MIME types for common files
+        header {
+            Content-Type {header.Response.Content-Type}
+        }
+
+        # Add specific MIME types
+        @jsfiles {
+            path *.js
+        }
+        header @jsfiles Content-Type "application/javascript"
+
+        @jsonfiles {
+            path *.json
+        }
+        header @jsonfiles Content-Type "application/json"
+
+        @cssfiles {
+            path *.css
+        }
+        header @cssfiles Content-Type "text/css"
+
+        @htmlfiles {
+            path *.html
+        }
+        header @htmlfiles Content-Type "text/html; charset=utf-8"
+
+        # Service Worker specific configuration
         @serviceworker {
             path /sw.js
         }
         header @serviceworker {
-            Cache-Control "no-cache"
+            Content-Type "application/javascript"
             Service-Worker-Allowed "/"
+            Cache-Control "no-cache"
         }
 
+        # Manifest specific configuration
         @manifest {
             path /manifest.json
         }
         header @manifest {
+            Content-Type "application/json"
             Cache-Control "no-cache"
         }
 
