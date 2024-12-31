@@ -1,16 +1,16 @@
 {
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
-    # Handle both HTTP and HTTPS
-    auto_https disable_redirects
+    # Let Hostinger handle HTTPS
+    auto_https off
     # Enable debug for troubleshooting
     debug
 }
 
 # Main domain configuration
 jalalbarber.com {
-    # Listen on both HTTP and HTTPS
-    bind :80 :443
+    # Listen only on HTTP since Hostinger handles HTTPS
+    bind :80
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
