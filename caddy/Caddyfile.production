@@ -42,49 +42,53 @@ jalalbarber.com {
 
     # Frontend routes - reverse proxy to production frontend
     handle {
-        # Set default MIME types for common files
-        header {
-            Content-Type {header.Response.Content-Type}
+        # Add specific MIME types for static files
+        @javascript {
+            path *.js /sw.js
+        }
+        header @javascript {
+            Content-Type "application/javascript"
+            Cache-Control "no-cache"
         }
 
-        # Add specific MIME types
-        @jsfiles {
-            path *.js
+        @typescript {
+            path *.ts *.tsx
         }
-        header @jsfiles Content-Type "application/javascript"
-
-        @jsonfiles {
-            path *.json
+        header @typescript {
+            Content-Type "application/javascript"
+            Cache-Control "no-cache"
         }
-        header @jsonfiles Content-Type "application/json"
 
-        @cssfiles {
+        @json {
+            path *.json /manifest.json
+        }
+        header @json {
+            Content-Type "application/json"
+            Cache-Control "no-cache"
+        }
+
+        @css {
             path *.css
         }
-        header @cssfiles Content-Type "text/css"
+        header @css {
+            Content-Type "text/css"
+            Cache-Control "no-cache"
+        }
 
-        @htmlfiles {
+        @html {
             path *.html
         }
-        header @htmlfiles Content-Type "text/html; charset=utf-8"
+        header @html {
+            Content-Type "text/html; charset=utf-8"
+            Cache-Control "no-cache"
+        }
 
-        # Service Worker specific configuration
+        # Service Worker specific
         @serviceworker {
             path /sw.js
         }
         header @serviceworker {
-            Content-Type "application/javascript"
             Service-Worker-Allowed "/"
-            Cache-Control "no-cache"
-        }
-
-        # Manifest specific configuration
-        @manifest {
-            path /manifest.json
-        }
-        header @manifest {
-            Content-Type "application/json"
-            Cache-Control "no-cache"
         }
 
         reverse_proxy frontend:{$FRONTEND_PORT} {
