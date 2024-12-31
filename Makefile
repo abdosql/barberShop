@@ -23,9 +23,7 @@ prod:
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
 	               up --build -d
-	@echo "Resetting environment back to production..."
-	docker compose exec -e APP_ENV=prod backend php bin/console cache:clear
-	
+
 # Stop all containers
 down:
 	@echo "Stopping and removing containers, networks, volumes, and images..."
