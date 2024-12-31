@@ -42,6 +42,26 @@ jalalbarber.com {
 
     # Frontend routes - reverse proxy to production frontend
     handle {
+        # Add proper MIME types
+        header /manifest.json "Content-Type" "application/json"
+        header /sw.js "Content-Type" "application/javascript"
+        
+        # Add cache control for service worker and manifest
+        @serviceworker {
+            path /sw.js
+        }
+        header @serviceworker {
+            Cache-Control "no-cache"
+            Service-Worker-Allowed "/"
+        }
+
+        @manifest {
+            path /manifest.json
+        }
+        header @manifest {
+            Cache-Control "no-cache"
+        }
+
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}
