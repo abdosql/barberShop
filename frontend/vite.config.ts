@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [
     react({
-      // Add Fast Refresh
       fastRefresh: true
     })
   ],
@@ -15,17 +14,27 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    // Enable HMR
     hmr: {
       overlay: true,
       clientPort: 5173,
       host: 'localhost'
     },
-    // Watch for file changes more aggressively
     watch: {
       usePolling: true,
-      interval: 100, // Poll every 100ms
+      interval: 100,
       ignored: ['**/node_modules/**', '**/dist/**']
     }
+  },
+  build: {
+    // Add cache busting through content hashing
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
+      }
+    },
+    // Clean output directory on each build
+    emptyOutDir: true
   }
 });

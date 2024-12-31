@@ -12,16 +12,18 @@ import { useLanguage } from '../../contexts/LanguageContext';
 
 type NotificationType = 'success' | 'error';
 
+interface NotificationMessage {
+  message: string;
+  type: NotificationType;
+  show: boolean;
+}
+
 export default function Dashboard() {
   const { token } = useAuth();
   const { translations } = useLanguage();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: NotificationType;
-    show: boolean;
-  }>({
+  const [notification, setNotification] = useState<NotificationMessage>({
     message: '',
     type: 'success',
     show: false
@@ -292,30 +294,91 @@ export default function Dashboard() {
   };
 
   const handleAppointmentUpdated = (appointment: Appointment) => {
-    if (appointment.status === 'accepted') {
-      handleAppointmentAccepted(appointment);
-    } else if (appointment.status === 'declined') {
-      handleAppointmentDeclined(appointment);
-    } else if (appointment.status === 'cancelled') {
-      handleAppointmentCancelled(appointment);
+    const clientName = `${appointment.user_.firstName} ${appointment.user_.lastName}`;
+    let notificationMessage = '';
+
+    // Helper function to get notification message with fallback
+    const getNotificationMessage = (translationKey: string, fallbackMessage: string) => {
+      const translation = translations.admin?.dashboard?.notifications?.[translationKey];
+      if (translation) {
+        return translation.replace('{clientName}', clientName);
+      }
+      return fallbackMessage.replace('{clientName}', clientName);
+    };
+
+    switch (appointment.status) {
+      case 'accepted':
+        notificationMessage = getNotificationMessage(
+          'appointmentAccepted',
+          'Appointment accepted for {clientName}'
+        );
+        showNotification(notificationMessage, 'success');
+        break;
+
+      case 'completed':
+        notificationMessage = getNotificationMessage(
+          'appointmentCompleted',
+          'Appointment completed for {clientName}'
+        );
+        showNotification(notificationMessage, 'success');
+        break;
+
+      case 'declined':
+        notificationMessage = getNotificationMessage(
+          'appointmentDeclined',
+          'Appointment declined for {clientName}'
+        );
+        showNotification(notificationMessage, 'error');
+        break;
+
+      case 'cancelled':
+        notificationMessage = getNotificationMessage(
+          'appointmentCancelled',
+          'Appointment cancelled for {clientName}'
+        );
+        showNotification(notificationMessage, 'error');
+        break;
     }
+
+    // Update the cache
+    setCachedAppointments(current => {
+      if (!current) return null;
+      
+      const newData = current.data.map(apt => 
+        apt.id === appointment.id ? appointment : apt
+      );
+      
+      const newCache = {
+        data: newData,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      return newCache;
+    });
   };
 
   return (
     <div className="min-h-screen bg-zinc-900">
       {notification.show && (
-        <div 
-          className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg 
-                     transform transition-all duration-500 ease-in-out z-50
-                     ${notification.type === 'success' 
-                       ? 'bg-green-500 text-white' 
-                       : 'bg-rose-500 text-white'}`}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50
+            ${notification.type === 'success' 
+              ? 'bg-green-500/90 backdrop-blur-sm border border-green-400/20' 
+              : 'bg-rose-500/90 backdrop-blur-sm border border-rose-400/20'}`}
         >
-          <div className="flex items-center gap-2">
-            {notification.type === 'success' ? "✓" : "✕"}
-            <span>{notification.message}</span>
+          <div className="flex items-center gap-2 text-white">
+            {notification.type === 'success' ? (
+              <div className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
+            ) : (
+              <div className="w-2 h-2 rounded-full bg-rose-300 animate-pulse" />
+            )}
+            <span className="text-sm font-medium">{notification.message}</span>
           </div>
-        </div>
+        </motion.div>
       )}
 
       <motion.div 
