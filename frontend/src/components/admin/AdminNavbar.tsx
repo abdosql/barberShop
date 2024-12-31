@@ -43,7 +43,9 @@ export default function AdminNavbar() {
                         {userInfo.firstName} {userInfo.lastName}
                       </p>
                       <p className="text-xs text-zinc-400">
-                        {userInfo.roles.includes('ROLE_ADMIN') ? 'Administrator' : 'User'}
+                        {userInfo.roles.includes('ROLE_ADMIN') 
+                          ? translations.auth.roles.admin 
+                          : translations.auth.roles.user}
                       </p>
                     </div>
                   </div>

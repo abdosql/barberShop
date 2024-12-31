@@ -37,21 +37,21 @@ export default function StatsCards() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch analytics');
+          throw new Error(errorData.message || translations.admin.stats.errorFetching);
         }
 
         const data = await response.json();
         setAnalytics(data);
       } catch (error) {
         console.error('Error fetching analytics:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch analytics');
+        setError(error instanceof Error ? error.message : translations.admin.stats.errorFetching);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAnalytics();
-  }, [token]);
+  }, [token, translations]);
 
   if (error) {
     return (
@@ -97,7 +97,7 @@ export default function StatsCards() {
     },
     {
       title: translations.admin.stats.monthlyRevenue,
-      value: `${analytics.revenue.currentValue.toFixed(2)} DH`,
+      value: `${analytics.revenue.currentValue.toFixed(2)} ${translations.admin.stats.currency}`,
       icon: TrendingUp,
       change: `${analytics.revenue.growth > 0 ? '+' : ''}${analytics.revenue.growth.toFixed(1)}%`,
       color: "amber"
@@ -122,7 +122,7 @@ export default function StatsCards() {
           </div>
           <div className="mt-4">
             <p className={`text-sm ${stat.change.startsWith('+') ? 'text-green-500' : 'text-rose-500'}`}>
-              {stat.change} from last month
+              {stat.change} {translations.admin.stats.fromLastMonth}
             </p>
           </div>
         </div>

@@ -208,7 +208,7 @@ export default function AppointmentList({
   };
 
   if (isLoading) {
-    return <div className="text-center py-4 text-zinc-400">Loading appointments...</div>;
+    return <div className="text-center py-4 text-zinc-400">{translations.admin.appointments.loading}</div>;
   }
 
   if (error) {
@@ -219,57 +219,12 @@ export default function AppointmentList({
     return (
       <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-8">
         <div className="text-center">
-          {status === 'pending' ? (
-            <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 mb-4">
-                <Clock className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No Pending Appointments</h3>
-              <p className="text-zinc-400 max-w-sm mx-auto">
-                There are currently no appointments waiting for approval. New appointments will appear here when clients make bookings.
-              </p>
-            </>
-          ) : status === 'accepted' ? (
-            <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 text-green-500 mb-4">
-                <CheckCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No Confirmed Appointments</h3>
-              <p className="text-zinc-400 max-w-sm mx-auto">
-                There are no confirmed appointments yet. Appointments will appear here after you approve them from the pending list.
-              </p>
-            </>
-          ) : status === 'cancelled' ? (
-            <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500/10 text-orange-500 mb-4">
-                <XCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No Cancelled Appointments</h3>
-              <p className="text-zinc-400 max-w-sm mx-auto">
-                There are no cancelled appointments. Appointments that are cancelled will appear here.
-              </p>
-            </>
-          ) : status === 'completed' ? (
-            <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 text-green-500 mb-4">
-                <CheckCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No Completed Appointments</h3>
-              <p className="text-zinc-400 max-w-sm mx-auto">
-                There are no completed appointments. Appointments that are completed will appear here.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 mb-4">
-                <XCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-medium text-white mb-2">No Declined Appointments</h3>
-              <p className="text-zinc-400 max-w-sm mx-auto">
-                There are no declined appointments. Appointments that you decline will appear here.
-              </p>
-            </>
-          )}
+          <h3 className="text-lg font-medium text-white mb-2">
+            {translations.admin.appointments.emptyStates.title[status]}
+          </h3>
+          <p className="text-zinc-400 max-w-sm mx-auto">
+            {translations.admin.appointments.emptyStates.description[status]}
+          </p>
         </div>
       </div>
     );
@@ -309,14 +264,14 @@ export default function AppointmentList({
               <thead className="sticky top-0 bg-zinc-900/95 backdrop-blur-sm z-10">
                 <tr className="border-b border-zinc-700">
                   <th className="px-4 py-3 w-8" title="Appointment Priority">•</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Client</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Phone</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Duration</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Date & Time</th>
-                  <th className="text-left p-4 text-zinc-400 font-medium">Price</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">{translations.admin.appointments.table.client}</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">{translations.admin.appointments.table.phone}</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">{translations.admin.appointments.table.duration}</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">{translations.admin.appointments.table.dateTime}</th>
+                  <th className="text-left p-4 text-zinc-400 font-medium">{translations.admin.appointments.table.price}</th>
                   <th className="text-left p-4 text-zinc-400 font-medium">
                     <div className="flex items-center justify-between">
-                      <span>Actions</span>
+                      <span>{translations.admin.appointments.table.actions}</span>
                       {status === 'accepted' && (
                         <button
                           onClick={() => setShowTodayOnly(!showTodayOnly)}
@@ -326,7 +281,7 @@ export default function AppointmentList({
                               : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
                           }`}
                         >
-                          {showTodayOnly ? 'Today' : 'All'}
+                          {showTodayOnly ? translations.admin.appointments.filters.today : translations.admin.appointments.filters.all}
                         </button>
                       )}
                     </div>
@@ -377,14 +332,14 @@ export default function AppointmentList({
                                 disabled={isUpdating === appointment.id}
                                 className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
                               >
-                                {isUpdating === appointment.id ? 'Accepting...' : 'Accept'}
+                                {isUpdating === appointment.id ? translations.admin.appointments.actions.accepting : translations.admin.appointments.actions.accept}
                               </button>
                               <button
                                 onClick={() => handleDecline(appointment.id)}
                                 disabled={isDeclining === appointment.id}
                                 className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                               >
-                                {isDeclining === appointment.id ? 'Declining...' : 'Decline'}
+                                {isDeclining === appointment.id ? translations.admin.appointments.actions.declining : translations.admin.appointments.actions.decline}
                               </button>
                             </>
                           )}
@@ -395,14 +350,14 @@ export default function AppointmentList({
                                 disabled={isCompleting === appointment.id}
                                 className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
                               >
-                                {isCompleting === appointment.id ? 'Completing...' : 'Complete'}
+                                {isCompleting === appointment.id ? translations.admin.appointments.actions.completing : translations.admin.appointments.actions.complete}
                               </button>
                               <button
                                 onClick={() => handleCancel(appointment.id)}
                                 disabled={isCancelling === appointment.id}
                                 className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                               >
-                                {isCancelling === appointment.id ? 'Cancelling...' : 'Cancel'}
+                                {isCancelling === appointment.id ? translations.admin.appointments.actions.cancelling : translations.admin.appointments.actions.cancel}
                               </button>
                             </>
                           )}
@@ -482,14 +437,14 @@ export default function AppointmentList({
                             disabled={isUpdating === appointment.id}
                             className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
                           >
-                            {isUpdating === appointment.id ? '...' : 'Accept'}
+                            {isUpdating === appointment.id ? translations.admin.appointments.actions.accepting : translations.admin.appointments.actions.accept}
                           </button>
                           <button
                             onClick={() => handleDecline(appointment.id)}
                             disabled={isDeclining === appointment.id}
                             className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                           >
-                            {isDeclining === appointment.id ? '...' : 'Decline'}
+                            {isDeclining === appointment.id ? translations.admin.appointments.actions.declining : translations.admin.appointments.actions.decline}
                           </button>
                         </>
                       )}
@@ -500,14 +455,14 @@ export default function AppointmentList({
                             disabled={isCompleting === appointment.id}
                             className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
                           >
-                            {isCompleting === appointment.id ? '...' : 'Complete'}
+                            {isCompleting === appointment.id ? translations.admin.appointments.actions.completing : translations.admin.appointments.actions.complete}
                           </button>
                           <button
                             onClick={() => handleCancel(appointment.id)}
                             disabled={isCancelling === appointment.id}
                             className="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                           >
-                            {isCancelling === appointment.id ? '...' : 'Cancel'}
+                            {isCancelling === appointment.id ? translations.admin.appointments.actions.cancelling : translations.admin.appointments.actions.cancel}
                           </button>
                         </>
                       )}
@@ -546,7 +501,7 @@ export default function AppointmentList({
               disabled={isLoadingMore}
               className="px-4 py-2 bg-zinc-700/50 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50"
             >
-              {isLoadingMore ? 'Loading...' : 'Load More'}
+              {isLoadingMore ? translations.admin.appointments.loading : translations.admin.appointments.loadMore}
             </button>
           </div>
         )}

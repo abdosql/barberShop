@@ -5,8 +5,10 @@ import Footer from '../Footer';
 import LanguageToggle from '../LanguageToggle';
 import { Button } from '../ui/Button';
 import { validatePhoneNumber, validatePassword } from '../../utils/validations';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function Register() {
+  const { translations } = useLanguage();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -26,12 +28,12 @@ export default function Register() {
 
     // Validate first name
     if (!firstName.trim()) {
-      newErrors.firstName = "Le prénom est requis.";
+      newErrors.firstName = translations.auth.register.errors.firstNameRequired;
     }
 
     // Validate last name
     if (!lastName.trim()) {
-      newErrors.lastName = "Le nom de famille est requis.";
+      newErrors.lastName = translations.auth.register.errors.lastNameRequired;
     }
 
     // Validate phone number
@@ -96,19 +98,19 @@ export default function Register() {
                 newErrors.lastName = violation.message;
                 break;
               default:
-                newErrors.general = "L'inscription a échoué. Veuillez réessayer.";
+                newErrors.general = translations.auth.register.errors.registrationFailed;
             }
           });
 
           if (Object.keys(newErrors).length === 0) {
-            setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
+            setErrors({ general: translations.auth.register.errors.registrationFailed });
           } else {
             setErrors(newErrors);
           }
         } else if (errorData?.['hydra:description']?.includes('phone number')) {
-          setErrors({ phone: "Ce numéro de téléphone est déjà utilisé." });
+          setErrors({ phone: translations.auth.register.errors.phoneExists });
         } else {
-          setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
+          setErrors({ general: translations.auth.register.errors.registrationFailed });
         }
         setIsLoading(false);
         return;
@@ -122,7 +124,7 @@ export default function Register() {
       });
 
     } catch (err) {
-      setErrors({ general: "L'inscription a échoué. Veuillez réessayer." });
+      setErrors({ general: translations.auth.register.errors.registrationFailed });
     } finally {
       setIsLoading(false);
     }
@@ -152,8 +154,8 @@ export default function Register() {
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500/20 to-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 backdrop-blur-xl border border-white/10">
               <Scissors className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Join Our Barbershop</h2>
-            <p className="text-xs sm:text-sm text-zinc-400">Create an account to get started</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{translations.auth.register.joinBarber}</h2>
+            <p className="text-xs sm:text-sm text-zinc-400">{translations.auth.register.createToStart}</p>
           </div>
 
           {/* Form Section - Responsive padding and spacing */}
@@ -169,7 +171,7 @@ export default function Register() {
               {/* First Name Input */}
               <div>
                 <label htmlFor="firstName" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
-                  First Name
+                  {translations.auth.register.firstName}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -184,7 +186,7 @@ export default function Register() {
                       errors.firstName ? 'border-rose-500' : 'border-zinc-800'
                     } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder="Enter your first name"
+                    placeholder={translations.auth.register.enterFirstName}
                     required
                   />
                   {errors.firstName && (
@@ -196,7 +198,7 @@ export default function Register() {
               {/* Last Name Input */}
               <div>
                 <label htmlFor="lastName" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
-                  Last Name
+                  {translations.auth.register.lastName}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -211,7 +213,7 @@ export default function Register() {
                       errors.lastName ? 'border-rose-500' : 'border-zinc-800'
                     } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder="Enter your last name"
+                    placeholder={translations.auth.register.enterLastName}
                     required
                   />
                   {errors.lastName && (
@@ -223,7 +225,7 @@ export default function Register() {
               {/* Phone Input */}
               <div>
                 <label htmlFor="phone" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
-                  Phone Number
+                  {translations.auth.register.phoneNumber}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -238,7 +240,7 @@ export default function Register() {
                       errors.phone ? 'border-rose-500' : 'border-zinc-800'
                     } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder="Enter your phone number"
+                    placeholder={translations.auth.register.enterPhone}
                     required
                   />
                   {errors.phone && (
@@ -250,7 +252,7 @@ export default function Register() {
               {/* Password Input */}
               <div>
                 <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-zinc-300 mb-1">
-                  Password
+                  {translations.auth.register.password}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -265,7 +267,7 @@ export default function Register() {
                       errors.password ? 'border-rose-500' : 'border-zinc-800'
                     } rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-xs sm:text-sm
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder="Create a password"
+                    placeholder={translations.auth.register.createPassword}
                     required
                   />
                   {errors.password && (
@@ -278,17 +280,17 @@ export default function Register() {
               <Button
                 type="submit"
                 isLoading={isLoading}
-                loadingText="Creating Account..."
+                loadingText={translations.auth.register.creatingAccount}
               >
-                Create Account
+                {translations.auth.register.createBtn}
               </Button>
             </form>
 
             {/* Sign in Link */}
             <div className="text-center text-xs sm:text-sm pt-1">
-              <span className="text-zinc-400">Already have an account?</span>{' '}
+              <span className="text-zinc-400">{translations.auth.register.haveAccount}</span>{' '}
               <Link to="/login" className="text-blue-500 hover:text-blue-400 font-medium">
-                Sign in
+                {translations.auth.register.signIn}
               </Link>
             </div>
           </div>

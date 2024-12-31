@@ -5,7 +5,11 @@
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "back": "Retour",
-    "next": "Suivant"
+    "next": "Suivant",
+    "loading": "Chargement...",
+    "showing": "Affichage",
+    "of": "de",
+    "deleting": "Suppression..."
   },
   "navbar": {
     "adminPanel": "Panneau d'administration",
@@ -45,16 +49,47 @@
       "manageServices": "Gérer les services",
       "pendingAppointments": "Rendez-vous en attente",
       "acceptedAppointments": "Rendez-vous acceptés",
+      "declinedAppointments": "Rendez-vous refusés",
+      "cancelledAppointments": "Rendez-vous annulés",
+      "completedAppointments": "Rendez-vous terminés",
       "overview": "Aperçu",
       "pending": "en attente",
-      "today": "aujourd'hui"
+      "today": "aujourd'hui",
+      "viewModes": {
+        "accepted": "Acceptés",
+        "declined": "Refusés",
+        "cancelled": "Annulés",
+        "completed": "Terminés"
+      },
+      "notifications": {
+        "appointmentConfirmed": "Le rendez-vous pour {clientName} a été confirmé avec succès.",
+        "appointmentDeclined": "Le rendez-vous pour {clientName} a été refusé.",
+        "appointmentCancelled": "Le rendez-vous pour {clientName} a été annulé.",
+        "appointmentDeleted": "Le rendez-vous a été supprimé",
+        "fetchError": "Échec du chargement des rendez-vous",
+        "realTimeError": "Erreur de connexion aux mises à jour en temps réel",
+        "processingError": "Erreur lors du traitement de la mise à jour en temps réel",
+        "newAppointment": "Nouveau rendez-vous reçu",
+        "appointmentUpdated": "Le rendez-vous a été mis à jour"
+      },
+      "shopStatus": {
+        "open": "Boutique Ouverte",
+        "closed": "Boutique Fermée"
+      },
+      "refresh": "Actualiser"
     },
     "stats": {
       "totalClients": "Total clients",
       "todayAppointments": "Rendez-vous du jour",
       "pendingRequests": "Demandes en attente",
       "monthlyRevenue": "Revenu mensuel",
-      "vsLastMonth": "vs mois dernier"
+      "vsLastMonth": "vs mois dernier",
+      "totalAppointments": "Total rendez-vous",
+      "completedAppointments": "Rendez-vous terminés",
+      "cancelledAppointments": "Rendez-vous annulés",
+      "fromLastMonth": "par rapport au mois dernier",
+      "errorFetching": "Échec du chargement des statistiques",
+      "currency": "DH"
     },
     "services": {
       "title": "Gérer les services",
@@ -62,7 +97,107 @@
       "serviceName": "Nom du service",
       "price": "Prix",
       "description": "Description",
-      "duration": "Durée"
+      "duration": "Durée",
+      "addNew": "Ajouter un nouveau service",
+      "edit": "Modifier le service",
+      "delete": "Supprimer le service",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "durationMinutes": "minutes",
+      "priceAmount": "€",
+      "validation": {
+        "nameRequired": "Le nom du service est requis",
+        "priceRequired": "Le prix est requis",
+        "durationRequired": "La durée est requise",
+        "descriptionRequired": "La description est requise"
+      },
+      "modal": {
+        "title": "Services du rendez-vous",
+        "noServices": "Aucun service trouvé pour ce rendez-vous"
+      },
+      "errorCreating": "Échec de la création du service",
+      "serviceNamePlaceholder": "Entrez le nom du service",
+      "descriptionPlaceholder": "Entrez la description du service",
+      "addButton": "Ajouter le service",
+      "form": {
+        "priceLabel": "Prix",
+        "pricePlaceholder": "0.00",
+        "durationLabel": "Durée",
+        "durationPlaceholder": "30",
+        "durationUnit": "min"
+      }
+    },
+    "appointments": {
+      "title": "Rendez-vous",
+      "noAppointments": "Aucun rendez-vous",
+      "loadMore": "Charger plus",
+      "client": "Client",
+      "date": "Date",
+      "time": "Heure",
+      "services": "Services",
+      "duration": "Durée",
+      "price": "Prix",
+      "status": {
+        "pending": "En attente",
+        "accepted": "Accepté",
+        "declined": "Refusé",
+        "cancelled": "Annulé",
+        "completed": "Terminé"
+      },
+      "emptyStates": {
+        "pending": "Il n'y a actuellement aucun rendez-vous en attente. Les nouveaux rendez-vous apparaîtront ici.",
+        "accepted": "Il n'y a aucun rendez-vous confirmé. Les rendez-vous apparaîtront ici après leur approbation.",
+        "cancelled": "Il n'y a aucun rendez-vous annulé. Les rendez-vous annulés apparaîtront ici.",
+        "declined": "Il n'y a aucun rendez-vous refusé. Les rendez-vous refusés apparaîtront ici.",
+        "completed": "Il n'y a aucun rendez-vous terminé. Les rendez-vous terminés apparaîtront ici."
+      },
+      "actions": {
+        "accept": "Accepter",
+        "decline": "Refuser",
+        "cancel": "Annuler",
+        "complete": "Terminer",
+        "viewServices": "Voir les services"
+      },
+      "loading": "Chargement des rendez-vous...",
+      "loadMore": "Charger plus",
+      "actions": {
+        "accept": "Accepter",
+        "accepting": "Acceptation...",
+        "decline": "Refuser",
+        "declining": "Refus...",
+        "complete": "Terminer",
+        "completing": "Finalisation...",
+        "cancel": "Annuler",
+        "cancelling": "Annulation..."
+      },
+      "table": {
+        "client": "Client",
+        "phone": "Téléphone",
+        "duration": "Durée",
+        "dateTime": "Date & Heure",
+        "price": "Prix",
+        "actions": "Actions"
+      },
+      "filters": {
+        "today": "Aujourd'hui",
+        "all": "Tout"
+      },
+      "emptyStates": {
+        "title": {
+          "pending": "Aucun rendez-vous en attente",
+          "accepted": "Aucun rendez-vous confirmé",
+          "cancelled": "Aucun rendez-vous annulé",
+          "completed": "Aucun rendez-vous terminé",
+          "declined": "Aucun rendez-vous refusé"
+        },
+        "description": {
+          "pending": "Il n'y a actuellement aucun rendez-vous en attente. Les nouveaux rendez-vous apparaîtront ici.",
+          "accepted": "Il n'y a aucun rendez-vous confirmé. Les rendez-vous apparaîtront ici après leur approbation.",
+          "cancelled": "Il n'y a aucun rendez-vous annulé. Les rendez-vous annulés apparaîtront ici.",
+          "completed": "Il n'y a aucun rendez-vous terminé. Les rendez-vous terminés apparaîtront ici.",
+          "declined": "Il n'y a aucun rendez-vous refusé. Les rendez-vous refusés apparaîtront ici."
+        }
+      }
     }
   },
   "auth": {
@@ -83,14 +218,30 @@
       "joinBarber": "Rejoignez Notre Barbier",
       "createToStart": "Créez un compte pour commencer",
       "fullName": "Nom complet",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
       "phoneNumber": "Numéro de téléphone",
       "password": "Mot de passe",
       "createPassword": "Créez un mot de passe",
       "enterName": "Entrez votre nom complet",
+      "enterFirstName": "Entrez votre prénom",
+      "enterLastName": "Entrez votre nom de famille",
       "enterPhone": "Entrez votre numéro de téléphone",
       "createBtn": "Créer un compte",
+      "creatingAccount": "Création du compte...",
       "haveAccount": "Vous avez déjà un compte ?",
-      "signIn": "Se connecter"
+      "signIn": "Se connecter",
+      "errors": {
+        "firstNameRequired": "Le prénom est requis.",
+        "lastNameRequired": "Le nom de famille est requis.",
+        "phoneExists": "Ce numéro de téléphone est déjà utilisé.",
+        "registrationFailed": "L'inscription a échoué. Veuillez réessayer."
+      }
+    },
+    "logout": "Déconnexion",
+    "roles": {
+      "admin": "Administrateur",
+      "user": "Utilisateur"
     }
   }
 } 

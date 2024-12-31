@@ -13,6 +13,8 @@ export default function DashboardHeader({ onManageServices, onAddService }: Dash
   const { translations } = useLanguage();
   const { isShopOpen, toggleShopAvailability } = useShopAvailability();
 
+  console.log('translations:', translations);
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
       <h1 className="text-2xl sm:text-3xl font-bold text-white">
@@ -47,8 +49,8 @@ export default function DashboardHeader({ onManageServices, onAddService }: Dash
           </motion.div>
           <span>
             {isShopOpen 
-              ? (translations.shopOpen || "Shop Open") 
-              : (translations.shopClosed || "Shop Closed")
+              ? (translations?.admin?.dashboard?.shopStatus?.open || "Boutique Ouverte")
+              : (translations?.admin?.dashboard?.shopStatus?.closed || "Boutique Fermée")
             }
           </span>
           <motion.div

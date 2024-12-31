@@ -60,12 +60,12 @@ export default function AppointmentTabs({
                 ? 'text-white'
                 : 'text-zinc-400 hover:text-white'
             }`}
-            title={translations.admin.dashboard.completedAppointments || "Completed"}
+            title={translations.admin.dashboard.completedAppointments}
           >
             <CheckCircle className="w-5 h-5 md:w-4 md:h-4" />
-            <span className="hidden md:inline">{translations.admin.dashboard.completedAppointments || "Completed"}</span>
+            <span className="hidden md:inline">{translations.admin.dashboard.completedAppointments}</span>
             <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none md:hidden">
-              {translations.admin.dashboard.completedAppointments || "Completed"}
+              {translations.admin.dashboard.completedAppointments}
             </div>
             {confirmedViewMode === 'completed' && (
               <motion.div

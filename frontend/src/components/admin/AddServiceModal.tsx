@@ -15,7 +15,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
   const [serviceName, setServiceName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState('30'); // Default duration of 30 minutes
+  const [duration, setDuration] = useState('30');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,7 +58,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
       onClose();
     } catch (err) {
       console.error('Error creating service:', err);
-      setError(translations.admin.services.errorCreating || 'Failed to create service');
+      setError(translations.admin.services.errorCreating);
     } finally {
       setIsLoading(false);
     }
@@ -134,7 +134,7 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
                 className="block w-full pl-10 pr-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg
                         text-white placeholder-zinc-500 text-sm
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0.00"
+                placeholder={translations.admin.services.form.pricePlaceholder}
                 required
                 min="0"
                 step="0.01"
@@ -159,13 +159,13 @@ export default function AddServiceModal({ isOpen, onClose, onServiceAdded }: Add
                 className="block w-full pl-10 pr-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg
                         text-white placeholder-zinc-500 text-sm
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="30"
+                placeholder={translations.admin.services.form.durationPlaceholder}
                 required
                 min="5"
                 step="5"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span className="text-zinc-500 text-sm">min</span>
+                <span className="text-zinc-500 text-sm">{translations.admin.services.durationMinutes}</span>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Appointment } from '../../../types/appointment';
 import { ServicesList } from './ServicesList';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface ServicesModalProps {
   appointment: Appointment | null;
@@ -10,6 +11,8 @@ interface ServicesModalProps {
 }
 
 export const ServicesModal: React.FC<ServicesModalProps> = ({ appointment, onClose }) => {
+  const { translations } = useLanguage();
+  
   if (!appointment) return null;
 
   return (
@@ -21,7 +24,9 @@ export const ServicesModal: React.FC<ServicesModalProps> = ({ appointment, onClo
         className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full mx-4"
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-white">Appointment Services</h3>
+          <h3 className="text-lg font-medium text-white">
+            {translations.admin.services.modal.title}
+          </h3>
           <button
             onClick={onClose}
             className="text-zinc-400 hover:text-white transition-colors"

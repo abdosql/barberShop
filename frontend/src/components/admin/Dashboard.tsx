@@ -8,11 +8,13 @@ import StatsCards from './StatsCards';
 import AddServiceModal from './AddServiceModal';
 import ManageServicesModal from './ManageServicesModal';
 import { Appointment } from '../../types/appointment';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type NotificationType = 'success' | 'error';
 
 export default function Dashboard() {
   const { token } = useAuth();
+  const { translations } = useLanguage();
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
   const [notification, setNotification] = useState<{
@@ -79,7 +81,7 @@ export default function Dashboard() {
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       
       const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
-      showNotification(`Appointment for ${clientName} has been confirmed successfully.`, 'success');
+      showNotification(translations.admin.dashboard.notifications.appointmentConfirmed, { clientName }, 'success');
 
       return newCache;
     });
@@ -102,7 +104,7 @@ export default function Dashboard() {
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       
       const clientName = `${declinedAppointment.user_.firstName} ${declinedAppointment.user_.lastName}`;
-      showNotification(`Appointment for ${clientName} has been declined.`, 'error');
+      showNotification(translations.admin.dashboard.notifications.appointmentDeclined, { clientName }, 'error');
 
       return newCache;
     });
@@ -125,7 +127,7 @@ export default function Dashboard() {
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       
       const clientName = `${cancelledAppointment.user_.firstName} ${cancelledAppointment.user_.lastName}`;
-      showNotification(`Appointment for ${clientName} has been cancelled.`, 'error');
+      showNotification(translations.admin.dashboard.notifications.appointmentCancelled, { clientName }, 'error');
 
       return newCache;
     });
@@ -163,7 +165,7 @@ export default function Dashboard() {
       setCachedAppointments(newCache);
     } catch (err) {
       console.error('Error fetching appointments:', err);
-      showNotification('Failed to fetch appointments', 'error');
+      showNotification(translations.admin.dashboard.notifications.fetchError, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -209,7 +211,7 @@ export default function Dashboard() {
               return newCache;
             });
             
-            showNotification('Appointment was deleted', 'error');
+            showNotification(translations.admin.dashboard.notifications.appointmentDeleted, 'error');
             return;
           }
           
@@ -259,19 +261,19 @@ export default function Dashboard() {
 
           // Show appropriate notification based on action
           if (update.action === 'created') {
-            showNotification('New appointment received', 'success');
+            showNotification(translations.admin.dashboard.notifications.newAppointment, 'success');
           } else if (update.action === 'updated') {
-            showNotification('Appointment was updated', 'success');
+            showNotification(translations.admin.dashboard.notifications.appointmentUpdated, 'success');
           }
         } catch (error) {
           console.error('Error processing Mercure message:', error);
-          showNotification('Error processing real-time update', 'error');
+          showNotification(translations.admin.dashboard.notifications.processingError, 'error');
         }
       };
 
       eventSource.onerror = (error) => {
         console.error('Mercure EventSource error:', error);
-        showNotification('Real-time updates connection error', 'error');
+        showNotification(translations.admin.dashboard.notifications.realTimeError, 'error');
       };
 
       // Cleanup function
@@ -280,7 +282,7 @@ export default function Dashboard() {
       };
     } catch (error) {
       console.error('Error setting up Mercure connection:', error);
-      showNotification('Failed to connect to real-time updates', 'error');
+      showNotification(translations.admin.dashboard.notifications.realTimeError, 'error');
     }
   }, [token]);
 
@@ -347,7 +349,9 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <h2 className="text-xl font-medium text-white mb-4">Overview</h2>
+          <h2 className="text-xl font-medium text-white mb-4">
+            {translations.admin.dashboard.overview}
+          </h2>
           <StatsCards />
         </div>
 

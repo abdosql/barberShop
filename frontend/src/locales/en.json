@@ -18,17 +18,17 @@
   },
   "home": {
     "hero": {
-      "title": "Professional Grooming",
-      "subtitle": "Just a Click Away",
-      "description": "Book your next premium haircut and beard trim with our expert barbers"
+      "title": "Professional Haircuts",
+      "subtitle": "At a click",
+      "description": "Book your next haircut and beard trim with our expert barbers"
     },
     "booking": {
-      "selectServices": "Select Services",
-      "selectDate": "Select Date",
-      "selectTime": "Select Time",
-      "totalDuration": "Total Duration",
-      "totalPrice": "Total Price",
-      "bookAppointment": "Book Appointment",
+      "selectServices": "Select services",
+      "selectDate": "Select date",
+      "selectTime": "Select time",
+      "totalDuration": "Total duration",
+      "totalPrice": "Total price",
+      "bookAppointment": "Book appointment",
       "chooseTime": "Choose a time"
     },
     "services": {
@@ -44,74 +44,185 @@
   },
   "admin": {
     "dashboard": {
-      "title": "Admin Dashboard",
-      "addService": "Add Service",
-      "manageServices": "Manage Services",
-      "pendingAppointments": "Pending Appointments",
-      "acceptedAppointments": "Accepted Appointments",
-      "declinedAppointments": "Declined Appointments",
-      "cancelledAppointments": "Cancelled Appointments",
-      "pendingTitle": "Pending Appointments",
-      "acceptedTitle": "Accepted Appointments",
-      "declinedTitle": "Declined Appointments",
-      "cancelledTitle": "Cancelled Appointments",
+      "title": "Dashboard",
+      "addService": "Add service",
+      "manageServices": "Manage services",
+      "pendingAppointments": "Pending appointments",
+      "acceptedAppointments": "Accepted appointments",
+      "declinedAppointments": "Declined appointments",
+      "cancelledAppointments": "Cancelled appointments",
+      "completedAppointments": "Completed appointments",
       "overview": "Overview",
       "pending": "pending",
-      "today": "today"
+      "today": "today",
+      "viewModes": {
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      },
+      "notifications": {
+        "appointmentConfirmed": "Appointment for {clientName} has been successfully confirmed.",
+        "appointmentDeclined": "Appointment for {clientName} has been declined.",
+        "appointmentCancelled": "Appointment for {clientName} has been cancelled.",
+        "appointmentDeleted": "Appointment has been deleted",
+        "fetchError": "Failed to load appointments",
+        "realTimeError": "Error connecting to real-time updates",
+        "processingError": "Error processing real-time update",
+        "newAppointment": "New appointment received",
+        "appointmentUpdated": "Appointment has been updated"
+      },
+      "shopStatus": {
+        "open": "Shop Open",
+        "closed": "Shop Closed"
+      },
+      "refresh": "Refresh"
     },
     "stats": {
-      "totalClients": "Total Clients",
-      "todayAppointments": "Today's Appointments",
-      "pendingRequests": "Pending Requests",
-      "monthlyRevenue": "Monthly Revenue",
-      "vsLastMonth": "vs last month"
+      "totalClients": "Total clients",
+      "todayAppointments": "Today's appointments",
+      "pendingRequests": "Pending requests",
+      "monthlyRevenue": "Monthly revenue",
+      "vsLastMonth": "vs last month",
+      "totalAppointments": "Total appointments",
+      "completedAppointments": "Completed appointments",
+      "cancelledAppointments": "Cancelled appointments",
+      "fromLastMonth": "compared to last month",
+      "errorFetching": "Failed to load statistics",
+      "currency": "DH"
     },
     "services": {
-      "title": "Manage Services",
+      "title": "Manage services",
       "confirmDelete": "Are you sure you want to delete this service?",
-      "serviceName": "Service Name",
+      "serviceName": "Service name",
       "price": "Price",
       "description": "Description",
       "duration": "Duration",
-      "addNew": "Add New Service",
-      "serviceNamePlaceholder": "e.g., Haircut",
-      "descriptionPlaceholder": "Enter service description...",
-      "addButton": "Add Service",
-      "errorCreating": "Failed to create service. Please try again.",
-      "successCreating": "Service created successfully!",
-      "errorFetching": "Failed to fetch services. Please try again.",
-      "errorDeleting": "Failed to delete service. Please try again.",
+      "addNew": "Add new service",
+      "edit": "Edit service",
+      "delete": "Delete service",
+      "save": "Save",
+      "cancel": "Cancel",
+      "durationMinutes": "minutes",
+      "priceAmount": "€",
+      "validation": {
+        "nameRequired": "Service name is required",
+        "priceRequired": "Price is required",
+        "durationRequired": "Duration is required",
+        "descriptionRequired": "Description is required"
+      },
+      "modal": {
+        "title": "Appointment services",
+        "noServices": "No services found for this appointment"
+      },
+      "errorCreating": "Failed to create service",
+      "serviceNamePlaceholder": "Enter service name",
+      "descriptionPlaceholder": "Enter service description",
+      "addButton": "Add service",
+      "form": {
+        "priceLabel": "Price",
+        "pricePlaceholder": "0.00",
+        "durationLabel": "Duration",
+        "durationPlaceholder": "30",
+        "durationUnit": "min"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "noAppointments": "No appointments",
+      "loadMore": "Load more",
+      "client": "Client",
+      "date": "Date",
+      "time": "Time",
+      "services": "Services",
       "duration": "Duration",
-      "durationPlaceholder": "Enter duration in minutes"
+      "price": "Price",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      },
+      "actions": {
+        "accept": "Accept",
+        "accepting": "Accepting...",
+        "decline": "Decline",
+        "declining": "Declining...",
+        "complete": "Complete",
+        "completing": "Completing...",
+        "cancel": "Cancel",
+        "cancelling": "Cancelling...",
+        "viewServices": "View services"
+      },
+      "loading": "Loading appointments...",
+      "table": {
+        "client": "Client",
+        "phone": "Phone",
+        "duration": "Duration",
+        "dateTime": "Date & Time",
+        "price": "Price",
+        "actions": "Actions"
+      },
+      "filters": {
+        "today": "Today",
+        "all": "All"
+      },
+      "emptyStates": {
+        "title": {
+          "pending": "No pending appointments",
+          "accepted": "No confirmed appointments",
+          "cancelled": "No cancelled appointments",
+          "completed": "No completed appointments",
+          "declined": "No declined appointments"
+        },
+        "description": {
+          "pending": "There are currently no pending appointments. New appointments will appear here.",
+          "accepted": "There are no confirmed appointments. Appointments will appear here after approval.",
+          "cancelled": "There are no cancelled appointments. Cancelled appointments will appear here.",
+          "completed": "There are no completed appointments. Completed appointments will appear here.",
+          "declined": "There are no declined appointments. Declined appointments will appear here."
+        }
+      }
     }
   },
   "auth": {
     "login": {
       "welcomeBack": "Welcome Back",
       "signInAccount": "Sign in to your account",
-      "phoneNumber": "Phone Number",
+      "phoneNumber": "Phone number",
       "password": "Password",
       "rememberMe": "Remember me",
       "forgot": "Forgot?",
       "signIn": "Sign in",
       "newHere": "New here?",
-      "createAccount": "Create account",
+      "createAccount": "Create an account",
       "enterPhone": "Enter your phone number",
-      "enterPassword": "Enter your password",
-      "signInToBook": "Sign in to book an appointment"
+      "enterPassword": "Enter your password"
     },
     "register": {
-      "joinBarber": "Join Our Barbershop",
+      "joinBarber": "Join Our Barber",
       "createToStart": "Create an account to get started",
-      "fullName": "Full Name",
-      "phoneNumber": "Phone Number",
+      "fullName": "Full name",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phoneNumber": "Phone number",
       "password": "Password",
       "createPassword": "Create a password",
       "enterName": "Enter your full name",
+      "enterFirstName": "Enter your first name",
+      "enterLastName": "Enter your last name",
       "enterPhone": "Enter your phone number",
-      "createBtn": "Create Account",
+      "createBtn": "Create account",
+      "creatingAccount": "Creating account...",
       "haveAccount": "Already have an account?",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "errors": {
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "phoneExists": "This phone number is already in use.",
+        "registrationFailed": "Registration failed. Please try again."
+      }
     }
   }
 }
