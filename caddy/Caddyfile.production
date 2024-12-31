@@ -2,26 +2,13 @@
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
     # Enable automatic HTTPS
-    auto_https off
+    auto_https off  # Let Hostinger handle HTTPS
     # Enable debug for troubleshooting
     debug
-    # Add SSL/TLS configuration
-    servers {
-        protocol {
-            experimental_http3
-        }
-    }
 }
 
 # Main domain configuration
 jalalbarber.com {
-    # TLS configuration
-    tls {
-        protocols tls1.2 tls1.3
-        prefer_server_cipher_suites on
-        cipher_suites TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
-    }
-
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -29,7 +16,7 @@ jalalbarber.com {
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
         Access-Control-Allow-Credentials "true"
         Access-Control-Max-Age "3600"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Let Hostinger handle HSTS
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
         # Security headers
