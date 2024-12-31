@@ -2,22 +2,13 @@
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
     # Enable automatic HTTPS
-    auto_https on
+    auto_https ignore_loaded_certs
     # Enable debug for troubleshooting
     debug
-    # Add email for Let's Encrypt
-    email admin@jalalbarber.com
 }
 
 # Main domain configuration
 jalalbarber.com {
-    # Force HTTPS
-    tls {
-        protocols tls1.2 tls1.3
-        curves x25519
-        alpn http/1.1 h2
-    }
-
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -31,7 +22,6 @@ jalalbarber.com {
         # Security headers
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         defer
     }
 
@@ -46,33 +36,15 @@ jalalbarber.com {
     # Backend API routes
     handle /api/* {
         root * /var/www/html/public
-        # Prevent API caching
-        header {
-            Cache-Control "no-store, no-cache, must-revalidate"
-            Pragma "no-cache"
-            Expires "0"
-        }
         php_fastcgi backend:9000
         file_server
     }
 
     # Frontend routes - reverse proxy to production frontend
     handle {
-        # Add no-cache for index.html and API routes
-        @nocache {
-            path /index.html /api/*
-        }
-        header @nocache {
-            Cache-Control "no-store, no-cache, must-revalidate"
-            Pragma "no-cache"
-            Expires "0"
-        }
-
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Forwarded-For {remote}
         }
     }
 
@@ -89,7 +61,6 @@ jalalbarber.com {
 
     # Enable compression
     encode gzip
-    encode zstd
 }
 
 # Mercure Hub subdomain configuration
@@ -97,7 +68,7 @@ mercure.jalalbarber.com {
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
+        Access-Control-Allow-Headers "*"
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
@@ -117,7 +88,7 @@ mercure.jalalbarber.com {
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
+            Access-Control-Allow-Headers "*"
             Access-Control-Allow-Credentials true
             Access-Control-Max-Age "3600"
             defer
@@ -136,30 +107,4 @@ mercure.jalalbarber.com {
 
     # Enable compression for Mercure
     encode gzip
-}
-
-# Internal Mercure Hub (for Docker network)
-:9999 {
-    header {
-        Access-Control-Allow-Origin "*"
-        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials true
-        Access-Control-Expose-Headers "*"
-        Access-Control-Max-Age "3600"
-        Cache-Control "no-cache"
-        Content-Type "text/event-stream"
-        Connection "keep-alive"
-        X-Accel-Buffering "no"
-        defer
-    }
-
-    mercure {
-        publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
-        subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins "*"
-        anonymous
-        subscriptions
-        transport_url bolt:///data/mercure.db
-    }
 } 
