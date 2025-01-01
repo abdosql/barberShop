@@ -7,24 +7,12 @@
     debug
     # Add email for Let's Encrypt
     email meriem.hqiaq@gmail.com
-    # Add explicit SSL protocols
-    servers {
-        protocol {
-            experimental_http3
-            strict_sni_host
-        }
-    }
 }
 
 # Main domain configuration
 jalalbarber.com {
-    tls {
-        protocols tls1.2 tls1.3
-        # Force HTTPS
-        must_staple
-        # Enable OCSP stapling
-        stapling
-    }
+    # Disable TLS for testing
+    tls off without_fallback
 
     # Common headers for security
     header {
@@ -36,7 +24,6 @@ jalalbarber.com {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
-        # Security headers
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
         defer
@@ -82,13 +69,8 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
-    tls {
-        protocols tls1.2 tls1.3
-        # Force HTTPS
-        must_staple
-        # Enable OCSP stapling
-        stapling
-    }
+    # Disable TLS for testing
+    tls off without_fallback
 
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
