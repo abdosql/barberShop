@@ -1,20 +1,8 @@
 {
-    # Enable debug for troubleshooting SSL issues
-    debug
-    # Add email for Let's Encrypt
     email meriem.hqiaq@gmail.com
-    # Ensure proper HTTPS handling
-    auto_https on
-    # Define default SNI for local development
-    default_sni jalalbarber.com
 }
 
 jalalbarber.com {
-    # Explicitly enable TLS/HTTPS
-    tls {
-        protocols tls1.2 tls1.3
-    }
-
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
