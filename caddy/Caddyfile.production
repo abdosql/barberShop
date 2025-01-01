@@ -1,14 +1,19 @@
 {
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
-    # Enable automatic HTTPS
-    auto_https ignore_loaded_certs
+    # Disable automatic HTTPS temporarily for debugging
+    auto_https off
     # Enable debug for troubleshooting
     debug
 }
 
 # Main domain configuration
 jalalbarber.com {
+    # Basic TLS configuration
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -65,6 +70,11 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
+    # Basic TLS configuration
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
