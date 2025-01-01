@@ -1,26 +1,22 @@
-{
-    # Enable admin API for SSL management
-    admin 0.0.0.0:2019
-    # Use default HTTPS settings
-    auto_https on
-    # Keep debug for troubleshooting
-    debug
-    # Add your email - replace with your actual email
-    email meriem.hqiaq@gmail.com
-    # Add local cert directory
-    local_certs
+# Enable admin API for SSL management
+admin 0.0.0.0:2019
+# Use default HTTPS settings
+auto_https on
+# Keep debug for troubleshooting
+debug
+# Add your email - replace with your actual email
+email meriem.hqiaq@gmail.com
+# Add local cert directory
+local_certs
 }
 
 # Main domain configuration
 jalalbarber.com {
-    # Simplified TLS config
     tls {
-        # Remove protocols specification to use Caddy defaults
     }
 
-    # Common headers for security
     header {
-        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
+        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
         Access-Control-Allow-Credentials "true"
@@ -28,13 +24,11 @@ jalalbarber.com {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
-        # Security headers
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
         defer
     }
 
-    # Handle OPTIONS requests
     @options {
         method OPTIONS
     }
@@ -42,23 +36,19 @@ jalalbarber.com {
         respond 204
     }
 
-    # Backend API routes
     handle /api/* {
         root * /var/www/html/public
         php_fastcgi backend:9000
         file_server
     }
 
-    # Frontend routes - reverse proxy to production frontend
     handle {
         reverse_proxy frontend:{$FRONTEND_PORT} {
-            # Only keep essential headers
             header_up Host {host}
             header_up X-Real-IP {remote}
         }
     }
 
-    # Error handling
     handle_errors {
         respond "{http.error.status_code} {http.error.status_text}"
     }
@@ -69,25 +59,21 @@ jalalbarber.com {
         level INFO
     }
 
-    # Enable compression
     encode gzip
 }
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
-    # Simplified TLS config
     tls {
-        # Remove protocols specification to use Caddy defaults
     }
 
     header {
-        Access-Control-Allow-Origin {http.request.header.Origin}
+        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials true
+        Access-Control-Allow-Credentials "true"
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
-        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -95,16 +81,15 @@ mercure.jalalbarber.com {
         defer
     }
 
-    # Handle OPTIONS requests for Mercure
     @options {
         method OPTIONS
     }
     handle @options {
         header {
-            Access-Control-Allow-Origin {http.request.header.Origin}
+            Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-            Access-Control-Allow-Credentials true
+            Access-Control-Allow-Credentials "true"
             Access-Control-Max-Age "3600"
             defer
         }
@@ -120,17 +105,16 @@ mercure.jalalbarber.com {
         transport_url "bolt:///data/mercure.db"
     }
 
-    # Enable compression for Mercure
     encode gzip
 }
 
 # Internal Mercure Hub (for Docker network)
 :9999 {
     header {
-        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials true
+        Access-Control-Allow-Credentials "true"
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
         Cache-Control "no-cache"
@@ -143,9 +127,9 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins ".*"
+        cors_origins "{$CORS_ALLOW_ORIGIN}"
         anonymous
         subscriptions
         transport_url "bolt:///data/mercure.db"
     }
-} 
+}
