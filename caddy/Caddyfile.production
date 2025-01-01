@@ -7,10 +7,25 @@
     debug
     # Add email for Let's Encrypt
     email meriem.hqiaq@gmail.com
+    # Add explicit SSL protocols
+    servers {
+        protocol {
+            experimental_http3
+            strict_sni_host
+        }
+    }
 }
 
 # Main domain configuration
 jalalbarber.com {
+    tls {
+        protocols tls1.2 tls1.3
+        # Force HTTPS
+        must_staple
+        # Enable OCSP stapling
+        stapling
+    }
+
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -67,6 +82,14 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
+    tls {
+        protocols tls1.2 tls1.3
+        # Force HTTPS
+        must_staple
+        # Enable OCSP stapling
+        stapling
+    }
+
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
