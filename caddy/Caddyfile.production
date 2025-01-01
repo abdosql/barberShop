@@ -7,17 +7,10 @@
     debug
     # Add email for Let's Encrypt
     email meriem.hqiaq@gmail.com
-    # Set acme CA to staging
-    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
 # Main domain configuration
 jalalbarber.com {
-    tls {
-        # Use Let's Encrypt staging for testing
-        ca https://acme-staging-v02.api.letsencrypt.org/directory
-    }
-
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -74,11 +67,6 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
-    tls {
-        # Use Let's Encrypt staging for testing
-        ca https://acme-staging-v02.api.letsencrypt.org/directory
-    }
-
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
