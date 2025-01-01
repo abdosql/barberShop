@@ -99,9 +99,9 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins "{$CORS_ALLOW_ORIGIN}"
-        anonymous
-        subscriptions
+        cors_origins {$CORS_ALLOW_ORIGIN}
+        anonymous true
+        subscriptions true
         transport_url bolt:///data/mercure.db
     }
 
@@ -128,9 +128,9 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins "*"
-        anonymous
-        subscriptions
+        cors_origins *
+        anonymous true
+        subscriptions true
         transport_url bolt:///data/mercure.db
     }
 } 
