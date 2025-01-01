@@ -45,7 +45,6 @@ jalalbarber.com {
     handle {
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
-            header_up X-Real-IP {remote}
         }
     }
 
@@ -100,7 +99,7 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins {$CORS_ALLOW_ORIGIN}
+        cors_origins list "{$CORS_ALLOW_ORIGIN}"
         anonymous
         subscriptions
         transport_url bolt:///data/mercure.db
@@ -129,7 +128,7 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins {$CORS_ALLOW_ORIGIN}
+        cors_origins list "{$CORS_ALLOW_ORIGIN}"
         anonymous
         subscriptions
         transport_url bolt:///data/mercure.db
