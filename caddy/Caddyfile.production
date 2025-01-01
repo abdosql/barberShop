@@ -1,22 +1,18 @@
-# Enable admin API for SSL management
-admin 0.0.0.0:2019
-# Use default HTTPS settings
-auto_https on
-# Keep debug for troubleshooting
-debug
-# Add your email - replace with your actual email
-email meriem.hqiaq@gmail.com
-# Add local cert directory
-local_certs
+{
+    admin 0.0.0.0:2019
+    auto_https on
+    debug
+    email meriem.hqiaq@gmail.com
+    local_certs
 }
 
-# Main domain configuration
 jalalbarber.com {
     tls {
     }
 
+    # Common headers for security
     header {
-        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
+        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
         Access-Control-Allow-Credentials "true"
@@ -36,12 +32,24 @@ jalalbarber.com {
         respond 204
     }
 
+    # API Platform and Symfony routes
     handle /api/* {
         root * /var/www/html/public
-        php_fastcgi backend:9000
+        try_files {path} {path}/ /index.php?{query}
+        php_fastcgi backend:9000 {
+            env APP_ENV production
+        }
+        encode gzip
         file_server
     }
 
+    # Serve bundles directory for API Platform assets
+    handle /bundles* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    # Frontend routes
     handle {
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
@@ -69,11 +77,10 @@ mercure.jalalbarber.com {
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
-        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -88,7 +95,7 @@ mercure.jalalbarber.com {
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            Access-Control-Allow-Headers "*"
+            Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
             Access-Control-Allow-Credentials true
             Access-Control-Max-Age "3600"
             defer
@@ -99,7 +106,7 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins list "{$CORS_ALLOW_ORIGIN}"
+        cors_origins {$CORS_ALLOW_ORIGIN}
         anonymous
         subscriptions
         transport_url bolt:///data/mercure.db
@@ -113,11 +120,10 @@ mercure.jalalbarber.com {
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
-        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -128,7 +134,7 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins list "{$CORS_ALLOW_ORIGIN}"
+        cors_origins {$CORS_ALLOW_ORIGIN}
         anonymous
         subscriptions
         transport_url bolt:///data/mercure.db
