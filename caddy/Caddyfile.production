@@ -68,12 +68,13 @@ mercure.jalalbarber.com {
     }
 
     header {
-        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
+        Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials "true"
+        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
+        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -86,10 +87,10 @@ mercure.jalalbarber.com {
     }
     handle @options {
         header {
-            Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
+            Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-            Access-Control-Allow-Credentials "true"
+            Access-Control-Allow-Headers "*"
+            Access-Control-Allow-Credentials true
             Access-Control-Max-Age "3600"
             defer
         }
@@ -99,10 +100,10 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins "{$CORS_ALLOW_ORIGIN}"
+        cors_origins {$CORS_ALLOW_ORIGIN}
         anonymous
         subscriptions
-        transport_url "bolt:///data/mercure.db"
+        transport_url bolt:///data/mercure.db
     }
 
     encode gzip
@@ -111,12 +112,13 @@ mercure.jalalbarber.com {
 # Internal Mercure Hub (for Docker network)
 :9999 {
     header {
-        Access-Control-Allow-Origin "{$CORS_ALLOW_ORIGIN}"
+        Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials "true"
+        Access-Control-Allow-Headers "*"
+        Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
+        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -127,9 +129,9 @@ mercure.jalalbarber.com {
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins "{$CORS_ALLOW_ORIGIN}"
+        cors_origins {$CORS_ALLOW_ORIGIN}
         anonymous
         subscriptions
-        transport_url "bolt:///data/mercure.db"
+        transport_url bolt:///data/mercure.db
     }
 }
