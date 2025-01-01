@@ -1,19 +1,8 @@
 {
-    # Enable admin API for SSL management
-    admin 0.0.0.0:2019
-    # Enable automatic HTTPS
-    auto_https ignore_loaded_certs
-    # Enable debug for troubleshooting
-    debug
-    # Add email for Let's Encrypt
     email meriem.hqiaq@gmail.com
 }
 
-# Main domain configuration
 jalalbarber.com {
-    # Disable TLS for testing
-    tls off
-
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -44,34 +33,16 @@ jalalbarber.com {
         file_server
     }
 
-    # Frontend routes - reverse proxy to production frontend
+    # Frontend routes
     handle {
-        reverse_proxy frontend:{$FRONTEND_PORT} {
-            header_up Host {host}
-            header_up X-Real-IP {remote}
-        }
-    }
-
-    # Error handling
-    handle_errors {
-        respond "{http.error.status_code} {http.error.status_text}"
-    }
-
-    log {
-        output stdout
-        format console
-        level INFO
+        reverse_proxy frontend:{$FRONTEND_PORT}
     }
 
     # Enable compression
     encode gzip
 }
 
-# Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
-    # Disable TLS for testing
-    tls off
-
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -79,28 +50,11 @@ mercure.jalalbarber.com {
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
-        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
         X-Accel-Buffering "no"
         defer
-    }
-
-    # Handle OPTIONS requests for Mercure
-    @options {
-        method OPTIONS
-    }
-    handle @options {
-        header {
-            Access-Control-Allow-Origin {http.request.header.Origin}
-            Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-            Access-Control-Allow-Credentials true
-            Access-Control-Max-Age "3600"
-            defer
-        }
-        respond 204
     }
 
     mercure {
@@ -112,26 +66,11 @@ mercure.jalalbarber.com {
         transport_url bolt:///data/mercure.db
     }
 
-    # Enable compression for Mercure
     encode gzip
 }
 
 # Internal Mercure Hub (for Docker network)
 :9999 {
-    header {
-        Access-Control-Allow-Origin "*"
-        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization, Cache-Control, Last-Event-ID, Link, Urgency"
-        Access-Control-Allow-Credentials true
-        Access-Control-Expose-Headers "*"
-        Access-Control-Max-Age "3600"
-        Cache-Control "no-cache"
-        Content-Type "text/event-stream"
-        Connection "keep-alive"
-        X-Accel-Buffering "no"
-        defer
-    }
-
     mercure {
         publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
         subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
