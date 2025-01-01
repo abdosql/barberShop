@@ -1,14 +1,20 @@
 {
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
-    # Enable automatic HTTPS
-    auto_https ignore_loaded_certs
-    # Enable debug for troubleshooting
+    # Remove the ignore_loaded_certs option and let Caddy handle HTTPS automatically
+    auto_https on
+    # Keep debug for troubleshooting
     debug
 }
 
 # Main domain configuration
 jalalbarber.com {
+    # Add TLS configuration
+    tls {
+        # Let Caddy automatically manage certificates
+        protocols tls1.2 tls1.3
+    }
+
     # Common headers for security
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -65,6 +71,11 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
+    # Add TLS configuration here too
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
