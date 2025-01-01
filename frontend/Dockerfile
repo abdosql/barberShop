@@ -26,15 +26,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 # Don't copy source code in development as it will be mounted
-ENV NODE_ENV=development
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Production stage
-FROM node:18-alpine as production
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/dist .
+FROM nginx:alpine as production
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 4173
-# Use serve with no-cache headers for HTML
-CMD ["serve", "-s", ".", "-l", "4173", "--cors"]
+WORKDIR /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
