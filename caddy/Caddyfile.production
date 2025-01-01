@@ -1,18 +1,21 @@
 {
     # Enable admin API for SSL management
     admin 0.0.0.0:2019
-    # Remove the ignore_loaded_certs option and let Caddy handle HTTPS automatically
+    # Use default HTTPS settings
     auto_https on
     # Keep debug for troubleshooting
     debug
+    # Add your email - replace with your actual email
+    email meriem.hqiaq@gmail.com
+    # Add local cert directory
+    local_certs
 }
 
 # Main domain configuration
 jalalbarber.com {
-    # Add TLS configuration
+    # Simplified TLS config
     tls {
-        # Let Caddy automatically manage certificates
-        protocols tls1.2 tls1.3
+        # Remove protocols specification to use Caddy defaults
     }
 
     # Common headers for security
@@ -71,9 +74,9 @@ jalalbarber.com {
 
 # Mercure Hub subdomain configuration
 mercure.jalalbarber.com {
-    # Add TLS configuration here too
+    # Simplified TLS config
     tls {
-        protocols tls1.2 tls1.3
+        # Remove protocols specification to use Caddy defaults
     }
 
     header {
