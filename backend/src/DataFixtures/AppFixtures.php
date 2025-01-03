@@ -8,9 +8,17 @@ use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $passwordHasher;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
         $this->createAdmin($manager);
@@ -28,16 +36,16 @@ class AppFixtures extends Fixture
             ->setLastName("Saqqal")
             ->setFirstName("Abdelaziz")
             ->setPhoneNumber("0708083110")
-            ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
-            ->setActive("true");
+            ->setPassword($this->passwordHasher->hashPassword($admin, '123'))
+            ->setActive(true);
         ;
         $admin2
             ->setRoles(['ROLE_ADMIN'])
             ->setLastName("Jalal")
             ->setFirstName("Benbachir")
             ->setPhoneNumber("0609745046")
-            ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
-            ->setActive("true");
+            ->setPassword($this->passwordHasher->hashPassword($admin2, '123'))
+            ->setActive(true);
 
         ;
 
