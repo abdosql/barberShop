@@ -124,8 +124,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: PhoneNumberVerification::class, mappedBy: 'user_')]
     private Collection $phoneNumberVerifications;
 
-    #[ORM\Column]
-    private ?bool $isActive = false;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isActive = false;
 
 
     public function __construct()
@@ -135,6 +135,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notifications = new ArrayCollection();
         $this->appointments = new ArrayCollection();
         $this->phoneNumberVerifications = new ArrayCollection();
+        $this->isActive = false;
     }
 
     public function getId(): ?int
