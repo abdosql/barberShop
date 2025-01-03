@@ -37,6 +37,15 @@ services:
             - method: addTemplate
               arguments:
                   - '@App\Notification\Template\AppointmentReminderTemplate'
+            - method: addTemplate
+              arguments:
+                  - '@App\Notification\Template\AppointmentCanceled'
+            - method: addTemplate
+              arguments:
+                  - '@App\Notification\Template\AppointmentDeclinedTemplate'
+            - method: addTemplate
+              arguments:
+                  - '@App\Notification\Template\VerificationCodeTemplate'
 
     App\Notification\Template\HelloWorldTemplate: ~
 
@@ -46,6 +55,12 @@ services:
             $longitude: '%env(float:BARBERSHOP_LONGITUDE)%'
             $locationName: '%env(BARBERSHOP_NAME)%'
             $address: '%env(BARBERSHOP_ADDRESS)%'
+
+    App\Notification\Template\AppointmentCanceled: ~
+
+    App\Notification\Template\AppointmentDeclinedTemplate: ~
+
+    App\Notification\Template\VerificationCodeTemplate: ~
 
     # Notification Factory Configuration
     App\Factory\NotificationFactory:
