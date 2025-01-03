@@ -22,22 +22,27 @@ class AppFixtures extends Fixture
     public function createAdmin(ObjectManager $manager): void
     {
         $admin = new User();
+        $admin2 = new User();
         $admin
             ->setRoles(['ROLE_ADMIN'])
             ->setLastName("Saqqal")
             ->setFirstName("Abdelaziz")
             ->setPhoneNumber("0708083110")
             ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
+            ->setActive("true");
         ;
-        $admin
+        $admin2
             ->setRoles(['ROLE_ADMIN'])
             ->setLastName("Jalal")
             ->setFirstName("Benbachir")
             ->setPhoneNumber("0609745046")
             ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
+            ->setActive("true");
+
         ;
 
         $manager->persist($admin);
+        $manager->persist($admin2);
     }
 
     public function generateServices(ObjectManager $manager): void
