@@ -23,7 +23,7 @@ class VerifyCodeController extends AbstractController
     public function index(Request $request): Response
     {
         $code = $request->request;
-        
+
         $phoneNumber = $request->request->get("phoneNumber");
 
         //verifying the code

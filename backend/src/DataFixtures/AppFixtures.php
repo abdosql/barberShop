@@ -29,6 +29,13 @@ class AppFixtures extends Fixture
             ->setPhoneNumber("0708083110")
             ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
         ;
+        $admin
+            ->setRoles(['ROLE_ADMIN'])
+            ->setLastName("Jalal")
+            ->setFirstName("Benbachir")
+            ->setPhoneNumber("0609745046")
+            ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
+        ;
 
         $manager->persist($admin);
     }
