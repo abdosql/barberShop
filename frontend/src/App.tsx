@@ -15,6 +15,8 @@ import ShopClosedPage from './components/ShopClosedPage';
 import SocialLinks from './components/SocialLinks';
 import LoadingSpinner from './components/LoadingSpinner';
 import './styles/globals.css';
+import PhoneVerification from './components/auth/PhoneVerification';
+import VerificationRoute from './components/auth/VerificationRoute';
 
 // Create a context for managing the social links modal
 export const SocialLinksContext = React.createContext({
@@ -45,6 +47,13 @@ function AppContent() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        
+        {/* Protected verification route */}
+        <Route path="/verify" element={
+          <VerificationRoute>
+            <PhoneVerification />
+          </VerificationRoute>
+        } />
 
         {/* Protected routes */}
         <Route path="/" element={
@@ -53,7 +62,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
-        {/* Admin routes - not affected by shop status */}
+        {/* Admin routes */}
         <Route path="/admin/*" element={
           <ProtectedRoute requireAdmin>
             <AdminLayout>

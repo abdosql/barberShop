@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -117,12 +118,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Appointment::class, mappedBy: 'user_')]
     private Collection $appointments;
 
+    /**
+     * @var Collection<int, PhoneNumberVerification>
+     */
+    #[ORM\OneToMany(targetEntity: PhoneNumberVerification::class, mappedBy: 'user_')]
+    private Collection $phoneNumberVerifications;
+
+    #[ORM\Column]
+    private ?bool $isActive = false;
+
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->notifications = new ArrayCollection();
         $this->appointments = new ArrayCollection();
+        $this->phoneNumberVerifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -296,5 +308,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFullName(): string
     {
         return $this->lastName . ' ' . $this->firstName;
+    }
+
+    /**
+     * @return Collection<int, PhoneNumberVerification>
+     */
+    public function getPhoneNumberVerifications(): Collection
+    {
+        return $this->phoneNumberVerifications;
+    }
+
+    public function addPhoneNumberVerification(PhoneNumberVerification $phoneNumberVerification): static
+    {
+        if (!$this->phoneNumberVerifications->contains($phoneNumberVerification)) {
+            $this->phoneNumberVerifications->add($phoneNumberVerification);
+            $phoneNumberVerification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePhoneNumberVerification(PhoneNumberVerification $phoneNumberVerification): static
+    {
+        if ($this->phoneNumberVerifications->removeElement($phoneNumberVerification)) {
+            // set the owning side to null (unless already changed)
+            if ($phoneNumberVerification->getUser() === $this) {
+                $phoneNumberVerification->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
     }
 }

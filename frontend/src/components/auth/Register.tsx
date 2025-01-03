@@ -116,11 +116,23 @@ export default function Register() {
         return;
       }
 
-      navigate('/login', { 
+      // Set verification session with 10-minute expiration
+      const verificationSession = {
+        phoneNumber: phone,
+        startedAt: Date.now(),
+        expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
+      };
+      localStorage.setItem('verificationSession', JSON.stringify(verificationSession));
+
+      // Navigate to verification
+      navigate('/verify', { 
         state: { 
-          registrationSuccess: true,
-          name: firstName + ' ' + lastName
-        } 
+          userData: {
+            firstName,
+            lastName,
+            phoneNumber: phone
+          }
+        }
       });
 
     } catch (err) {
