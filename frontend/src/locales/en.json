@@ -243,7 +243,9 @@
       "newHere": "New here?",
       "createAccount": "Create an account",
       "enterPhone": "Enter your phone number",
-      "enterPassword": "Enter your password"
+      "enterPassword": "Enter your password",
+      "invalidCredentials": "Invalid phone number or password.",
+      "loginError": "An error occurred while trying to log in. Please try again."
     },
     "register": {
       "joinBarber": "Join Our Barber",

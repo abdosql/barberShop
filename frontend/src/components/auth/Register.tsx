@@ -116,9 +116,13 @@ export default function Register() {
         return;
       }
 
-      // Set verification session with 10-minute expiration
+      // Get the created user data
+      const userData = await response.json();
+      
+      // Set verification session with user ID
       const verificationSession = {
         phoneNumber: phone,
+        userId: userData['@id'], // Store the full ID path
         startedAt: Date.now(),
         expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
       };
@@ -130,7 +134,8 @@ export default function Register() {
           userData: {
             firstName,
             lastName,
-            phoneNumber: phone
+            phoneNumber: phone,
+            userId: userData['@id']
           }
         }
       });

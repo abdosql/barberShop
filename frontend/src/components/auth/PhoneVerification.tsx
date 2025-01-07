@@ -103,28 +103,52 @@ export default function PhoneVerification() {
 
     try {
       const verificationCode = code.join('');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify-phone`, {
+      const verificationSession = localStorage.getItem('verificationSession');
+      const session = verificationSession ? JSON.parse(verificationSession) : null;
+
+      if (!session?.userId) {
+        throw new Error('Invalid session');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify_code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: userData.phoneNumber,
           code: verificationCode,
+          user: session.userId
         }),
       });
 
+      const data = await response.json();
+
+      if (response.status === 410) {
+        setError(translations.auth.verification.codeExpired);
+        // Clear session and redirect after a delay
+        localStorage.removeItem('verificationSession');
+        setTimeout(() => {
+          navigate('/register', { 
+            state: { 
+              verificationExpired: true 
+            }
+          });
+        }, 3000);
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('Invalid verification code');
+        throw new Error(data.error || 'Invalid verification code');
       }
 
       // Clear verification session on successful verification
       localStorage.removeItem('verificationSession');
 
-      // Navigate to login
+      // Show success message and navigate to login
       navigate('/login', {
         state: { 
           verificationSuccess: true,
+          message: data.message || translations.auth.verification.success,
           name: userData.firstName
         }
       });

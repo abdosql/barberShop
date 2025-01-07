@@ -13,6 +13,7 @@ interface User {
   roles: string[];
   createdAt: string;
   updatedAt: string;
+  isActive: boolean;
 }
 
 interface AuthContextType {
@@ -36,6 +37,11 @@ interface JWTPayload {
 interface LoginCredentials {
   phoneNumber: string;
   password: string;
+}
+
+interface LoginError {
+  code?: string | number;
+  message: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,8 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (phoneNumber: string, password: string) => {
     try {
-      console.log('Logging in...');
-      console.log(`${API_URL}/api/login`);
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: {
@@ -99,16 +103,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
         body: JSON.stringify({ phoneNumber, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Login failed');
+        if (response.status === 403 && data.code === 'INACTIVE_ACCOUNT') {
+          throw {
+            code: 'INACTIVE_ACCOUNT',
+            message: data.message
+          };
+        } else if (response.status === 401) {
+          throw {
+            code: 401,
+            message: 'Invalid credentials'
+          };
+        }
+        throw {
+          code: response.status,
+          message: data.message || 'Login failed'
+        };
       }
 
-      const data = await response.json();
+      // If login was successful, fetch user data
+      const userResponse = await fetch(`${API_URL}/api/me`, {
+        headers: {
+          'Authorization': `Bearer ${data.token}`,
+          'Accept': 'application/ld+json',
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+
+      const userData: User = await userResponse.json();
+
+      // Check if user is active
+      if (!userData.isActive) {
+        throw {
+          code: 'INACTIVE_ACCOUNT',
+          message: 'Account is not active. Please verify your account.'
+        };
+      }
+
+      // If everything is OK, set the authentication state
       localStorage.setItem('token', data.token);
+      sessionStorage.setItem('userInfo', JSON.stringify(userData));
       setToken(data.token);
+      setUserInfo(userData);
       setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      // Clean up any partial authentication state
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('userInfo');
+      setToken(null);
+      setUserInfo(null);
+      setIsAuthenticated(false);
+      
       throw error;
     }
   };

@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     mercure.public_url: '%env(MERCURE_PUBLIC_URL)%'
-    verification_code_expiry_minutes: 10
+    verification_code_expiry_minutes: 50
 
 services:
     # default configuration for services in *this* file
@@ -87,4 +87,8 @@ services:
     App\OpenApi\JwtDecorator:
         decorates: 'api_platform.openapi.factory'
         arguments: ['@.inner']
+
+    App\Security\Authentication\InactiveUserAuthenticationListener:
+        tags:
+            - { name: kernel.event_subscriber }
 

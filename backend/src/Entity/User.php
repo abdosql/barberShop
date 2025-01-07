@@ -124,8 +124,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: PhoneNumberVerification::class, mappedBy: 'user_')]
     private Collection $phoneNumberVerifications;
 
+    #[Groups(['user:read', 'user:update'])]
     #[ORM\Column(type: 'boolean')]
-    private bool $isActive = false;
+    private bool $isActive;
 
 
     public function __construct()
@@ -341,7 +342,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isActive(): ?bool
+    public function getIsActive(): ?bool
     {
         return $this->isActive;
     }

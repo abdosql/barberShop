@@ -257,7 +257,9 @@
       "newHere": "Nouveau ici ?",
       "createAccount": "Créer un compte",
       "enterPhone": "Entrez votre numéro de téléphone",
-      "enterPassword": "Entrez votre mot de passe"
+      "enterPassword": "Entrez votre mot de passe",
+      "invalidCredentials": "Numéro de téléphone ou mot de passe invalide.",
+      "loginError": "Une erreur s'est produite lors de la connexion. Veuillez réessayer."
     },
     "register": {
       "joinBarber": "Rejoignez Notre Barbier",

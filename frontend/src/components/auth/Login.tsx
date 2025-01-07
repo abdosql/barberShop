@@ -19,6 +19,15 @@ interface ValidationError {
   detail: string;
 }
 
+interface FlashMessage {
+  type: 'success' | 'error' | 'warning';
+  message: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
 export default function Login() {
   const { translations } = useLanguage();
   const [phone, setPhone] = useState('');
@@ -31,6 +40,11 @@ export default function Login() {
   const userName = location.state?.name;
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const verificationSuccess = location.state?.verificationSuccess;
+  const successMessage = location.state?.message;
+  const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+  const [inactiveUserPhone, setInactiveUserPhone] = useState('');
+  const [flashMessage, setFlashMessage] = useState<FlashMessage | null>(null);
   
   // Get the redirect path from location state, or default to home
   const from = (location.state as any)?.from?.pathname || '/';
@@ -73,9 +87,44 @@ export default function Login() {
     return null;
   };
 
+  const handleResendVerification = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: inactiveUserPhone,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to resend verification code');
+      }
+
+      // Navigate to verification page
+      navigate('/verify', { 
+        state: { 
+          userData: {
+            phoneNumber: inactiveUserPhone
+          }
+        }
+      });
+    } catch (err) {
+      setFlashMessage({
+        type: 'error',
+        message: translations.auth.login.resendVerificationError
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
+    setFlashMessage(null);
     setIsLoading(true);
 
     // Validate inputs
@@ -93,31 +142,28 @@ export default function Login() {
     
     try {
       await login(phone, password);
-      // Navigation will happen automatically due to the effect above
     } catch (err: any) {
-      if (err.response?.status === 422) {
-        const violations = err.response.data?.violations || [];
-        const newErrors: { [key: string]: string } = {};
-        
-        violations.forEach((violation: { propertyPath: string; message: string }) => {
-          // Map backend field names to frontend field names if needed
-          const fieldMap: { [key: string]: string } = {
-            phoneNumber: 'phoneNumber',
-            password: 'password'
-          };
-          
-          const fieldName = fieldMap[violation.propertyPath] || violation.propertyPath;
-          newErrors[fieldName] = violation.message;
+      console.log('Login error:', err);
+      if (err.code === 'INACTIVE_ACCOUNT') {
+        setInactiveUserPhone(phone);
+        setFlashMessage({
+          type: 'warning',
+          message: err.message,
+          action: {
+            label: translations.auth.login.resendVerification,
+            onClick: handleResendVerification
+          }
         });
-
-        if (Object.keys(newErrors).length === 0) {
-          // If no specific violations were found, set a general error
-          setErrors({ general: 'Une erreur de validation s\'est produite.' });
-        } else {
-          setErrors(newErrors);
-        }
+      } else if (err.code === 401) {
+        setFlashMessage({
+          type: 'error',
+          message: translations.auth.login.invalidCredentials
+        });
       } else {
-        setErrors({ general: 'Une erreur s\'est produite. Veuillez réessayer.' });
+        setFlashMessage({
+          type: 'error',
+          message: translations.auth.login.loginError
+        });
       }
     } finally {
       setIsLoading(false);
@@ -169,6 +215,39 @@ export default function Login() {
 
         {/* Content */}
         <div className="w-full max-w-[min(90%,420px)] relative z-10">
+          {/* Flash Message */}
+          {flashMessage && (
+            <div className={`mb-4 ${
+              flashMessage.type === 'error' ? 'bg-rose-500/10 border-rose-500/50 text-rose-500' :
+              flashMessage.type === 'warning' ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' :
+              'bg-green-500/10 border-green-500/50 text-green-500'
+            } border rounded-lg px-4 py-3`}>
+              <div className="flex justify-between items-start">
+                <p className="text-sm font-medium">{flashMessage.message}</p>
+                {flashMessage.action && (
+                  <button
+                    onClick={flashMessage.action.onClick}
+                    className="ml-4 text-sm font-medium text-blue-500 hover:text-blue-400"
+                  >
+                    {flashMessage.action.label}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Success Message for Verification */}
+          {verificationSuccess && (
+            <div className="mb-4 bg-green-500/10 border border-green-500/50 text-green-500 text-sm px-4 py-3 rounded-lg">
+              <p className="font-medium">{successMessage}</p>
+              {userName && (
+                <p className="text-xs mt-1">
+                  {translations.auth.login.welcomeBack}, {userName}!
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Compact Logo Section */}
           <div className="text-center mb-4 sm:mb-6">
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500/20 to-amber-500/20 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 backdrop-blur-xl border border-white/10">
@@ -186,7 +265,15 @@ export default function Login() {
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-4 sm:p-5 space-y-3 sm:space-y-4">
             {errors.general && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-500 text-sm">
-                {errors.general}
+                <p>{errors.general}</p>
+                {showVerificationPrompt && (
+                  <button
+                    onClick={handleResendVerification}
+                    className="text-blue-500 hover:text-blue-400 text-sm font-medium mt-2"
+                  >
+                    {translations.auth.login.resendVerification}
+                  </button>
+                )}
               </div>
             )}
             
