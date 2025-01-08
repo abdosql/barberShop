@@ -40,6 +40,7 @@ export default function Login() {
   const userName = location.state?.name;
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const verificationSuccess = location.state?.verificationSuccess;
   const successMessage = location.state?.message;
   const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
@@ -50,6 +51,16 @@ export default function Login() {
   
   // Get the redirect path from location state, or default to home
   const from = (location.state as any)?.from?.pathname || '/';
+
+  // Load remembered user on mount
+  useEffect(() => {
+    const rememberedUser = localStorage.getItem('rememberedUser');
+    if (rememberedUser) {
+      const { phoneNumber } = JSON.parse(rememberedUser);
+      setPhone(phoneNumber);
+      setRememberMe(true);
+    }
+  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -189,7 +200,7 @@ export default function Login() {
     }
     
     try {
-      await login(phone, password);
+      await login(phone, password, rememberMe);
     } catch (err: any) {
       console.log('Login error:', err);
       if (err.code === 'INACTIVE_ACCOUNT') {
@@ -440,6 +451,8 @@ export default function Login() {
                     <input
                       id="remember-me"
                       type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-blue-500 
                                focus:ring-blue-500 focus:ring-offset-zinc-900 transition-colors"
                     />
