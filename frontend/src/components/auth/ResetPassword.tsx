@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Phone, MessageSquare } from 'lucide-react';
 import Footer from '../Footer';
 import LanguageToggle from '../LanguageToggle';
@@ -15,6 +15,7 @@ export default function ResetPassword() {
     phone?: string;
     general?: string;
   }>({});
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +30,52 @@ export default function ResetPassword() {
       return;
     }
 
-    // TODO: Implement reset password logic
-    setIsLoading(false);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/request_password_reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: phone,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset code');
+      }
+
+      // Set verification session
+      const verificationSession = {
+        phoneNumber: phone,
+        userId: data.userId,
+        startedAt: Date.now(),
+        expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
+        type: 'password_reset'
+      };
+      localStorage.setItem('verificationSession', JSON.stringify(verificationSession));
+
+      // Navigate to verification page with user data and reset type
+      navigate('/verify', {
+        state: {
+          userData: {
+            phoneNumber: phone,
+            userId: data.userId
+          },
+          resetPassword: true,
+          message: data.message || 'Reset code sent successfully'
+        }
+      });
+    } catch (err: any) {
+      console.error('Reset password error:', err);
+      setErrors({
+        general: err.message || translations.auth.resetPassword.sendError || 'Failed to send reset code'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

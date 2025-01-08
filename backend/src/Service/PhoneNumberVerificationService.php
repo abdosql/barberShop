@@ -14,6 +14,8 @@ use App\Notification\NotificationFacade;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class PhoneNumberVerificationService
 {
@@ -38,15 +40,27 @@ readonly class PhoneNumberVerificationService
      * @throws RandomException
      * @throws \Exception
      */
-    public function createVerification(User $user): PhoneNumberVerification
+    public function createVerification
+    (
+        User $user,
+        string $type = PhoneNumberVerification::TYPE_PHONE_VERIFICATION
+    ): PhoneNumberVerification
     {
         $code = $this->generateCode();
         $expiredAt = new \DateTimeImmutable(sprintf('+%d minutes', $this->expiryMinutes));
-
+        $existingCodes = $this->entityManager->getRepository(PhoneNumberVerification::class)
+            ->findBy([
+                'user_' => $user,
+                'type' => $type,
+            ]);
+        foreach ($existingCodes as $existingCode) {
+            $this->entityManager->remove($existingCode);
+        }
         $PhoneNumberVerification = new PhoneNumberVerification();
         $PhoneNumberVerification
             ->setCode($code)
             ->setUser($user)
+            ->setType($type)
             ->setExpiredAt($expiredAt)
         ;
 
@@ -56,7 +70,12 @@ readonly class PhoneNumberVerificationService
         return $PhoneNumberVerification;
     }
 
-    public function verifyCode(User $user, $code): bool
+    public function verifyCode
+    (
+        User $user,
+        $code,
+        string $type = PhoneNumberVerification::TYPE_PHONE_VERIFICATION
+    ): bool
     {
         $repository = $this->entityManager->getRepository(PhoneNumberVerification::class);
         $verification = $repository->findOneBy(['user_' => $user, 'code' => $code]);
@@ -95,5 +114,24 @@ readonly class PhoneNumberVerificationService
         } catch (\Throwable $e) {
             error_log(sprintf('Failed to send WhatsApp notification: %s', $e->getMessage()));
         }
+    }
+
+    public function deserialize(string $url): User|JsonResponse
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $segments = explode('/', trim($path, '/'));
+        $userId = end($segments);
+
+        if (!ctype_digit($userId)){
+            return new JsonResponse(['error' => 'Invalid URL format'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $this->entityManager->getRepository(User::class)->find($userId);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $user;
     }
 }
