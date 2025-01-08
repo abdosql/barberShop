@@ -51,7 +51,7 @@ readonly class PhoneNumberVerificationService
         ;
 
         $this->entityManager->persist($PhoneNumberVerification);
-        $this->entityManager->flush();  
+        $this->entityManager->flush();
         $this->sendVerification($user, $code);
         return $PhoneNumberVerification;
     }
@@ -68,7 +68,7 @@ readonly class PhoneNumberVerificationService
             throw new CodeExpiredException();
         }
 
-        $user->setActive(true);
+        $user->setIsActive(true);
         $this->entityManager->persist($user);
 
         $this->entityManager->remove($verification);

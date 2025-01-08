@@ -30,7 +30,7 @@ class AppFixtures extends Fixture
             ->setPhoneNumber("0609745046")
             ->setPassword('$2y$13$LEHnsMrPritNgyrQfXZTmupMdCPZFErQ0yb8FIrlj8ND4hramDWr6')
         ;
-        $admin->setActive(true);
+        $admin->setIsActive(true);
 
         $manager->persist($admin);
 //        $manager->persist($admin2);
