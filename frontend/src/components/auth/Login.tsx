@@ -268,19 +268,23 @@ export default function Login() {
 
         {/* Content */}
         <div className="w-full max-w-[min(90%,420px)] relative z-10">
-          {/* Flash Message */}
-          {flashMessage && (
-            <div className={`mb-6 transform transition-all duration-300 ease-out ${
-              flashMessage.type === 'error' ? 'bg-rose-500/10 border-rose-500/50 text-rose-500' :
-              flashMessage.type === 'warning' ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' :
-              'bg-green-500/10 border-green-500/50 text-green-500'
-            } border rounded-lg px-4 py-3 backdrop-blur-xl shadow-lg`}>
-              <div className="flex justify-between items-start">
-                <p className="text-sm font-medium">{flashMessage.message}</p>
+          {/* Alert Messages */}
+          {flashMessage?.type === 'error' && (
+            <div className="mb-4 bg-black/20 backdrop-blur border border-rose-500/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 text-sm text-rose-500">
+                {flashMessage.message}
+              </div>
+            </div>
+          )}
+
+          {flashMessage?.type === 'warning' && (
+            <div className="mb-4 bg-black/20 backdrop-blur border border-amber-500/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 flex justify-between items-center gap-4">
+                <span className="text-sm text-amber-500">{flashMessage.message}</span>
                 {flashMessage.action && (
                   <button
                     onClick={flashMessage.action.onClick}
-                    className="ml-4 text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                    className="text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"
                   >
                     {flashMessage.action.label}
                   </button>
@@ -289,15 +293,18 @@ export default function Login() {
             </div>
           )}
 
-          {/* Success Message for Verification */}
-          {verificationSuccess && (
-            <div className="mb-6 bg-green-500/10 border border-green-500/50 text-green-500 text-sm px-4 py-3 rounded-lg backdrop-blur-xl shadow-lg transform transition-all duration-300 ease-out">
-              <p className="font-medium">{successMessage}</p>
-              {userName && (
-                <p className="text-xs mt-1">
-                  {translations.auth.login.welcomeBack}, {userName}!
+          {(verificationSuccess || location.state?.verificationSuccess) && (
+            <div className="mb-4 bg-black/20 backdrop-blur border border-green-500/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3">
+                <p className="text-sm text-green-500">
+                  {location.state?.message || successMessage}
                 </p>
-              )}
+                {userName && (
+                  <p className="mt-1 text-xs text-green-500/80">
+                    {translations.auth.login.welcomeBack}, {userName}!
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -315,7 +322,7 @@ export default function Login() {
           </div>
 
           {/* Form Section */}
-          <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl p-6 space-y-5 shadow-2xl shadow-black/10">
+          <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 space-y-4">
             {showResendForm ? (
               <form onSubmit={handleResendSubmit} className="space-y-5">
                 {/* Phone Input for Resend */}
