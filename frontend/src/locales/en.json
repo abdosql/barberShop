@@ -278,6 +278,15 @@
     "roles": {
       "admin": "Administrator",
       "user": "User"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your phone number to reset your password",
+      "phoneNumber": "Phone Number",
+      "enterPhone": "Enter your phone number",
+      "sendCode": "Send Reset Code",
+      "sending": "Sending reset code...",
+      "backToLogin": "Back to Login"
     }
   },
   "footer": {

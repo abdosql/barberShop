@@ -292,6 +292,15 @@
     "roles": {
       "admin": "Administrateur",
       "user": "Utilisateur"
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "description": "Entrez votre numéro de téléphone pour réinitialiser votre mot de passe",
+      "phoneNumber": "Numéro de téléphone",
+      "enterPhone": "Entrez votre numéro de téléphone",
+      "sendCode": "Envoyer le code",
+      "sending": "Envoi du code...",
+      "backToLogin": "Retour à la connexion"
     }
   },
   "footer": {

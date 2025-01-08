@@ -460,9 +460,9 @@ export default function Login() {
                       {translations.auth.login.rememberMe}
                     </label>
                   </div>
-                  <a href="#" className="text-sm text-blue-500 hover:text-blue-400 transition-colors">
+                  <Link to="/reset-password" className="text-sm text-blue-500 hover:text-blue-400 transition-colors">
                     {translations.auth.login.forgot}
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Submit Button */}
