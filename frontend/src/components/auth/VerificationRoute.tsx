@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import NotFound from '../NotFound';
 
 interface VerificationRouteProps {
   children: React.ReactNode;
@@ -7,7 +8,14 @@ interface VerificationRouteProps {
 
 export default function VerificationRoute({ children }: VerificationRouteProps) {
   const location = useLocation();
-  const userData = location.state?.userData;
+  
+  // First check: Prevent direct access without state
+  // This ensures users see 404 instead of being redirected
+  if (!location.state || !location.state.userData) {
+    return <NotFound />;
+  }
+
+  const userData = location.state.userData;
   
   // Check if verification session exists and is valid
   const verificationSession = localStorage.getItem('verificationSession');
@@ -16,7 +24,7 @@ export default function VerificationRoute({ children }: VerificationRouteProps) 
   
   // Verify session validity
   const isValidSession = session && 
-    session.phoneNumber === userData?.phoneNumber && 
+    session.phoneNumber === userData.phoneNumber && 
     session.expiresAt > now;
 
   // Clear expired session
@@ -24,7 +32,8 @@ export default function VerificationRoute({ children }: VerificationRouteProps) 
     localStorage.removeItem('verificationSession');
   }
 
-  if (!userData || !isValidSession) {
+  // If session is invalid, redirect to register
+  if (!isValidSession) {
     return <Navigate to="/register" replace />;
   }
 

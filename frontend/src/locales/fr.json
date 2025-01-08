@@ -292,6 +292,25 @@
     "roles": {
       "admin": "Administrateur",
       "user": "Utilisateur"
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "description": "Entrez votre numéro de téléphone pour réinitialiser votre mot de passe",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneNumberPlaceholder": "Entrez votre numéro de téléphone",
+      "sendCode": "Envoyer le code",
+      "sending": "Envoi du code...",
+      "backToLogin": "Retour à la connexion",
+      "newPassword": "Nouveau mot de passe",
+      "enterNewPassword": "Entrez le nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmNewPassword": "Confirmer le nouveau mot de passe",
+      "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 3 caractères",
+      "updating": "Mise à jour du mot de passe...",
+      "updatePassword": "Mettre à jour le mot de passe",
+      "success": "Le mot de passe a été réinitialisé avec succès",
+      "error": "Échec de la réinitialisation du mot de passe"
     }
   },
   "footer": {
@@ -307,5 +326,10 @@
       "instagram": "Instagram",
       "tiktok": "TikTok"
     }
+  },
+  "notFound": {
+    "title": "404 - Page Non Trouvée",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'Accueil"
   }
 } 

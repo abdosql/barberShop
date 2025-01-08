@@ -278,6 +278,25 @@
     "roles": {
       "admin": "Administrator",
       "user": "User"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your phone number to reset your password",
+      "phoneNumber": "Phone Number",
+      "phoneNumberPlaceholder": "Enter your phone number",
+      "sendCode": "Send Reset Code",
+      "sending": "Sending reset code...",
+      "backToLogin": "Back to Login",
+      "newPassword": "New Password",
+      "enterNewPassword": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmNewPassword": "Confirm new password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 3 characters",
+      "updating": "Updating password...",
+      "updatePassword": "Update Password",
+      "success": "Password has been reset successfully",
+      "error": "Failed to reset password"
     }
   },
   "footer": {
@@ -293,5 +312,10 @@
       "instagram": "Instagram",
       "tiktok": "TikTok"
     }
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home"
   }
 }

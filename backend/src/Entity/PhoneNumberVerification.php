@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PhoneNumberVerificationRepository::class)]
 class PhoneNumberVerification
 {
+    public const TYPE_PHONE_VERIFICATION = 'phone_verification';
+    public const TYPE_PASSWORD_RESET = 'password_reset';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -25,9 +27,12 @@ class PhoneNumberVerification
     #[ORM\Column]
     private ?\DateTimeImmutable $expiredAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'phoneNumberVerifications', cascade: ['persist'])]
+    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'phoneNumberVerifications')]
     #[Assert\NotNull]
     private ?User $user_ = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $type = self::TYPE_PHONE_VERIFICATION;
 
     public function getId(): ?int
     {
@@ -66,6 +71,18 @@ class PhoneNumberVerification
     public function setUser(?User $user_): static
     {
         $this->user_ = $user_;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }

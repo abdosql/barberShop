@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class VerifyCodeController extends AbstractController
+class VerifyPhoneNumberController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -35,7 +35,7 @@ class VerifyCodeController extends AbstractController
 
         $code = $data['code'];
 
-        $user = $this->deserialize($data['user']);
+        $user = $this->numberVerificationService->deserialize($data['user']);
 
         if ($user instanceof JsonResponse) {
             return $user;
@@ -86,24 +86,5 @@ class VerifyCodeController extends AbstractController
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
-    }
-
-    public function deserialize(string $url): User|JsonResponse
-    {
-        $path = parse_url($url, PHP_URL_PATH);
-        $segments = explode('/', trim($path, '/'));
-        $userId = end($segments);
-
-        if (!ctype_digit($userId)){
-            return new JsonResponse(['error' => 'Invalid URL format'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $user = $this->entityManager->getRepository(User::class)->find($userId);
-
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        return $user;
     }
 }

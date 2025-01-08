@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import NotFound from '../NotFound';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,18 +11,20 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   const { isAuthenticated, userInfo } = useAuth();
   const location = useLocation();
 
+  // Allow public access to home page
   if (location.pathname === '/') {
     return <>{children}</>;
   }
 
-  if (!isAuthenticated) {
-    // Redirect to login while saving the attempted URL
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Check admin access first, before authentication
+  // This ensures unauthorized users see 404 instead of being redirected
+  if (requireAdmin && (!isAuthenticated || !userInfo?.roles?.includes('ROLE_ADMIN'))) {
+    return <NotFound />;
   }
 
-  if (requireAdmin && !userInfo?.roles.includes('ROLE_ADMIN')) {
-    // Redirect non-admin users to home page
-    return <Navigate to="/" replace />;
+  // Then check general authentication
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

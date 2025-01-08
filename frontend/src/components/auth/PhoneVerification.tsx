@@ -1,10 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Lock } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useLanguage } from '../../contexts/LanguageContext';
 import Footer from '../Footer';
 import LanguageToggle from '../LanguageToggle';
+
+interface NewPasswordFormProps {
+  onSubmit: (password: string) => void;
+  isLoading: boolean;
+  error?: string;
+}
+
+function NewPasswordForm({ onSubmit, isLoading, error }: NewPasswordFormProps) {
+  const { translations } = useLanguage();
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [validationError, setValidationError] = useState<string>();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setValidationError(undefined);
+
+    if (password.length < 3) {
+      setValidationError(translations.auth.resetPassword.passwordTooShort || 'Password must be at least 3 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setValidationError(translations.auth.resetPassword.passwordsDoNotMatch || 'Passwords do not match');
+      return;
+    }
+
+    onSubmit(password);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="new-password" className="block text-sm font-medium text-zinc-300 mb-2">
+          {translations.auth.resetPassword.newPassword || "New Password"}
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Lock className="h-4 w-4 text-zinc-500" />
+          </div>
+          <input
+            type="password"
+            id="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="block w-full pl-10 pr-4 py-2.5 border border-zinc-800 rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            placeholder={translations.auth.resetPassword.enterNewPassword || "Enter new password"}
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="confirm-password" className="block text-sm font-medium text-zinc-300 mb-2">
+          {translations.auth.resetPassword.confirmPassword || "Confirm Password"}
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Lock className="h-4 w-4 text-zinc-500" />
+          </div>
+          <input
+            type="password"
+            id="confirm-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="block w-full pl-10 pr-4 py-2.5 border border-zinc-800 rounded-lg bg-zinc-900/50 text-white placeholder-zinc-500 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            placeholder={translations.auth.resetPassword.confirmNewPassword || "Confirm new password"}
+            required
+          />
+        </div>
+      </div>
+
+      {(validationError || error) && (
+        <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 text-sm px-3 py-2 rounded-lg">
+          {validationError || error}
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        isLoading={isLoading}
+        loadingText={translations.auth.resetPassword.updating || "Updating password..."}
+        className="w-full"
+      >
+        {translations.auth.resetPassword.updatePassword || "Update Password"}
+      </Button>
+    </form>
+  );
+}
 
 export default function PhoneVerification() {
   const { translations } = useLanguage();
@@ -16,6 +107,9 @@ export default function PhoneVerification() {
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [canResend, setCanResend] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordError, setPasswordError] = useState<string>();
+  const isPasswordReset = location.state?.resetPassword;
 
   // Get user data from location state
   const userData = location.state?.userData;
@@ -29,7 +123,18 @@ export default function PhoneVerification() {
     invalidCode: translations?.auth?.verification?.invalidCode ?? "Invalid verification code. Please try again.",
     timeRemaining: translations?.auth?.verification?.timeRemaining ?? "Time remaining",
     resend: translations?.auth?.verification?.resend ?? "Resend Code",
-    resendError: translations?.auth?.verification?.resendError ?? "Failed to resend code. Please try again."
+    resendError: translations?.auth?.verification?.resendError ?? "Failed to resend code. Please try again.",
+    verificationSuccess: translations?.auth?.verification?.verificationSuccess ?? "Verification successful",
+    verificationFailed: translations?.auth?.verification?.verificationFailed ?? "Verification failed",
+    resetPassword: {
+      newPassword: translations?.auth?.resetPassword?.newPassword ?? "New Password",
+      confirmPassword: translations?.auth?.resetPassword?.confirmPassword ?? "Confirm Password",
+      passwordsDoNotMatch: translations?.auth?.resetPassword?.passwordsDoNotMatch ?? "Passwords do not match",
+      passwordTooShort: translations?.auth?.resetPassword?.passwordTooShort ?? "Password must be at least 3 characters",
+      updating: translations?.auth?.resetPassword?.updating ?? "Updating password...",
+      updatePassword: translations?.auth?.resetPassword?.updatePassword ?? "Update Password",
+      success: translations?.auth?.resetPassword?.success ?? "Password has been reset successfully"
+    }
   };
 
   // Initialize and manage timer
@@ -104,45 +209,96 @@ export default function PhoneVerification() {
     setError(null);
     setIsLoading(true);
 
+    const verificationCode = code.join('');
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError(t.invalidCode);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const verificationCode = code.join('');
-      const verificationSession = localStorage.getItem('verificationSession');
-      const session = verificationSession ? JSON.parse(verificationSession) : null;
+      if (isPasswordReset) {
+        // For password reset, just show the password form without verifying the code yet
+        setShowPasswordForm(true);
+      } else {
+        // Account verification logic
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify_code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: verificationCode,
+            user: userData?.userId
+          }),
+        });
 
-      if (!session?.userId) {
-        throw new Error('Invalid session');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Verification failed');
+        }
+
+        // Clear verification session
+        localStorage.removeItem('verificationSession');
+
+        // Navigate back to login with success message
+        navigate('/login', {
+          state: {
+            verificationSuccess: true,
+            message: data.message || t.verificationSuccess
+          }
+        });
       }
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      setError(err.message || t.verificationFailed);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify_code`, {
+  const handlePasswordSubmit = async (newPassword: string) => {
+    setPasswordError(undefined);
+    setIsLoading(true);
+
+    try {
+      // Send both verification code and new password in a single request
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reset_password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: verificationCode,
-          user: session.userId
+          code: code.join(''),
+          user: userData?.userId,
+          newPassword
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Invalid verification code');
+        throw new Error(data.error || 'Failed to reset password');
       }
 
-      // Clear verification session on successful verification
+      // Clear verification session
       localStorage.removeItem('verificationSession');
 
-      // Show success message and navigate to login
+      // Navigate back to login with success message
       navigate('/login', {
-        state: { 
+        state: {
           verificationSuccess: true,
-          message: data.message || translations.auth.verification.success,
-          name: userData.firstName
+          message: translations.auth.resetPassword.success || 'Password has been reset successfully'
         }
       });
-    } catch (err) {
-      setError(t.invalidCode);
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      setPasswordError(err.message || translations.auth.resetPassword.error || 'Failed to reset password');
+      // If the error is due to invalid code, go back to code input
+      if (err.message?.toLowerCase().includes('invalid code') || err.message?.toLowerCase().includes('expired code')) {
+        setShowPasswordForm(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -178,15 +334,17 @@ export default function PhoneVerification() {
         userId: data.userId,
         startedAt: Date.now(),
         expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
+        type: isPasswordReset ? 'password_reset' : 'account_verification'
       };
       localStorage.setItem('verificationSession', JSON.stringify(verificationSession));
       
       setTimeLeft(600); // Reset to 10 minutes
       setCanResend(false);
-      setError(translations?.auth?.verification?.codeSent || "New verification code sent successfully!");
+      setError(data.message || translations?.auth?.verification?.codeSent || "New verification code sent successfully!");
 
-    } catch (err) {
-      setError(t.resendError);
+    } catch (err: any) {
+      console.error('Resend error:', err);
+      setError(err.message || t.resendError);
       setCanResend(true);
     } finally {
       setIsResending(false);
@@ -228,41 +386,45 @@ export default function PhoneVerification() {
           {/* Verification Form */}
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 space-y-4">
             {error && (
-              <div className={`text-sm px-3 py-2 rounded-lg ${
-                error === "New verification code sent successfully!" 
-                  ? "bg-green-500/10 border border-green-500/50 text-green-500"
-                  : "bg-rose-500/10 border border-rose-500/50 text-rose-500"
-              }`}>
+              <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 text-sm px-3 py-2 rounded-lg">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex justify-center space-x-2">
-                {code.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`code-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleCodeChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-lg font-medium text-white bg-zinc-900/50 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ))}
-              </div>
-
-              <Button
-                type="submit"
+            {showPasswordForm ? (
+              <NewPasswordForm
+                onSubmit={handlePasswordSubmit}
                 isLoading={isLoading}
-                loadingText={t.verifying}
-                className="w-full"
-              >
-                {t.verify}
-              </Button>
-            </form>
+                error={passwordError}
+              />
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex justify-center space-x-2">
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`code-${index}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      className="w-12 h-12 text-center text-lg font-medium text-white bg-zinc-900/50 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  ))}
+                </div>
+
+                <Button
+                  type="submit"
+                  isLoading={isLoading}
+                  loadingText={t.verifying}
+                  className="w-full"
+                >
+                  {t.verify}
+                </Button>
+              </form>
+            )}
           </div>
 
           {/* Completely separate resend section */}

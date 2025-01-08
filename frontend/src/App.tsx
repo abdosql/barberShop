@@ -17,6 +17,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import './styles/globals.css';
 import PhoneVerification from './components/auth/PhoneVerification';
 import VerificationRoute from './components/auth/VerificationRoute';
+import ResetPassword from './components/auth/ResetPassword';
+import NotFound from './components/NotFound';
 
 // Create a context for managing the social links modal
 export const SocialLinksContext = React.createContext({
@@ -47,6 +49,7 @@ function AppContent() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Protected verification route */}
         <Route path="/verify" element={
@@ -71,8 +74,8 @@ function AppContent() {
           </ProtectedRoute>
         } />
 
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {/* Social Links Modal */}

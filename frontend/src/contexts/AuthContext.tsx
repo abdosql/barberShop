@@ -19,7 +19,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   userInfo: User | null;
-  login: (phoneNumber: string, password: string) => Promise<void>;
+  login: (phoneNumber: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => void;
   token: string | null;
 }
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const login = async (phoneNumber: string, password: string) => {
+  const login = async (phoneNumber: string, password: string, rememberMe: boolean = false) => {
     try {
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -145,6 +145,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
 
+      // Store credentials if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('rememberedUser', JSON.stringify({
+          phoneNumber,
+          lastLogin: new Date().toISOString()
+        }));
+      } else {
+        localStorage.removeItem('rememberedUser');
+      }
+
       // If everything is OK, set the authentication state
       localStorage.setItem('token', data.token);
       sessionStorage.setItem('userInfo', JSON.stringify(userData));
@@ -154,6 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error: any) {
       // Clean up any partial authentication state
       localStorage.removeItem('token');
+      localStorage.removeItem('rememberedUser');
       sessionStorage.removeItem('userInfo');
       setToken(null);
       setUserInfo(null);
@@ -165,6 +176,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('rememberedUser');
     sessionStorage.removeItem('userInfo'); // Clear user info from sessionStorage
     setToken(null);
     setUserInfo(null);
