@@ -26,24 +26,63 @@ class VerifyCodeController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!$data || !isset($data['user'], $data['code'])) {
+        if (!$data || !isset($data['code'], $data['user'])) {
             return $this->json(
-                ['error' => 'Invalid request data. "user" and "code" are required.'],
+                ['error' => 'Invalid request data. "code" and "user" are required.'],
                 Response::HTTP_BAD_REQUEST
             );
         }
 
         $code = $data['code'];
+
         $user = $this->deserialize($data['user']);
 
+        if ($user instanceof JsonResponse) {
+            return $user;
+        }
         try {
-            $this->numberVerificationService->verifyCode($user, $code);
-            return $this->json(['message' => 'Account verification successful.'], Response::HTTP_OK);
-        }catch (CodeExpiredException $e){
+            if ($this->numberVerificationService->verifyCode($user, $code) )
+                return $this->json(['message' => 'Account verification successful.'], Response::HTTP_OK)
+                    ;
+                return $this->json(['error' => 'Verification code is invalid or expired.'], Response::HTTP_BAD_REQUEST);
+
+        } catch (CodeExpiredException $e) {
             return $this->json(['error' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             return $this->json(
                 ['error' => 'An unexpected error occurred.'],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    #[Route('/api/resend_verification', name: 'app_resend_code', methods: ["POST"])]
+    public function resend(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['phoneNumber'])) {
+            return $this->json(
+                ['error' => 'Invalid request data. "phoneNumber" is required.'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $phoneNumber = $data['phoneNumber'];
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['phoneNumber' => $phoneNumber]);
+
+        if (!$user) {
+            return $this->json(['error' => 'User not found.'], Response::HTTP_NOT_FOUND);
+        }
+        try {
+            $this->numberVerificationService->createVerification($user);
+            return $this->json([
+                'message' => 'Verification code was send successfully.',
+                'userId' => '/api/users/' . $user->getId()
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->json(
+                ['error' => 'An unexpected error occurred while sending verification code.'],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

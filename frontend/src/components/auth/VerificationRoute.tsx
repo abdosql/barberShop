@@ -17,7 +17,6 @@ export default function VerificationRoute({ children }: VerificationRouteProps) 
   // Verify session validity
   const isValidSession = session && 
     session.phoneNumber === userData?.phoneNumber && 
-    session.userId &&
     session.expiresAt > now;
 
   // Clear expired session

@@ -25,7 +25,7 @@ class PhoneNumberVerification
     #[ORM\Column]
     private ?\DateTimeImmutable $expiredAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'phoneNumberVerifications')]
+    #[ORM\ManyToOne(inversedBy: 'phoneNumberVerifications', cascade: ['persist'])]
     #[Assert\NotNull]
     private ?User $user_ = null;
 

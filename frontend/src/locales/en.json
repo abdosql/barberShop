@@ -245,7 +245,10 @@
       "enterPhone": "Enter your phone number",
       "enterPassword": "Enter your password",
       "invalidCredentials": "Invalid phone number or password.",
-      "loginError": "An error occurred while trying to log in. Please try again."
+      "loginError": "An error occurred while trying to log in. Please try again.",
+      "accountNotVerified": "Your account is not verified. Please verify your account.",
+      "resendVerification": "Resend verification code",
+      "resendVerificationError": "Failed to resend verification code. Please try again."
     },
     "register": {
       "joinBarber": "Join Our Barber",

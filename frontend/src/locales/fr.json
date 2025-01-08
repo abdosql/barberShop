@@ -259,7 +259,10 @@
       "enterPhone": "Entrez votre numéro de téléphone",
       "enterPassword": "Entrez votre mot de passe",
       "invalidCredentials": "Numéro de téléphone ou mot de passe invalide.",
-      "loginError": "Une erreur s'est produite lors de la connexion. Veuillez réessayer."
+      "loginError": "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
+      "accountNotVerified": "Votre compte n'est pas vérifié. Veuillez vérifier votre compte.",
+      "resendVerification": "Renvoyer le code de vérification",
+      "resendVerificationError": "Échec de l'envoi du code de vérification. Veuillez réessayer."
     },
     "register": {
       "joinBarber": "Rejoignez Notre Barbier",

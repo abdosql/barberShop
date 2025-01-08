@@ -51,6 +51,7 @@ readonly class PhoneNumberVerificationService
         ;
 
         $this->entityManager->persist($PhoneNumberVerification);
+        $this->entityManager->flush();  
         $this->sendVerification($user, $code);
         return $PhoneNumberVerification;
     }
@@ -59,7 +60,6 @@ readonly class PhoneNumberVerificationService
     {
         $repository = $this->entityManager->getRepository(PhoneNumberVerification::class);
         $verification = $repository->findOneBy(['user_' => $user, 'code' => $code]);
-
         if (!$verification) {
             return false;
         }

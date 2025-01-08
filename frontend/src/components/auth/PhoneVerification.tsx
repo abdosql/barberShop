@@ -165,7 +165,7 @@ export default function PhoneVerification() {
     setError(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/resend-verification`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/resend_verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,6 +175,8 @@ export default function PhoneVerification() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         throw new Error('Failed to resend code');
       }
@@ -182,6 +184,7 @@ export default function PhoneVerification() {
       // Reset verification session
       const verificationSession = {
         phoneNumber: userData.phoneNumber,
+        userId: data.userId, // Store the user ID from response
         startedAt: Date.now(),
         expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
       };
