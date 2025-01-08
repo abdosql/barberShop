@@ -12,8 +12,9 @@ export default function PhoneVerification() {
   const location = useLocation();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(0);
   const [canResend, setCanResend] = useState(false);
 
   // Get user data from location state
@@ -31,6 +32,7 @@ export default function PhoneVerification() {
     resendError: translations?.auth?.verification?.resendError ?? "Failed to resend code. Please try again."
   };
 
+  // Initialize and manage timer
   useEffect(() => {
     const verificationSession = localStorage.getItem('verificationSession');
     if (!verificationSession) {
@@ -39,24 +41,26 @@ export default function PhoneVerification() {
     }
 
     const session = JSON.parse(verificationSession);
-    const remainingTime = Math.max(0, Math.floor((session.expiresAt - Date.now()) / 1000));
+    const now = Date.now();
+    const expiresAt = session.expiresAt;
     
-    // Set initial time left based on session
+    // Calculate remaining time in seconds
+    const remainingTime = Math.max(0, Math.floor((expiresAt - now) / 1000));
+    
+    if (remainingTime <= 0) {
+      setCanResend(true);
+      setTimeLeft(0);
+      return;
+    }
+
     setTimeLeft(remainingTime);
+    setCanResend(false);
 
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           setCanResend(true);
           clearInterval(timer);
-          // Clear session when time expires
-          localStorage.removeItem('verificationSession');
-          // Redirect to register when time expires
-          navigate('/register', { 
-            state: { 
-              verificationExpired: true 
-            } 
-          });
           return 0;
         }
         return prevTime - 1;
@@ -73,8 +77,8 @@ export default function PhoneVerification() {
   };
 
   const handleCodeChange = (index: number, value: string) => {
-    if (value.length > 1) return; // Prevent multiple digits
-    if (!/^\d*$/.test(value)) return; // Only allow digits
+    if (value.length > 1) return;
+    if (!/^\d*$/.test(value)) return;
 
     setCode((prevCode) => {
       const newCode = [...prevCode];
@@ -82,7 +86,6 @@ export default function PhoneVerification() {
       return newCode;
     });
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`code-${index + 1}`);
       nextInput?.focus();
@@ -123,20 +126,6 @@ export default function PhoneVerification() {
 
       const data = await response.json();
 
-      if (response.status === 410) {
-        setError(translations.auth.verification.codeExpired);
-        // Clear session and redirect after a delay
-        localStorage.removeItem('verificationSession');
-        setTimeout(() => {
-          navigate('/register', { 
-            state: { 
-              verificationExpired: true 
-            }
-          });
-        }, 3000);
-        return;
-      }
-
       if (!response.ok) {
         throw new Error(data.error || 'Invalid verification code');
       }
@@ -159,9 +148,11 @@ export default function PhoneVerification() {
     }
   };
 
-  const handleResendCode = async () => {
-    setCanResend(false);
-    setTimeLeft(600);
+  // Completely separate resend handler
+  const handleResend = async () => {
+    if (!canResend || isResending) return;
+    
+    setIsResending(true);
     setError(null);
 
     try {
@@ -178,21 +169,27 @@ export default function PhoneVerification() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error('Failed to resend code');
+        throw new Error(data.error || 'Failed to resend code');
       }
 
-      // Reset verification session
+      // Reset verification session with 10 minutes expiry
       const verificationSession = {
         phoneNumber: userData.phoneNumber,
-        userId: data.userId, // Store the user ID from response
+        userId: data.userId,
         startedAt: Date.now(),
         expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
       };
       localStorage.setItem('verificationSession', JSON.stringify(verificationSession));
+      
+      setTimeLeft(600); // Reset to 10 minutes
+      setCanResend(false);
+      setError(translations?.auth?.verification?.codeSent || "New verification code sent successfully!");
 
     } catch (err) {
       setError(t.resendError);
       setCanResend(true);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -231,7 +228,11 @@ export default function PhoneVerification() {
           {/* Verification Form */}
           <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 space-y-4">
             {error && (
-              <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 text-sm px-3 py-2 rounded-lg">
+              <div className={`text-sm px-3 py-2 rounded-lg ${
+                error === "New verification code sent successfully!" 
+                  ? "bg-green-500/10 border border-green-500/50 text-green-500"
+                  : "bg-rose-500/10 border border-rose-500/50 text-rose-500"
+              }`}>
                 {error}
               </div>
             )}
@@ -262,18 +263,27 @@ export default function PhoneVerification() {
                 {t.verify}
               </Button>
             </form>
+          </div>
 
+          {/* Completely separate resend section */}
+          <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 mt-4">
             <div className="text-center space-y-2">
               <p className="text-sm text-zinc-400">
-                {t.timeRemaining}: {formatTime(timeLeft)}
+                {timeLeft > 0 ? `${t.timeRemaining}: ${formatTime(timeLeft)}` : "Code expired"}
               </p>
               {canResend && (
-                <button
-                  onClick={handleResendCode}
-                  className="text-sm text-blue-500 hover:text-blue-400"
+                <div 
+                  onClick={handleResend}
+                  className={`text-sm transition-colors cursor-pointer ${
+                    isResending
+                      ? 'text-zinc-500 cursor-not-allowed'
+                      : 'text-blue-500 hover:text-blue-400'
+                  }`}
                 >
-                  {t.resend}
-                </button>
+                  {isResending 
+                    ? (translations?.auth?.verification?.resending || "Resending...") 
+                    : (translations?.auth?.verification?.resend || "Resend verification code")}
+                </div>
               )}
             </div>
           </div>
