@@ -91,19 +91,17 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     // Check if the slot is in the past for today
     const today = new Date().toLocaleDateString('en-CA');
     if (formState.date === today) {
+        // Get current time and add one hour to match UTC time of slots
         const now = new Date();
-        // Create a date object with the slot time in local timezone
-        const slotDateTime = new Date(slot.startTime);
-        const slotTime = slotDateTime.toLocaleTimeString('en-US', { hour12: false });
-        const [slotHours, slotMinutes] = slotTime.split(':').map(Number);
+        now.setHours(now.getHours() + 1);
         
-        const slotFullDateTime = new Date(formState.date);
-        slotFullDateTime.setHours(slotHours, slotMinutes, 0, 0);
+        // Create a date object with the slot time
+        const slotDateTime = new Date(slot.startTime);
         
         // Add 15 minutes buffer
         const bookingBuffer = new Date(now.getTime() + 15 * 60000);
         
-        if (slotFullDateTime <= bookingBuffer) {
+        if (slotDateTime <= bookingBuffer) {
             return true;
         }
     }
@@ -229,8 +227,9 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       };
     });
     
-    // Trigger time slots refresh
+    // Trigger time slots refresh and refetch time slots
     setRefreshTimeSlotsCount(prev => prev + 1);
+    fetchTimeSlots(); // Immediately fetch new time slots
   };
 
   const formatDuration = (minutes: number) => {
