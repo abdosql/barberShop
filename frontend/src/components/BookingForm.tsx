@@ -91,17 +91,21 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     // Check if the slot is in the past for today
     const today = new Date().toLocaleDateString('en-CA');
     if (formState.date === today) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      
-      const slotTime = new Date(slot.startTime);
-      const slotHour = slotTime.getHours();
-      const slotMinute = slotTime.getMinutes();
-      
-      if (currentHour > slotHour || (currentHour === slotHour && currentMinute + 15 >= slotMinute)) {
-        return true;
-      }
+        const now = new Date();
+        // Create a date object with the slot time in local timezone
+        const slotDateTime = new Date(slot.startTime);
+        const slotTime = slotDateTime.toLocaleTimeString('en-US', { hour12: false });
+        const [slotHours, slotMinutes] = slotTime.split(':').map(Number);
+        
+        const slotFullDateTime = new Date(formState.date);
+        slotFullDateTime.setHours(slotHours, slotMinutes, 0, 0);
+        
+        // Add 15 minutes buffer
+        const bookingBuffer = new Date(now.getTime() + 15 * 60000);
+        
+        if (slotFullDateTime <= bookingBuffer) {
+            return true;
+        }
     }
 
     // If the slot has no dailyTimeSlots, it's available by default

@@ -62,16 +62,17 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
     console.log('Today:', today);
     console.log('Is today?', formattedSelectedDate === today);
     
-    // Extract just the time part from the slot
-    const slotTime = timeSlot.startTime.split('T')[1].split('+')[0];
+    // Extract time from the slot and adjust for timezone
+    const slotDateTime = new Date(timeSlot.startTime);
+    const slotTime = slotDateTime.toLocaleTimeString('en-US', { hour12: false });
     const [slotHours, slotMinutes] = slotTime.split(':').map(Number);
     console.log('Slot time parts - Hours:', slotHours, 'Minutes:', slotMinutes);
     
     // Create a date object for the selected date with the slot's time
-    const slotDateTime = new Date(selectedDate);
-    slotDateTime.setHours(slotHours, slotMinutes, 0, 0);
-    console.log('Full slot date time:', slotDateTime);
-    console.log('Slot time string:', slotDateTime.toLocaleTimeString());
+    const slotFullDateTime = new Date(selectedDate);
+    slotFullDateTime.setHours(slotHours, slotMinutes, 0, 0);
+    console.log('Full slot date time:', slotFullDateTime);
+    console.log('Slot time string:', slotFullDateTime.toLocaleTimeString());
     
     // Get current time
     const currentTime = new Date();
@@ -80,36 +81,36 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
     
     // For today's slots, check if they're in the past
     if (formattedSelectedDate === today) {
-      // Add 15 minutes buffer for immediate bookings
-      const bookingBuffer = new Date(currentTime.getTime() + 15 * 60000);
-      console.log('Booking buffer time:', bookingBuffer.toLocaleTimeString());
-      
-      const isBeforeBuffer = slotDateTime <= bookingBuffer;
-      console.log('Is slot before buffer?', isBeforeBuffer);
-      
-      if (isBeforeBuffer) {
-        console.log('❌ Slot disabled: Too close to current time');
-        return false;
-      }
+        // Add 15 minutes buffer for immediate bookings
+        const bookingBuffer = new Date(currentTime.getTime() + 15 * 60000);
+        console.log('Booking buffer time:', bookingBuffer.toLocaleTimeString());
+        
+        const isBeforeBuffer = slotFullDateTime <= bookingBuffer;
+        console.log('Is slot before buffer?', isBeforeBuffer);
+        
+        if (isBeforeBuffer) {
+            console.log('❌ Slot disabled: Too close to current time');
+            return false;
+        }
     }
     
     // Check daily time slots
     if (!timeSlot.dailyTimeSlots || timeSlot.dailyTimeSlots.length === 0) {
-      console.log('✅ No daily slots - slot is available');
-      return true;
+        console.log('✅ No daily slots - slot is available');
+        return true;
     }
 
     const dailySlot = timeSlot.dailyTimeSlots.find(
-      slot => {
-        const slotDate = formatDateForComparison(slot.date);
-        console.log('Comparing daily slot date:', slotDate, 'with selected date:', formattedSelectedDate);
-        return slotDate === formattedSelectedDate;
-      }
+        slot => {
+            const slotDate = formatDateForComparison(slot.date);
+            console.log('Comparing daily slot date:', slotDate, 'with selected date:', formattedSelectedDate);
+            return slotDate === formattedSelectedDate;
+        }
     );
 
     if (!dailySlot) {
-      console.log('✅ No daily slot for this date - slot is available');
-      return true;
+        console.log('✅ No daily slot for this date - slot is available');
+        return true;
     }
 
     console.log(dailySlot.is_available ? '✅' : '❌', 'Daily slot availability:', dailySlot.is_available);
