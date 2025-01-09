@@ -1,5 +1,15 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Calendar, Clock, User, Scissors, Phone } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  User, 
+  Scissors,
+  Pencil,
+  Brush,
+  Sparkles,
+  Ruler,
+  Droplets,
+} from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import ServiceCard from './ServiceCard';
 import SocialLinks from './SocialLinks';
@@ -43,6 +53,24 @@ interface TimeSlotResponse {
   "totalItems": number;
   "member": TimeSlot[];
 }
+
+// Map of service names to arrays of possible icons
+const serviceIcons = {
+  'Haircut': [Scissors, Scissors, Pencil],
+  'Beard Trim': [Scissors, Pencil],
+  'Hair Styling': [Brush, Scissors],
+  'Clean Shave': [Scissors, Sparkles, Droplets],
+  'Hair Wash': [Droplets, Sparkles],
+  'Hair Treatment': [Droplets, Brush],
+  'Kids Haircut': [Scissors, Pencil, Ruler],
+  // Add more mappings as needed
+};
+
+// Function to get a random icon for a service
+const getRandomIcon = (serviceName: string) => {
+  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [Scissors, Pencil, Brush];
+  return icons[Math.floor(Math.random() * icons.length)];
+};
 
 export default function BookingForm({ readOnly = false }: BookingFormProps) {
   const { translations } = useLanguage();
@@ -373,7 +401,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
                 name={service.name}
                 price={Number(service.price)}
                 duration={service.duration}
-                icon={Scissors}
+                icon={getRandomIcon(service.name)}
                 isSelected={formState.selectedServices.includes(service.id.toString())}
                 onClick={() => handleServiceSelect(service.id)}
               />
