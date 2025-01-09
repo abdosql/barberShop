@@ -21,7 +21,7 @@
     "contact": "Contact",
     "logout": "Déconnexion",
     "guest": "Invité",
-    "brandName": "Barbershop",
+    "brandName": "Jalal Barber",
     "qrCode": {
       "title": "Code QR",
       "install": "Installer l'application"
@@ -29,9 +29,9 @@
   },
   "home": {
     "hero": {
-      "title": "Coiffure Professionnelle",
-      "subtitle": "À un clic",
-      "description": "Réservez votre prochaine coupe de cheveux et taille de barbe avec nos barbiers experts",
+      "title": "Avec JalalBarber",
+      "subtitle": "C'est aussi simple qu'un clic",
+      "description": "Cliquez, réservez, sublimez - votre coiffure parfaite sans attente !",
       "professionalGrooming": "Coiffure Professionnelle",
       "clickAway": "À un clic",
       "bookPremium": "Réservez votre prochaine coupe de cheveux premium et taille de barbe avec nos barbiers experts"
@@ -297,20 +297,23 @@
       "title": "Réinitialiser le mot de passe",
       "description": "Entrez votre numéro de téléphone pour réinitialiser votre mot de passe",
       "phoneNumber": "Numéro de téléphone",
-      "phoneNumberPlaceholder": "Entrez votre numéro de téléphone",
+      "enterPhone": "Entrez votre numéro de téléphone",
       "sendCode": "Envoyer le code",
       "sending": "Envoi du code...",
       "backToLogin": "Retour à la connexion",
       "newPassword": "Nouveau mot de passe",
       "enterNewPassword": "Entrez le nouveau mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
-      "confirmNewPassword": "Confirmer le nouveau mot de passe",
+      "confirmNewPassword": "Confirmez le nouveau mot de passe",
       "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
       "passwordTooShort": "Le mot de passe doit contenir au moins 3 caractères",
       "updating": "Mise à jour du mot de passe...",
       "updatePassword": "Mettre à jour le mot de passe",
       "success": "Le mot de passe a été réinitialisé avec succès",
-      "error": "Échec de la réinitialisation du mot de passe"
+      "error": "Échec de la réinitialisation du mot de passe",
+      "tokenError": "Le jeton de réinitialisation est invalide ou a expiré. Veuillez réessayer.",
+      "verifyingCode": "Vérification du code...",
+      "creatingToken": "Création du jeton de réinitialisation..."
     }
   },
   "footer": {

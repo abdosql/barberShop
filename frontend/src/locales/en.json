@@ -21,7 +21,7 @@
     "contact": "Contact",
     "logout": "Logout",
     "guest": "Guest",
-    "brandName": "Barbershop",
+    "brandName": "Jalal Barber",
     "qrCode": {
       "title": "QR Code",
       "install": "Install the application"
@@ -29,9 +29,9 @@
   },
   "home": {
     "hero": {
-      "title": "Professional Grooming",
-      "subtitle": "One Click Away",
-      "description": "Book your next haircut and beard trim with our expert barbers",
+      "title": "With JalalBarber",
+      "subtitle": "As Simple As One Click",
+      "description": "Click, book, shine - your perfect haircut without the wait!",
       "professionalGrooming": "Professional Grooming",
       "clickAway": "One Click Away",
       "bookPremium": "Book your next premium haircut and beard trim with our expert barbers"
@@ -283,7 +283,7 @@
       "title": "Reset Password",
       "description": "Enter your phone number to reset your password",
       "phoneNumber": "Phone Number",
-      "phoneNumberPlaceholder": "Enter your phone number",
+      "enterPhone": "Enter your phone number",
       "sendCode": "Send Reset Code",
       "sending": "Sending reset code...",
       "backToLogin": "Back to Login",
@@ -296,7 +296,10 @@
       "updating": "Updating password...",
       "updatePassword": "Update Password",
       "success": "Password has been reset successfully",
-      "error": "Failed to reset password"
+      "error": "Failed to reset password",
+      "tokenError": "Reset token is invalid or has expired. Please try again.",
+      "verifyingCode": "Verifying code...",
+      "creatingToken": "Creating reset token..."
     }
   },
   "footer": {
@@ -305,7 +308,7 @@
     "madeBy": "Made by"
   },
   "social": {
-    "title": "Follow us",
+    "title": "Merci pour votre confiance !",
     "close": "Close",
     "links": {
       "facebook": "Facebook",

@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ResetPasswordController extends AbstractController
 {
+    private const RESET_TOKEN_EXPIRY = 300; // 5 minutes in seconds
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly PhoneNumberVerificationService $verificationService,
@@ -55,7 +57,41 @@ class ResetPasswordController extends AbstractController
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
 
+    #[Route('/api/create_reset_token', name: 'app_create_reset_token', methods: ["POST"])]
+    public function createResetToken(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['user'])) {
+            return $this->json(
+                ['error' => 'Invalid request data. "user" is required.'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $user = $this->verificationService->deserialize($data['user']);
+
+        if ($user instanceof JsonResponse) {
+            return $user;
+        }
+
+        // Generate a secure random token
+        $resetToken = bin2hex(random_bytes(32));
+        $expiresAt = time() + self::RESET_TOKEN_EXPIRY;
+
+        // Store the token in the user entity
+        $user->setResetToken($resetToken);
+        $user->setResetTokenExpiresAt($expiresAt);
+        
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'resetToken' => $resetToken,
+            'expiresAt' => $expiresAt
+        ], Response::HTTP_OK);
     }
 
     #[Route('/api/reset_password', name: 'app_reset_password', methods: ["POST"])]
@@ -63,17 +99,17 @@ class ResetPasswordController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!$data || !isset($data['code'], $data['user'], $data['newPassword'])) {
+        if (!$data || !isset($data['resetToken'], $data['user'], $data['newPassword'])) {
             return $this->json(
-                ['error' => 'Invalid request data. "code", "user", and "newPassword" are required.'],
+                ['error' => 'Invalid request data. "resetToken", "user", and "newPassword" are required.'],
                 Response::HTTP_BAD_REQUEST
             );
         }
 
-        $code = $data['code'];
+        $resetToken = $data['resetToken'];
         $newPassword = $data['newPassword'];
 
-        if (strlen($newPassword) < 3 ){
+        if (strlen($newPassword) < 3) {
             return $this->json(['error' => 'Password must be at least 3 characters long.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -83,20 +119,29 @@ class ResetPasswordController extends AbstractController
             return $user;
         }
 
+        // Verify reset token
+        if (!$user->getResetToken() || $user->getResetToken() !== $resetToken) {
+            return $this->json(['error' => 'Invalid reset token.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check if token is expired
+        if (!$user->getResetTokenExpiresAt() || $user->getResetTokenExpiresAt() < time()) {
+            return $this->json(['error' => 'Reset token has expired.'], Response::HTTP_BAD_REQUEST);
+        }
+
         try {
-            if ($this->verificationService->verifyCode($user, $code, PhoneNumberVerification::TYPE_PASSWORD_RESET)) {
-                // Hash and set the new password
-                $hashedPassword = $this->passwordHasher->hashPassword($user, $newPassword);
-                $user->setPassword($hashedPassword);
+            // Hash and set the new password
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $newPassword);
+            $user->setPassword($hashedPassword);
 
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
+            // Clear the reset token
+            $user->setResetToken(null);
+            $user->setResetTokenExpiresAt(null);
 
-                return $this->json(['message' => 'Password has been reset successfully.'], Response::HTTP_OK);
-            }
-            return $this->json(['error' => 'Reset code is invalid or expired.'], Response::HTTP_BAD_REQUEST);
-        } catch (CodeExpiredException $e) {
-            return $this->json(['error' => $e->getMessage()], $e->getStatusCode());
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            return $this->json(['message' => 'Password has been reset successfully.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->json(
                 ['error' => 'An unexpected error occurred.'],

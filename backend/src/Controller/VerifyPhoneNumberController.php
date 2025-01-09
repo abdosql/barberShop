@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Exception\CodeExpiredException;
+use App\Exception\InvalidVerificationCode;
 use App\Service\PhoneNumberVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,12 +42,10 @@ class VerifyPhoneNumberController extends AbstractController
             return $user;
         }
         try {
-            if ($this->numberVerificationService->verifyCode($user, $code) )
-                return $this->json(['message' => 'Account verification successful.'], Response::HTTP_OK)
-                    ;
-                return $this->json(['error' => 'Verification code is invalid or expired.'], Response::HTTP_BAD_REQUEST);
+            $this->numberVerificationService->verifyCode($user, $code);
 
-        } catch (CodeExpiredException $e) {
+            return $this->json(['message' => 'Account verification successful.'], Response::HTTP_OK);
+        } catch (CodeExpiredException|InvalidVerificationCode $e) {
             return $this->json(['error' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             return $this->json(
@@ -76,6 +75,7 @@ class VerifyPhoneNumberController extends AbstractController
         }
         try {
             $this->numberVerificationService->createVerification($user);
+
             return $this->json([
                 'message' => 'Verification code was send successfully.',
                 'userId' => '/api/users/' . $user->getId()

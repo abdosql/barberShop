@@ -181,8 +181,22 @@ export default function PhoneVerification() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const newCode = [...code];
+    for (let i = 0; i < 6; i++) {
+      newCode[i] = i < pastedData.length ? pastedData[i] : code[i];
+    }
+    setCode(newCode);
+    // Focus the next empty input or the last input if all are filled
+    const nextEmptyIndex = Math.min(pastedData.length, 5);
+    const nextInput = document.getElementById(`code-${nextEmptyIndex}`);
+    nextInput?.focus();
+  };
+
   const handleCodeChange = (index: number, value: string) => {
-    if (value.length > 1) return;
+    // Handle single digit input
     if (!/^\d*$/.test(value)) return;
 
     setCode((prevCode) => {
@@ -218,7 +232,48 @@ export default function PhoneVerification() {
 
     try {
       if (isPasswordReset) {
-        // For password reset, just show the password form without verifying the code yet
+        // First verify the code
+        const verifyResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/verify_code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: verificationCode,
+            user: userData?.userId
+          }),
+        });
+
+        const verifyData = await verifyResponse.json();
+
+        if (!verifyResponse.ok) {
+          throw new Error(verifyData.error || 'Verification failed');
+        }
+
+        // Then create a reset token
+        const tokenResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/create_reset_token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user: userData?.userId
+          }),
+        });
+
+        const tokenData = await tokenResponse.json();
+
+        if (!tokenResponse.ok) {
+          throw new Error(tokenData.error || 'Failed to create reset token');
+        }
+
+        // Store the reset token in state
+        localStorage.setItem('resetToken', JSON.stringify({
+          token: tokenData.resetToken,
+          expiresAt: tokenData.expiresAt
+        }));
+
+        // Show the password form
         setShowPasswordForm(true);
       } else {
         // Account verification logic
@@ -253,6 +308,7 @@ export default function PhoneVerification() {
     } catch (err: any) {
       console.error('Verification error:', err);
       setError(err.message || t.verificationFailed);
+      setShowPasswordForm(false);
     } finally {
       setIsLoading(false);
     }
@@ -263,14 +319,21 @@ export default function PhoneVerification() {
     setIsLoading(true);
 
     try {
-      // Send both verification code and new password in a single request
+      const resetTokenData = localStorage.getItem('resetToken');
+      if (!resetTokenData) {
+        throw new Error('Reset token not found. Please try again.');
+      }
+
+      const { token } = JSON.parse(resetTokenData);
+
+      // Send reset password request
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reset_password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: code.join(''),
+          resetToken: token,
           user: userData?.userId,
           newPassword
         }),
@@ -282,8 +345,9 @@ export default function PhoneVerification() {
         throw new Error(data.error || 'Failed to reset password');
       }
 
-      // Clear verification session
+      // Clear verification session and reset token
       localStorage.removeItem('verificationSession');
+      localStorage.removeItem('resetToken');
 
       // Navigate back to login with success message
       navigate('/login', {
@@ -295,8 +359,8 @@ export default function PhoneVerification() {
     } catch (err: any) {
       console.error('Password reset error:', err);
       setPasswordError(err.message || translations.auth.resetPassword.error || 'Failed to reset password');
-      // If the error is due to invalid code, go back to code input
-      if (err.message?.toLowerCase().includes('invalid code') || err.message?.toLowerCase().includes('expired code')) {
+      // If the error is due to invalid token, go back to code input
+      if (err.message?.toLowerCase().includes('invalid token') || err.message?.toLowerCase().includes('expired token')) {
         setShowPasswordForm(false);
       }
     } finally {
@@ -410,6 +474,7 @@ export default function PhoneVerification() {
                       value={digit}
                       onChange={(e) => handleCodeChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={handlePaste}
                       className="w-12 h-12 text-center text-lg font-medium text-white bg-zinc-900/50 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   ))}
@@ -427,28 +492,30 @@ export default function PhoneVerification() {
             )}
           </div>
 
-          {/* Completely separate resend section */}
-          <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 mt-4">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-zinc-400">
-                {timeLeft > 0 ? `${t.timeRemaining}: ${formatTime(timeLeft)}` : "Code expired"}
-              </p>
-              {canResend && (
-                <div 
-                  onClick={handleResend}
-                  className={`text-sm transition-colors cursor-pointer ${
-                    isResending
-                      ? 'text-zinc-500 cursor-not-allowed'
-                      : 'text-blue-500 hover:text-blue-400'
-                  }`}
-                >
-                  {isResending 
-                    ? (translations?.auth?.verification?.resending || "Resending...") 
-                    : (translations?.auth?.verification?.resend || "Resend verification code")}
-                </div>
-              )}
+          {/* Completely separate resend section - Only show when not in password form */}
+          {!showPasswordForm && (
+            <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-xl p-5 mt-4">
+              <div className="text-center space-y-2">
+                <p className="text-sm text-zinc-400">
+                  {timeLeft > 0 ? `${t.timeRemaining}: ${formatTime(timeLeft)}` : "Code expired"}
+                </p>
+                {canResend && (
+                  <div 
+                    onClick={handleResend}
+                    className={`text-sm transition-colors cursor-pointer ${
+                      isResending
+                        ? 'text-zinc-500 cursor-not-allowed'
+                        : 'text-blue-500 hover:text-blue-400'
+                    }`}
+                  >
+                    {isResending 
+                      ? (translations?.auth?.verification?.resending || "Resending...") 
+                      : (translations?.auth?.verification?.resend || "Resend verification code")}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       <Footer />
