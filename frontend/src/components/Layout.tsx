@@ -11,9 +11,9 @@ export default function Layout() {
   const { isAuthenticated } = useAuth();
 
   const images = [
-    "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1584486483122-af7d49cf2992?auto=format&fit=crop&q=80&w=2070",
+    "/images/barber1.jpg",
+    "/images/barber2.jpg",
+    "/images/barber3.jpg",
   ];
 
   // Add RTL-specific classes when Arabic is selected
@@ -40,7 +40,7 @@ export default function Layout() {
     }
 
     return (
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-lg mx-auto">
         <BookingForm />
       </div>
     );
@@ -61,24 +61,44 @@ export default function Layout() {
                 {/* Images Section - Right in Arabic */}
                 <div className="w-full lg:w-1/2 flex flex-col justify-center order-1 lg:order-2">
                   <div className={`text-center lg:${textAlignClass} mb-8 lg:mb-12`}>
-                    <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-white mb-4">
+                    <h1 className={`${
+                      language === 'ar' 
+                        ? 'text-5xl sm:text-6xl lg:text-7xl font-arabic font-black tracking-normal leading-[1.2]' 
+                        : 'text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight'
+                    } text-white mb-6`}>
                       {translations.home.hero.title}
-                      <span className="block text-blue-500">{translations.home.hero.subtitle}</span>
+                      <span className={`block text-blue-500 ${
+                        language === 'ar' 
+                          ? 'mt-4 text-4xl sm:text-5xl lg:text-6xl' 
+                          : 'mt-2 font-extrabold'
+                      }`}>
+                        {translations.home.hero.subtitle}
+                      </span>
                     </h1>
-                    <p className="text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 mb-8 lg:mb-16">
+                    <p className={`${
+                      language === 'ar'
+                        ? 'text-xl sm:text-2xl font-arabic leading-[1.8] font-medium'
+                        : 'text-lg sm:text-xl leading-relaxed'
+                    } text-zinc-400 max-w-2xl mx-auto lg:mx-0 mb-8 lg:mb-16`}>
                       {translations.home.hero.description}
                     </p>
                   </div>
 
                   <div className="hidden lg:block relative h-[450px] w-full">
-                    <div className="absolute top-0 right-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
-                      <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                    </div>
-                    <div className="absolute top-[100px] right-[200px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
-                      <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                    </div>
-                    <div className="absolute top-[180px] right-[40px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
-                      <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                    {/* Center container */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[450px]">
+                      {/* First image */}
+                      <div className="absolute top-0 left-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
+                        <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
+                      {/* Second image */}
+                      <div className="absolute top-[100px] left-[160px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
+                        <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
+                      {/* Third image */}
+                      <div className="absolute top-[180px] left-[300px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
+                        <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -88,24 +108,30 @@ export default function Layout() {
                 {/* Images Section - Left in English/French */}
                 <div className="w-full lg:w-1/2 flex flex-col justify-center">
                   <div className={`text-center lg:${textAlignClass} mb-8 lg:mb-12`}>
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
                       {translations.home.hero.title}
-                      <span className="block text-blue-500">{translations.home.hero.subtitle}</span>
+                      <span className="block text-blue-500 mt-2 font-extrabold">{translations.home.hero.subtitle}</span>
                     </h1>
-                    <p className="text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 mb-8 lg:mb-16">
+                    <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto lg:mx-0 mb-8 lg:mb-16 leading-relaxed">
                       {translations.home.hero.description}
                     </p>
                   </div>
 
                   <div className="hidden lg:block relative h-[450px] w-full">
-                    <div className="absolute top-0 left-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
-                      <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                    </div>
-                    <div className="absolute top-[100px] left-[200px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
-                      <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                    </div>
-                    <div className="absolute top-[180px] left-[40px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
-                      <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                    {/* Center container - RTL version */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[450px]">
+                      {/* First image */}
+                      <div className="absolute top-0 right-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
+                        <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
+                      {/* Second image */}
+                      <div className="absolute top-[100px] right-[160px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
+                        <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
+                      {/* Third image */}
+                      <div className="absolute top-[180px] right-[300px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
+                        <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
+                      </div>
                     </div>
                   </div>
                 </div>

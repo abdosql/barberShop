@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Scissors, ScissorsSquare, Brush, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Scissors, 
+  Pencil,
+  Brush,
+  Sparkles,
+  Ruler,
+  Spray,
+  Droplets,
+  CircleUser
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -21,13 +30,22 @@ interface ServicesProps {
   onNext: () => void;
 }
 
-// Map of service names to their respective icons
+// Map of service names to arrays of possible icons
 const serviceIcons = {
-  'Haircut': Scissors,
-  'Beard Trim': ScissorsSquare,
-  'Hair Styling': Brush,
-  'Clean Shave': Sparkles,
+  'Haircut': [Scissors, Scissors, Pencil],
+  'Beard Trim': [Scissors, Pencil],
+  'Hair Styling': [Brush, Spray, Scissors],
+  'Clean Shave': [Scissors, Sparkles, Droplets],
+  'Hair Wash': [Droplets, Spray, Sparkles],
+  'Hair Treatment': [Droplets, Brush],
+  'Kids Haircut': [Scissors, Pencil, Ruler],
   // Add more mappings as needed
+};
+
+// Function to get a random icon for a service
+const getRandomIcon = (serviceName: string) => {
+  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [Scissors, Pencil, Brush];
+  return icons[Math.floor(Math.random() * icons.length)];
 };
 
 export default function Services({ selectedServices, onSelect, onNext }: ServicesProps) {
@@ -109,7 +127,7 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
       
       <div className={getGridClass(services.length)}>
         {services.map(service => {
-          const Icon = serviceIcons[service.name as keyof typeof serviceIcons] || Scissors;
+          const Icon = getRandomIcon(service.name);
           const isSelected = selectedServices.includes(service.id.toString());
           
           return (

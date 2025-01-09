@@ -10,6 +10,7 @@ use App\Entity\Appointment;
 use App\Entity\PhoneNumberVerification;
 use App\Entity\User;
 use App\Exception\CodeExpiredException;
+use App\Exception\InvalidVerificationCode;
 use App\Notification\NotificationFacade;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
@@ -70,17 +71,19 @@ readonly class PhoneNumberVerificationService
         return $PhoneNumberVerification;
     }
 
+    /**
+     * @throws InvalidVerificationCode
+     */
     public function verifyCode
     (
         User $user,
         $code,
-        string $type = PhoneNumberVerification::TYPE_PHONE_VERIFICATION
     ): bool
     {
         $repository = $this->entityManager->getRepository(PhoneNumberVerification::class);
         $verification = $repository->findOneBy(['user_' => $user, 'code' => $code]);
         if (!$verification) {
-            return false;
+            throw new InvalidVerificationCode();
         }
 
         if ($verification->getExpiredAt() <= new \DateTime()) {
