@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
         $admin->setIsActive(true);
 
         $manager->persist($admin);
-//        $manager->persist($admin2);
+        $manager->persist($admin2);
     }
 
     public function generateServices(ObjectManager $manager): void
