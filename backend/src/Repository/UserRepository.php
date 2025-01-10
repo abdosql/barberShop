@@ -16,6 +16,17 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+
+    public function deleteInactiveUsers(): int
+    {
+        return $this->createQueryBuilder('U')
+            ->delete()
+            ->where('U.isActive = :isActive')
+            ->setParameter('isActive', false)
+            ->getQuery()
+            ->execute();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

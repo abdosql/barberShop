@@ -16,6 +16,18 @@ class AppointmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Appointment::class);
     }
 
+    public function deletePastNotConfirmedAppointments()
+    {
+        return $this->createQueryBuilder('A')
+            ->delete()
+            ->where('A.createdAt < :date')
+            ->andWhere('A.status = :status')
+            ->setParameter('date', new \DateTimeImmutable())
+            ->setParameter('status', "accepted")
+            ->getQuery()
+            ->execute();
+    }
+
 //    /**
 //     * @return Appointment[] Returns an array of Appointment objects
 //     */

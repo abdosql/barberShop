@@ -124,6 +124,24 @@ services:
   #   depends_on:
   #     - backend
 
+  supervisor:
+    build:
+      context: ./supervisor
+      dockerfile: Dockerfile
+    container_name: symfony_supervisor
+    volumes:
+      - ./backend:/var/www/html
+    env_file:
+      - ./backend/.env.${ENV_MODE:-development}
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
+      - DATABASE_URL=postgresql://user:password@database:5432/app_db
+    depends_on:
+      - backend
+      - database
+    networks:
+      - app_network
+
 volumes:
   postgres_data:
   caddy_data:
