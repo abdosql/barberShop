@@ -31,7 +31,7 @@
     "hero": {
       "title": "With JalalBarber",
       "subtitle": "As Simple As One Click",
-      "description": "Click, book, shine - your perfect haircut without the wait!",
+      "description": "Forget long waits and ineffective calls! Book your appointment with just one click and enjoy an exceptional grooming experience for a look that suits you perfectly",
       "professionalGrooming": "Professional Grooming",
       "clickAway": "One Click Away",
       "bookPremium": "Book your next premium haircut and beard trim with our expert barbers"
@@ -248,7 +248,12 @@
       "loginError": "An error occurred while trying to log in. Please try again.",
       "accountNotVerified": "Your account is not verified. Please verify your account.",
       "resendVerification": "Resend verification code",
-      "resendVerificationError": "Failed to resend verification code. Please try again."
+      "resendVerificationError": "Failed to resend verification code. Please try again.",
+      "registrationSuccess": {
+        "title": "Registration Successful!",
+        "message": "Welcome {name}! Please login to continue."
+      },
+      "signingIn": "Signing in..."
     },
     "register": {
       "joinBarber": "Join Our Barber",
@@ -300,6 +305,19 @@
       "tokenError": "Reset token is invalid or has expired. Please try again.",
       "verifyingCode": "Verifying code...",
       "creatingToken": "Creating reset token..."
+    },
+    "verification": {
+      "title": "Phone Verification",
+      "description": "Enter the 6-digit code we sent to your WhatsApp",
+      "verify": "Verify Phone Number",
+      "verifying": "Verifying...",
+      "invalidCode": "Invalid verification code. Please try again.",
+      "timeRemaining": "Time remaining",
+      "resend": "Resend verification code",
+      "resending": "Resending...",
+      "codeSent": "New verification code sent successfully!",
+      "verificationSuccess": "Verification successful",
+      "verificationFailed": "Verification failed"
     }
   },
   "footer": {
@@ -320,5 +338,9 @@
     "title": "404 - Page Not Found",
     "description": "The page you're looking for doesn't exist or has been moved.",
     "backHome": "Back to Home"
+  },
+  "notification": {
+    "trust": "Thank you for your trust!",
+    "pending": "Your appointment is pending validation. You will receive a notification on WhatsApp once it is confirmed."
   }
 }

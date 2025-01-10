@@ -251,10 +251,10 @@ export default function Login() {
                 </div>
                 <div>
                   <h3 className="text-green-500 font-medium text-sm">
-                    Registration Successful!
+                    {translations.auth.login.registrationSuccess.title}
                   </h3>
                   <p className="text-zinc-400 text-xs mt-0.5">
-                    Welcome {userName}! Please login to continue.
+                    {translations.auth.login.registrationSuccess.message.replace('{name}', userName || '')}
                   </p>
                 </div>
               </div>
@@ -469,7 +469,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   isLoading={isLoading}
-                  loadingText="Signing in..."
+                  loadingText={translations.auth.login.signingIn}
                   className="w-full py-2.5 text-sm font-medium transition-all duration-200
                            bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
                            focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 focus:ring-offset-zinc-900"

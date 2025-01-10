@@ -31,7 +31,7 @@
     "hero": {
       "title": "Avec JalalBarber",
       "subtitle": "C'est aussi simple qu'un clic",
-      "description": "Cliquez, réservez, sublimez - votre coiffure parfaite sans attente !",
+      "description": "Fini les longues attentes et les appels inefficaces! Réservez votre rendez-vous en un seul clic et profitez d'une expérience de coiffure exceptionnelle pour un look qui vous correspond.",
       "professionalGrooming": "Coiffure Professionnelle",
       "clickAway": "À un clic",
       "bookPremium": "Réservez votre prochaine coupe de cheveux premium et taille de barbe avec nos barbiers experts"
@@ -262,7 +262,12 @@
       "loginError": "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
       "accountNotVerified": "Votre compte n'est pas vérifié. Veuillez vérifier votre compte.",
       "resendVerification": "Renvoyer le code de vérification",
-      "resendVerificationError": "Échec de l'envoi du code de vérification. Veuillez réessayer."
+      "resendVerificationError": "Échec de l'envoi du code de vérification. Veuillez réessayer.",
+      "registrationSuccess": {
+        "title": "Inscription réussie !",
+        "message": "Bienvenue {name} ! Veuillez vous connecter pour continuer."
+      },
+      "signingIn": "Connexion en cours..."
     },
     "register": {
       "joinBarber": "Rejoignez Notre Barbier",
@@ -314,6 +319,19 @@
       "tokenError": "Le jeton de réinitialisation est invalide ou a expiré. Veuillez réessayer.",
       "verifyingCode": "Vérification du code...",
       "creatingToken": "Création du jeton de réinitialisation..."
+    },
+    "verification": {
+      "title": "Vérification du téléphone",
+      "description": "Entrez le code à 6 chiffres que nous avons envoyé sur WhatsApp",
+      "verify": "Vérifier le numéro",
+      "verifying": "Vérification en cours...",
+      "invalidCode": "Code de vérification invalide. Veuillez réessayer.",
+      "timeRemaining": "Temps restant",
+      "resend": "Renvoyer le code",
+      "resending": "Renvoi en cours...",
+      "codeSent": "Nouveau code de vérification envoyé avec succès !",
+      "verificationSuccess": "Vérification réussie",
+      "verificationFailed": "Échec de la vérification"
     }
   },
   "footer": {
@@ -334,5 +352,9 @@
     "title": "404 - Page Non Trouvée",
     "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
     "backHome": "Retour à l'Accueil"
+  },
+  "notification": {
+    "trust": "Merci pour votre confiance !",
+    "pending": "Votre rendez-vous est en attente de validation. Une notification vous sera envoyée sur WhatsApp dès qu'il sera confirmé."
   }
 } 

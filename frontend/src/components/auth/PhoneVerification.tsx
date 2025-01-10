@@ -122,19 +122,11 @@ export default function PhoneVerification() {
     verifying: translations?.auth?.verification?.verifying ?? "Verifying...",
     invalidCode: translations?.auth?.verification?.invalidCode ?? "Invalid verification code. Please try again.",
     timeRemaining: translations?.auth?.verification?.timeRemaining ?? "Time remaining",
-    resend: translations?.auth?.verification?.resend ?? "Resend Code",
-    resendError: translations?.auth?.verification?.resendError ?? "Failed to resend code. Please try again.",
+    resend: translations?.auth?.verification?.resend ?? "Resend verification code",
+    resending: translations?.auth?.verification?.resending ?? "Resending...",
+    codeSent: translations?.auth?.verification?.codeSent ?? "New verification code sent successfully!",
     verificationSuccess: translations?.auth?.verification?.verificationSuccess ?? "Verification successful",
-    verificationFailed: translations?.auth?.verification?.verificationFailed ?? "Verification failed",
-    resetPassword: {
-      newPassword: translations?.auth?.resetPassword?.newPassword ?? "New Password",
-      confirmPassword: translations?.auth?.resetPassword?.confirmPassword ?? "Confirm Password",
-      passwordsDoNotMatch: translations?.auth?.resetPassword?.passwordsDoNotMatch ?? "Passwords do not match",
-      passwordTooShort: translations?.auth?.resetPassword?.passwordTooShort ?? "Password must be at least 3 characters",
-      updating: translations?.auth?.resetPassword?.updating ?? "Updating password...",
-      updatePassword: translations?.auth?.resetPassword?.updatePassword ?? "Update Password",
-      success: translations?.auth?.resetPassword?.success ?? "Password has been reset successfully"
-    }
+    verificationFailed: translations?.auth?.verification?.verificationFailed ?? "Verification failed"
   };
 
   // Initialize and manage timer
@@ -463,7 +455,7 @@ export default function PhoneVerification() {
               />
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex justify-center space-x-2">
+                <div className="flex justify-center space-x-2" dir="ltr">
                   {code.map((digit, index) => (
                     <input
                       key={index}
@@ -476,6 +468,7 @@ export default function PhoneVerification() {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={handlePaste}
                       className="w-12 h-12 text-center text-lg font-medium text-white bg-zinc-900/50 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      style={{ direction: 'ltr' }}
                     />
                   ))}
                 </div>
@@ -508,9 +501,7 @@ export default function PhoneVerification() {
                         : 'text-blue-500 hover:text-blue-400'
                     }`}
                   >
-                    {isResending 
-                      ? (translations?.auth?.verification?.resending || "Resending...") 
-                      : (translations?.auth?.verification?.resend || "Resend verification code")}
+                    {isResending ? t.resending : t.resend}
                   </div>
                 )}
               </div>
