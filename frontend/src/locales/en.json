@@ -21,7 +21,10 @@
     "contact": "Contact",
     "logout": "Logout",
     "guest": "Guest",
-    "brandName": "Jalal Barber",
+    "brandName": {
+      "first": "Jalal",
+      "second": "BARBER"
+    },
     "qrCode": {
       "title": "QR Code",
       "install": "Install the application"
@@ -31,7 +34,7 @@
     "hero": {
       "title": "With JalalBarber",
       "subtitle": "As Simple As One Click",
-      "description": "Forget long waits and ineffective calls! Book your appointment with just one click and enjoy an exceptional grooming experience for a look that suits you perfectly",
+      "description": "Forget long waits and ineffective calls! Book your appointment with just one click.",
       "professionalGrooming": "Professional Grooming",
       "clickAway": "One Click Away",
       "bookPremium": "Book your next premium haircut and beard trim with our expert barbers"

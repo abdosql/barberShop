@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import BookingForm from './BookingForm';
 import Footer from './Footer';
@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 export default function Layout() {
   const { translations, language } = useLanguage();
   const { isAuthenticated } = useAuth();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const images = [
     "/images/barber1.jpg",
@@ -16,8 +17,81 @@ export default function Layout() {
     "/images/barber3.jpg",
   ];
 
+  // Auto switch images every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Add RTL-specific classes when Arabic is selected
   const textAlignClass = language === 'ar' ? 'text-right' : 'text-left';
+
+  const renderImageStack = () => (
+    <div className="hidden lg:block relative h-[450px] w-full">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[450px]">
+        {/* First image */}
+        <div className="absolute top-0 left-0 w-[300px] h-[300px] transform -rotate-6">
+          <img 
+            key={activeImageIndex}
+            src={images[(activeImageIndex) % images.length]} 
+            alt="Barber Service 1" 
+            className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800 transition-all duration-1000 ease-in-out hover:scale-105"
+            style={{
+              animation: 'imageFade 1000ms ease-in-out'
+            }}
+          />
+        </div>
+        {/* Second image */}
+        <div className="absolute top-[100px] left-[160px] w-[280px] h-[280px] transform rotate-3 z-10">
+          <img 
+            key={activeImageIndex}
+            src={images[(activeImageIndex + 1) % images.length]} 
+            alt="Barber Service 2" 
+            className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800 transition-all duration-1000 ease-in-out hover:scale-105"
+            style={{
+              animation: 'imageFade 1000ms ease-in-out'
+            }}
+          />
+        </div>
+        {/* Third image */}
+        <div className="absolute top-[180px] left-[300px] w-[260px] h-[260px] transform -rotate-3 z-20">
+          <img 
+            key={activeImageIndex}
+            src={images[(activeImageIndex + 2) % images.length]} 
+            alt="Barber Service 3" 
+            className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800 transition-all duration-1000 ease-in-out hover:scale-105"
+            style={{
+              animation: 'imageFade 1000ms ease-in-out'
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  // Add animation keyframes to the component
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes imageFade {
+        0% {
+          opacity: 0;
+          transform: scale(0.95) translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const renderBookingSection = () => {
     if (!isAuthenticated) {
@@ -58,7 +132,6 @@ export default function Layout() {
                   {renderBookingSection()}
                 </div>
 
-                {/* Images Section - Right in Arabic */}
                 <div className="w-full lg:w-1/2 flex flex-col justify-center order-1 lg:order-2">
                   <div className={`text-center lg:${textAlignClass} mb-8 lg:mb-12`}>
                     <h1 className={`${
@@ -84,28 +157,11 @@ export default function Layout() {
                     </p>
                   </div>
 
-                  <div className="hidden lg:block relative h-[450px] w-full">
-                    {/* Center container */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[450px]">
-                      {/* First image */}
-                      <div className="absolute top-0 left-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
-                        <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                      {/* Second image */}
-                      <div className="absolute top-[100px] left-[160px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
-                        <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                      {/* Third image */}
-                      <div className="absolute top-[180px] left-[300px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
-                        <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                    </div>
-                  </div>
+                  {renderImageStack()}
                 </div>
               </>
             ) : (
               <>
-                {/* Images Section - Left in English/French */}
                 <div className="w-full lg:w-1/2 flex flex-col justify-center">
                   <div className={`text-center lg:${textAlignClass} mb-8 lg:mb-12`}>
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
@@ -117,26 +173,9 @@ export default function Layout() {
                     </p>
                   </div>
 
-                  <div className="hidden lg:block relative h-[450px] w-full">
-                    {/* Center container - RTL version */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[450px]">
-                      {/* First image */}
-                      <div className="absolute top-0 right-0 w-[300px] h-[300px] transform -rotate-6 hover:scale-105 transition-transform duration-300">
-                        <img src={images[0]} alt="Barber Service 1" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                      {/* Second image */}
-                      <div className="absolute top-[100px] right-[160px] w-[280px] h-[280px] transform rotate-3 z-10 hover:scale-105 transition-transform duration-300">
-                        <img src={images[1]} alt="Barber Service 2" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                      {/* Third image */}
-                      <div className="absolute top-[180px] right-[300px] w-[260px] h-[260px] transform -rotate-3 z-20 hover:scale-105 transition-transform duration-300">
-                        <img src={images[2]} alt="Barber Service 3" className="w-full h-full object-cover rounded-[25px] shadow-xl border-4 border-zinc-800" />
-                      </div>
-                    </div>
-                  </div>
+                  {renderImageStack()}
                 </div>
 
-                {/* Booking Section - Right in English/French */}
                 <div className="w-full lg:w-1/2 flex items-center">
                   {renderBookingSection()}
                 </div>

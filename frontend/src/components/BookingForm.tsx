@@ -1,15 +1,22 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Scissors,
-  Pencil,
-  Brush,
-  Sparkles,
-  Ruler,
-  Droplets,
-} from 'lucide-react';
+  GiRazor, 
+  GiScissors,
+  GiHairStrands,
+  GiWaterDrop,
+  GiSpray,
+  GiComb,
+  GiBeard,
+  GiRazorBlade
+} from 'react-icons/gi';
+import { 
+  FaChild, 
+  FaUserAlt,
+  FaSprayCan,
+  FaCalendarAlt,
+  FaClock,
+  FaUser
+} from 'react-icons/fa';
 import { useLanguage } from '../contexts/LanguageContext';
 import ServiceCard from './ServiceCard';
 import SocialLinks from './SocialLinks';
@@ -56,19 +63,19 @@ interface TimeSlotResponse {
 
 // Map of service names to arrays of possible icons
 const serviceIcons = {
-  'Haircut': [Scissors, Scissors, Pencil],
-  'Beard Trim': [Scissors, Pencil],
-  'Hair Styling': [Brush, Scissors],
-  'Clean Shave': [Scissors, Sparkles, Droplets],
-  'Hair Wash': [Droplets, Sparkles],
-  'Hair Treatment': [Droplets, Brush],
-  'Kids Haircut': [Scissors, Pencil, Ruler],
+  'Haircut': [GiScissors, GiComb, GiHairStrands],
+  'Beard Trim': [GiBeard, GiRazor, GiRazorBlade],
+  'Hair Styling': [GiComb, GiSpray, FaSprayCan],
+  'Clean Shave': [GiRazor, GiRazorBlade, FaUserAlt],
+  'Hair Wash': [GiWaterDrop, GiSpray, FaSprayCan],
+  'Hair Treatment': [GiHairStrands, GiSpray, GiComb],
+  'Kids Haircut': [FaChild, GiScissors, GiComb],
   // Add more mappings as needed
 };
 
 // Function to get a random icon for a service
 const getRandomIcon = (serviceName: string) => {
-  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [Scissors, Pencil, Brush];
+  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [GiScissors, GiComb, GiRazor];
   return icons[Math.floor(Math.random() * icons.length)];
 };
 
@@ -442,7 +449,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             {translations.home.booking.selectDate}
           </label>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
+            <FaCalendarAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <input
               type="date"
               value={formState.date}
@@ -476,7 +483,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
             {translations.home.booking.selectTime}
           </label>
           <div className="relative">
-            <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
+            <FaClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <select
               value={formState.time}
               onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))} // Reset time selection when date changes
@@ -542,7 +549,7 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
               </span>
             ) : (
               <span className="flex items-center gap-3 text-lg">
-                <User className="h-6 w-6" />
+                <FaUserAlt className="h-6 w-6" />
                 {translations.home.booking.bookAppointment}
               </span>
             )}

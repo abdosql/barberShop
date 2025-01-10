@@ -6,6 +6,16 @@ import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import InstallQRCode from './InstallQRCode';
 import { SocialLinksContext } from '../App';
+import styled from '@emotion/styled';
+
+const BrandName = styled.span`
+  @font-face {
+    font-family: 'RichTheBarber';
+    src: url('/fonts/RichTheBarberPersonalUse-gx824.ttf') format('truetype');
+  }
+  font-family: 'RichTheBarber', serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+`;
 
 /**
  * Navbar Component
@@ -45,7 +55,10 @@ export default function Navbar() {
             <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
               <Scissors className="w-4 h-4 text-blue-500" />
             </div>
-            <span className="text-white font-bold">{translations.navbar.brandName}</span>
+            <BrandName className="text-white text-2xl tracking-wide">
+              <span className="font-light">{translations.navbar.brandName.first}</span>
+              <span className="text-blue-400 ml-1">{translations.navbar.brandName.second}</span>
+            </BrandName>
           </Link>
 
           {/* Desktop navigation menu */}
