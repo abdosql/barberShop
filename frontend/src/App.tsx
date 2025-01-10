@@ -19,6 +19,7 @@ import PhoneVerification from './components/auth/PhoneVerification';
 import VerificationRoute from './components/auth/VerificationRoute';
 import ResetPassword from './components/auth/ResetPassword';
 import NotFound from './components/NotFound';
+import CancelAppointment from './components/CancelAppointment';
 
 // Create a context for managing the social links modal
 export const SocialLinksContext = React.createContext({
@@ -32,14 +33,15 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAuthRoute = ['/login', '/register'].includes(location.pathname);
+  const isCancelRoute = location.pathname.match(/^\/appointment\/\d+\/cancel$/);
 
   // Show loading spinner while checking shop status (except for admin routes)
-  if (isLoading && !isAdminRoute && !isAuthRoute) {
+  if (isLoading && !isAdminRoute && !isAuthRoute && !isCancelRoute) {
     return <LoadingSpinner />;
   }
 
   // Show closed page only for public routes (not admin or auth) when shop is closed
-  if (!isShopOpen && !isAdminRoute && !isAuthRoute) {
+  if (!isShopOpen && !isAdminRoute && !isAuthRoute && !isCancelRoute) {
     return <ShopClosedPage />;
   }
 
@@ -50,6 +52,7 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/appointment/:id/cancel" element={<CancelAppointment />} />
         
         {/* Protected verification route */}
         <Route path="/verify" element={
