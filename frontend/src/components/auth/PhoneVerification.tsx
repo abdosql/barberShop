@@ -116,8 +116,12 @@ export default function PhoneVerification() {
 
   // Ensure translations exist or provide fallbacks
   const t = {
-    title: translations?.auth?.verification?.title ?? "Phone Verification",
-    description: translations?.auth?.verification?.description ?? "Enter the 6-digit code we sent to your WhatsApp",
+    title: showPasswordForm 
+      ? (translations?.auth?.resetPassword?.title ?? "Reset Password")
+      : (translations?.auth?.verification?.title ?? "Phone Verification"),
+    description: showPasswordForm
+      ? (translations?.auth?.resetPassword?.description ?? "Enter your new password")
+      : (translations?.auth?.verification?.description ?? "Enter the 6-digit code we sent to your WhatsApp"),
     verify: translations?.auth?.verification?.verify ?? "Verify Phone Number",
     verifying: translations?.auth?.verification?.verifying ?? "Verifying...",
     invalidCode: translations?.auth?.verification?.invalidCode ?? "Invalid verification code. Please try again.",

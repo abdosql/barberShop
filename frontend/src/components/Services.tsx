@@ -1,16 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Scissors, 
-  Pencil,
-  Brush,
-  Sparkles,
-  Ruler,
-  Spray,
-  Droplets,
-  CircleUser
-} from 'lucide-react';
+  GiRazor, 
+  GiScissors,
+  GiHairStrands,
+  GiWaterDrop,
+  GiSpray,
+  GiComb,
+  GiBeard,
+  GiRazorBlade
+} from 'react-icons/gi';
+import { 
+  FaChild, 
+  FaUserAlt,
+  FaSprayCan
+} from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import ServiceCard from './ServiceCard';
 
 interface Service {
   "@id": string;
@@ -26,29 +32,28 @@ interface Service {
 
 interface ServicesProps {
   selectedServices: string[];
-  onSelect: (services: string[]) => void;
-  onNext: () => void;
+  onSelect: (services: string[], totalDuration: number) => void;
 }
 
 // Map of service names to arrays of possible icons
 const serviceIcons = {
-  'Haircut': [Scissors, Scissors, Pencil],
-  'Beard Trim': [Scissors, Pencil],
-  'Hair Styling': [Brush, Spray, Scissors],
-  'Clean Shave': [Scissors, Sparkles, Droplets],
-  'Hair Wash': [Droplets, Spray, Sparkles],
-  'Hair Treatment': [Droplets, Brush],
-  'Kids Haircut': [Scissors, Pencil, Ruler],
+  'Haircut': [GiScissors, GiComb, GiHairStrands],
+  'Beard Trim': [GiBeard, GiRazor, GiRazorBlade],
+  'Hair Styling': [GiComb, GiSpray, FaSprayCan],
+  'Clean Shave': [GiRazor, GiRazorBlade, FaUserAlt],
+  'Hair Wash': [GiWaterDrop, GiSpray, FaSprayCan],
+  'Hair Treatment': [GiHairStrands, GiSpray, GiComb],
+  'Kids Haircut': [FaChild, GiScissors, GiComb],
   // Add more mappings as needed
 };
 
 // Function to get a random icon for a service
 const getRandomIcon = (serviceName: string) => {
-  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [Scissors, Pencil, Brush];
+  const icons = serviceIcons[serviceName as keyof typeof serviceIcons] || [GiScissors, GiComb, GiRazor];
   return icons[Math.floor(Math.random() * icons.length)];
 };
 
-export default function Services({ selectedServices, onSelect, onNext }: ServicesProps) {
+export default function Services({ selectedServices, onSelect }: ServicesProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,10 +95,7 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
       sum + (services.find(s => s.id.toString() === id)?.duration || 0), 0
     );
 
-    onSelect({
-      services: newSelection,
-      totalDuration
-    });
+    onSelect(newSelection, totalDuration);
   };
 
   const totalPrice = selectedServices.reduce((sum, id) => 
@@ -131,65 +133,40 @@ export default function Services({ selectedServices, onSelect, onNext }: Service
           const isSelected = selectedServices.includes(service.id.toString());
           
           return (
-            <button
+            <ServiceCard
               key={service.id}
+              name={service.name}
+              price={Number(service.price)}
+              duration={service.duration}
+              icon={Icon}
+              isSelected={isSelected}
               onClick={() => handleServiceToggle(service.id)}
-              className={`p-6 rounded-xl border ${
-                isSelected 
-                  ? 'border-amber-500 bg-amber-500/10' 
-                  : 'border-zinc-800 bg-zinc-800/50 hover:border-zinc-700'
-              } transition-all duration-200 group`}
-            >
-              <Icon className={`w-8 h-8 mb-4 ${
-                isSelected ? 'text-amber-500' : 'text-zinc-400'
-              } group-hover:text-amber-500/80 transition-colors`} />
-              <h3 className="text-lg font-medium mb-2">{service.name}</h3>
-              <div className="flex justify-between items-center">
-                <p className="text-zinc-400">{service.price} {translations.home.booking.currency}</p>
-                <p className="text-sm text-zinc-500">{service.duration} {translations.home.services.min}</p>
-              </div>
-              {isSelected && (
-                <div className="mt-2 text-sm text-amber-500">{translations.home.services.selected}</div>
-              )}
-            </button>
+            />
           );
         })}
       </div>
 
       {selectedServices.length > 0 && (
-        <>
-          <div className="bg-zinc-800/50 rounded-xl p-4 mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-zinc-400">{translations.home.services.selectedServices}:</span>
-              <span className="font-medium">
-                {selectedServices.map(id => 
-                  services.find(s => s.id.toString() === id)?.name
-                ).join(', ')}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-zinc-400">{translations.home.services.totalDuration}:</span>
-              <span className="font-medium">{totalDuration} {translations.home.services.min}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-zinc-400">{translations.home.services.totalPrice}:</span>
-              <span className="font-medium text-amber-500">
-                {totalPrice} {translations.home.booking.currency}
-              </span>
-            </div>
+        <div className="bg-zinc-800/50 rounded-xl p-4 mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-zinc-400">{translations.home.services.selectedServices}:</span>
+            <span className="font-medium">
+              {selectedServices.map(id => 
+                services.find(s => s.id.toString() === id)?.name
+              ).join(', ')}
+            </span>
           </div>
-
-          <button
-            onClick={onNext}
-            className="w-full bg-amber-500 text-black py-3 px-4 rounded-lg font-medium hover:bg-amber-400 transition flex items-center justify-center gap-2"
-          >
-            {translations.home.services.continueWith} {selectedServices.length} {
-              selectedServices.length > 1 
-                ? translations.home.services.services 
-                : translations.home.services.service
-            }
-          </button>
-        </>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-zinc-400">{translations.home.services.totalDuration}:</span>
+            <span className="font-medium">{totalDuration} {translations.home.services.min}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-zinc-400">{translations.home.services.totalPrice}:</span>
+            <span className="font-medium text-amber-500">
+              {totalPrice} {translations.home.booking.currency}
+            </span>
+          </div>
+        </div>
       )}
     </div>
   );

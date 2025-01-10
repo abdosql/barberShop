@@ -17,11 +17,14 @@
   "navbar": {
     "adminPanel": "Panneau d'administration",
     "login": "Connexion",
-    "register": "S'inscrire",
+    "register": "Inscription",
     "contact": "Contact",
     "logout": "Déconnexion",
     "guest": "Invité",
-    "brandName": "Jalal Barber",
+    "brandName": {
+      "first": "Jalal",
+      "second": "BARBER"
+    },
     "qrCode": {
       "title": "Code QR",
       "install": "Installer l'application"
@@ -31,7 +34,7 @@
     "hero": {
       "title": "Avec JalalBarber",
       "subtitle": "C'est aussi simple qu'un clic",
-      "description": "Fini les longues attentes et les appels inefficaces! Réservez votre rendez-vous en un seul clic et profitez d'une expérience de coiffure exceptionnelle pour un look qui vous correspond.",
+      "description": "Fini les longues attentes et les appels inefficaces! Réservez votre rendez-vous en un seul clic.",
       "professionalGrooming": "Coiffure Professionnelle",
       "clickAway": "À un clic",
       "bookPremium": "Réservez votre prochaine coupe de cheveux premium et taille de barbe avec nos barbiers experts"
@@ -182,6 +185,12 @@
       "services": "Services",
       "duration": "Durée",
       "price": "Prix",
+      "cancelTitle": "Annulation du rendez-vous",
+      "cancelConfirmation": "Êtes-vous sûr de vouloir annuler ce rendez-vous ? Cette action ne peut pas être annulée.",
+      "confirmCancel": "Confirmer l'annulation",
+      "cancelling": "Annulation en cours...",
+      "cancelSuccess": "Votre rendez-vous a été annulé avec succès. Vous allez être redirigé vers la page d'accueil.",
+      "cancelError": "Une erreur s'est produite lors de l'annulation du rendez-vous. Veuillez réessayer.",
       "status": {
         "pending": "En attente",
         "accepted": "Accepté",
@@ -252,7 +261,7 @@
       "phoneNumber": "Numéro de téléphone",
       "password": "Mot de passe",
       "rememberMe": "Se souvenir de moi",
-      "forgot": "Oublié ?",
+      "forgot": "Oublié le mot de passe ?",
       "signIn": "Se connecter",
       "newHere": "Nouveau ici ?",
       "createAccount": "Créer un compte",
