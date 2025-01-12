@@ -128,24 +128,26 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
     console.log('Total duration:', totalDuration);
     console.log('Selected date:', formState.date);
     
-    // Check if the slot is in the past for today
+    // Get today's date in YYYY-MM-DD format
     const today = new Date().toLocaleDateString('en-CA');
+    
+    // Only check past slots for today's date
     if (formState.date === today) {
-      // Get current time and add one hour to match UTC time of slots
       const now = new Date();
-      now.setHours(now.getHours() + 1);
+      const [slotHours, slotMinutes] = slot.startTime.split(':');
       
-      // Create a date object with the slot time
-      const slotDateTime = new Date(slot.startTime);
+      // Create a full datetime for the slot using today's date and the slot time
+      const slotDateTime = new Date(formState.date);
+      slotDateTime.setHours(parseInt(slotHours), parseInt(slotMinutes), 0, 0);
       
-      // Add 15 minutes buffer
+      // Add 15 minutes buffer to current time
       const bookingBuffer = new Date(now.getTime() + 15 * 60000);
       
-      console.log('Current time (UTC+1):', now.toLocaleTimeString());
+      console.log('Current time:', now.toLocaleTimeString());
       console.log('Slot time:', slotDateTime.toLocaleTimeString());
       console.log('Booking buffer:', bookingBuffer.toLocaleTimeString());
       
-      if (slotDateTime <= bookingBuffer) {
+      if (slotDateTime.getTime() <= bookingBuffer.getTime()) {
         console.log('❌ Slot disabled: Too close to current time');
         return true;
       }

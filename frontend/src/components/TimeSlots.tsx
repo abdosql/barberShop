@@ -66,17 +66,14 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         const bookingBuffer = new Date(now.getTime() + 15 * 60000);
         
         // Compare full datetime to handle timezone correctly
-        const slotTime = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            slotDateTime.getHours(),
-            slotDateTime.getMinutes()
-        );
+        const slotTime = new Date(timeSlot.startTime); // Use the original slot time
         
         if (slotTime.getTime() <= bookingBuffer.getTime()) {
             return false;
         }
+    } else if (formattedSelectedDate > today) {
+        // If the date is in the future, the slot is available (subject to dailyTimeSlots check)
+        return true;
     }
     
     // Check daily time slots
