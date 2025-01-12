@@ -55,109 +55,72 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
     const formattedSelectedDate = formatDateForComparison(selectedDate);
     const today = new Date().toISOString().split('T')[0];
     
-    console.log('----------------------------------------');
-    console.log('Checking availability for slot:', timeSlot.startTime);
-    console.log('Selected date:', selectedDate);
-    console.log('Formatted selected date:', formattedSelectedDate);
-    console.log('Today:', today);
-    console.log('Is today?', formattedSelectedDate === today);
-    
-    // Extract time from the slot and adjust for timezone
+    // Extract time from the slot
     const slotDateTime = new Date(timeSlot.startTime);
     
     // For today's slots, check if they're in the past
     if (formattedSelectedDate === today) {
-      // Get current time and add one hour to match UTC time of slots
-      const currentTime = new Date();
-      currentTime.setHours(currentTime.getHours() + 1);
-      console.log('Adjusted current time:', currentTime);
-      
-      // Add 15 minutes buffer for immediate bookings
-      const bookingBuffer = new Date(currentTime.getTime() + 15 * 60000);
-      console.log('Booking buffer time:', bookingBuffer.toLocaleTimeString());
-      
-      const isBeforeBuffer = slotDateTime <= bookingBuffer;
-      console.log('Is slot before buffer?', isBeforeBuffer);
-      console.log('Slot time:', slotDateTime.toLocaleTimeString());
-      console.log('Buffer time:', bookingBuffer.toLocaleTimeString());
-      
-      if (isBeforeBuffer) {
-        console.log('❌ Slot disabled: Too close to current time');
-        return false;
-      }
+        const now = new Date();
+        
+        // Add 15 minutes buffer for immediate bookings
+        const bookingBuffer = new Date(now.getTime() + 15 * 60000);
+        
+        // Compare full datetime to handle timezone correctly
+        const slotTime = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            slotDateTime.getHours(),
+            slotDateTime.getMinutes()
+        );
+        
+        if (slotTime.getTime() <= bookingBuffer.getTime()) {
+            return false;
+        }
     }
     
     // Check daily time slots
     const dailySlot = timeSlot.dailyTimeSlots.find(
-      slot => {
-        const slotDate = formatDateForComparison(slot.date);
-        console.log('Comparing daily slot date:', slotDate, 'with selected date:', formattedSelectedDate);
-        return slotDate === formattedSelectedDate;
-      }
+        slot => formatDateForComparison(slot.date) === formattedSelectedDate
     );
 
-    if (dailySlot && !dailySlot.is_available) {
-      console.log('❌ Slot disabled: Marked as unavailable in daily slots');
-      return false;
-    }
-
-    console.log('✅ Slot is available');
-    return true;
+    return !(dailySlot && !dailySlot.is_available);
   };
 
   // Function to check if there are enough consecutive available slots
   const hasEnoughConsecutiveSlots = (startIndex: number, slotsNeeded: number) => {
-    console.log('----------------------------------------');
-    console.log('Checking consecutive slots from index:', startIndex);
-    console.log('Slots needed:', slotsNeeded);
-    console.log('Total duration:', totalDuration);
-    
     // If no duration/slots needed, slot is available
     if (slotsNeeded <= 0) {
-      console.log('No slots needed, returning true');
-      return true;
+        return true;
     }
     
     // Check if we have enough slots remaining
     if (startIndex + slotsNeeded > timeSlots.length) {
-      console.log('❌ Not enough remaining slots');
-      return false;
+        return false;
     }
 
     // Check all required slots at once
     for (let i = 0; i < slotsNeeded; i++) {
-      const currentSlot = timeSlots[startIndex + i];
-      console.log(`Checking slot ${i + 1}/${slotsNeeded}:`, new Date(currentSlot.startTime).toLocaleTimeString());
-      
-      // Check if the slot exists and is available
-      if (!currentSlot || !isTimeSlotAvailable(currentSlot, selectedDate)) {
-        console.log('❌ Slot not available at index:', startIndex + i);
-        return false;
-      }
-
-      // If not first slot, check if consecutive with previous slot
-      if (i > 0) {
-        const prevSlot = timeSlots[startIndex + i - 1];
-        const currentStart = new Date(currentSlot.startTime);
-        const prevEnd = new Date(prevSlot.endTime);
+        const currentSlot = timeSlots[startIndex + i];
         
-        console.log('Checking consecutive slots:');
-        console.log('Current start:', currentStart.toLocaleTimeString());
-        console.log('Previous end:', prevEnd.toLocaleTimeString());
-        
-        // Check if slots are exactly consecutive (end time = start time)
-        const timeDiff = (currentStart.getTime() - prevEnd.getTime()) / (1000 * 60);
-        console.log('Time difference:', timeDiff, 'minutes');
-        
-        if (timeDiff !== 0) {
-          console.log('❌ Slots not consecutive');
-          return false;
+        // Check if the slot exists and is available
+        if (!currentSlot || !isTimeSlotAvailable(currentSlot, selectedDate)) {
+            return false;
         }
-      }
+
+        // If not first slot, check if consecutive with previous slot
+        if (i > 0) {
+            const prevSlot = timeSlots[startIndex + i - 1];
+            const currentStart = new Date(currentSlot.startTime);
+            const prevEnd = new Date(prevSlot.endTime);
+            
+            // Slots must be exactly consecutive (end time = start time)
+            if (currentStart.getTime() !== prevEnd.getTime()) {
+                return false;
+            }
+        }
     }
 
-    // If we got here, we found all needed consecutive slots
-    console.log('✅ Found all needed consecutive available slots');
     return true;
   };
 

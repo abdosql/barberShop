@@ -21,6 +21,7 @@ services:
       - MERCURE_URL=http://caddy:9999/.well-known/mercure
       - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
       - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - TZ=Africa/Casablanca
     depends_on:
       - database
     networks:
@@ -54,6 +55,7 @@ services:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
       - VITE_MERCURE_HOST=${VITE_MERCURE_HOST}
+      - TZ=Africa/Casablanca
     depends_on:
       - backend
       - frontend
@@ -78,6 +80,7 @@ services:
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
       - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
       - VITE_MERCURE_HOST=${VITE_MERCURE_HOST}
+      - TZ=Africa/Casablanca
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -95,6 +98,7 @@ services:
       - POSTGRES_DB=app_db
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+      - TZ=Africa/Casablanca
     ports:
       - "5432:5432"
     networks:
@@ -136,6 +140,7 @@ services:
     environment:
       - APP_ENV=${APP_ENV:-dev}
       - DATABASE_URL=postgresql://user:password@database:5432/app_db
+      - TZ=Africa/Casablanca
     depends_on:
       - backend
       - database

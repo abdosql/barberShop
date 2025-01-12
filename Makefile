@@ -30,14 +30,32 @@ prod:
 	@sleep 10s
 	@make setup-db
 
+prod-nodb:
+	@echo "Starting production environment..."
+	ENV_MODE=production \
+	APP_ENV=prod \
+	FRONTEND_TARGET=production \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.production \
+	docker compose --env-file ./frontend/.env.production \
+	               --env-file ./backend/.env.production \
+	               --env-file ./notification/.env \
+	               up --build -d
 # Stop all containers
-down:
+down-clean:
 	@echo "🔽 Stopping and cleaning up..."
 	@docker compose down -v --remove-orphans
 	@echo "🧹 Cleaning frontend build artifacts..."
 	@if [ -d "frontend/dist" ]; then rm -rf frontend/dist; fi
 	@if [ -d "frontend/node_modules" ]; then rm -rf frontend/node_modules; fi
 	@echo "✨ Cleanup complete"
+
+down:
+	@echo "🔽 Stopping and cleaning up..."
+	@docker compose down
+	@echo "🧹 Cleaning frontend build artifacts..."
+	@if [ -d "frontend/dist" ]; then rm -rf frontend/dist; fi
+	@if [ -d "frontend/node_modules" ]; then rm -rf frontend/node_modules; fi
+	@echo "✨ Completed"
 
 # PowerShell version of down command
 down-win:
