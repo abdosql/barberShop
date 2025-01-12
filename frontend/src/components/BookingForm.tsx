@@ -316,8 +316,9 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       }
 
       // Calculate end time based on total duration
-      const endTime = new Date(initialTimeSlot.startTime);
-      endTime.setMinutes(endTime.getMinutes() + totalDuration);
+      const startDateTime = new Date(`${formState.date}T${initialTimeSlot.startTime.split('T')[1]}`);
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setMinutes(startDateTime.getMinutes() + totalDuration);
 
       // Get all consecutive slots needed for the appointment
       const getConsecutiveSlots = (startSlot: TimeSlot, totalDuration: number) => {
@@ -333,8 +334,8 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
       };
 
       const appointmentBody = {
-        startTime: `${formState.date}T${initialTimeSlot.startTime.split('T')[1]}`,
-        endTime: endTime.toISOString(),
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
         status: "pending",
         totalDuration: totalDuration,
         totalPrice: totalPrice.toString(),

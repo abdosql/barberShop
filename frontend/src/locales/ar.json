@@ -88,6 +88,30 @@
       "noTimeSlots": "ما كاين حتى وقت متاح",
       "loadingError": "ما قدرناش نحملو الأوقات",
       "next": "زيد"
+    },
+    "appointments": {
+      "title": "المواعيد",
+      "noAppointments": "ما كاين حتى موعد",
+      "loadMore": "حمل المزيد",
+      "client": "الزبون",
+      "date": "النهار",
+      "time": "الوقت",
+      "services": "الخدمات",
+      "duration": "المدة",
+      "price": "الثمن",
+      "cancelTitle": "إلغاء الموعد",
+      "cancelConfirmation": "واش متأكد بغيتي تلغي هاد الموعد؟ ما غاديش تقدر ترجع فكلامك.",
+      "confirmCancel": "أكد الإلغاء",
+      "cancelling": "كنلغي دابا...",
+      "cancelSuccess": "تلغى الموعد ديالك بنجاح. غادي نرجعوك للصفحة الرئيسية.",
+      "cancelError": "كاين مشكل فإلغاء الموعد. عاود حاول من فضلك.",
+      "status": {
+        "pending": "معلق",
+        "accepted": "مقبول",
+        "declined": "مرفوض",
+        "cancelled": "ملغي",
+        "completed": "مكمل"
+      }
     }
   },
   "admin": {

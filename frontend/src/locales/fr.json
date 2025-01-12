@@ -88,6 +88,30 @@
       "noTimeSlots": "Aucun créneau disponible",
       "loadingError": "Échec du chargement des créneaux horaires",
       "next": "Suivant"
+    },
+    "appointments": {
+      "title": "Rendez-vous",
+      "noAppointments": "Aucun rendez-vous",
+      "loadMore": "Charger plus",
+      "client": "Client",
+      "date": "Date",
+      "time": "Heure",
+      "services": "Services",
+      "duration": "Durée",
+      "price": "Prix",
+      "cancelTitle": "Annulation du rendez-vous",
+      "cancelConfirmation": "Êtes-vous sûr de vouloir annuler ce rendez-vous ? Cette action ne peut pas être annulée.",
+      "confirmCancel": "Confirmer l'annulation",
+      "cancelling": "Annulation en cours...",
+      "cancelSuccess": "Votre rendez-vous a été annulé avec succès. Vous allez être redirigé vers la page d'accueil.",
+      "cancelError": "Une erreur s'est produite lors de l'annulation du rendez-vous. Veuillez réessayer.",
+      "status": {
+        "pending": "En attente",
+        "accepted": "Accepté",
+        "declined": "Refusé",
+        "cancelled": "Annulé",
+        "completed": "Terminé"
+      }
     }
   },
   "admin": {

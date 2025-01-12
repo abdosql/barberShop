@@ -1,28 +1,77 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { FaCalendarTimes } from 'react-icons/fa';
 import { useLanguage } from '../contexts/LanguageContext';
 import Footer from './Footer';
 import { Button } from './ui/Button';
+import LanguageToggle from './LanguageToggle';
 
 export default function CancelAppointment() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { translations } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
+
+  useEffect(() => {
+    async function validateUrl() {
+      // Check if required query params exist
+      const expiration = searchParams.get('_expiration');
+      const hash = searchParams.get('_hash');
+
+      if (!expiration || !hash) {
+        navigate('/404', { replace: true });
+        return;
+      }
+
+      try {
+        // Send URL to backend for validation
+        const urlToCheck = `${location.pathname.substring(1)}${location.search}`;
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/url/appointment/cancellation/checker`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Check-Url': urlToCheck
+          }
+        });
+
+        // If response is not 200 OK, redirect to 404
+        if (!response.ok) {
+          navigate('/404', { replace: true });
+          return;
+        }
+
+        // URL is valid, we can show the form
+        setIsValidating(false);
+      } catch (err) {
+        // Any error means invalid URL
+        navigate('/404', { replace: true });
+      }
+    }
+
+    validateUrl();
+  }, [location, navigate, searchParams]);
 
   const handleCancel = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${id}/cancel`, {
-        method: 'POST',
+      // Get the URL path and query parameters
+      const urlToCancel = `${location.pathname.substring(1)}${location.search}`;
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointment/cancel`, {
+        method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          'accept': 'application/ld+json',
+          'Content-Type': 'application/merge-patch+json',
         },
+        body: JSON.stringify({
+          url: urlToCancel
+        })
       });
 
       if (!response.ok) {
@@ -30,19 +79,33 @@ export default function CancelAppointment() {
       }
 
       setSuccess(true);
-      // Redirect to home page after 3 seconds
       setTimeout(() => {
         navigate('/');
       }, 3000);
     } catch (err) {
-      setError(translations.appointments.cancelError);
+      setError(translations.home.appointments.cancelError);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Show loading state while validating URL
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0A0B]">
+        <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+        <p className="mt-4 text-zinc-400">{translations.common.loading}</p>
+      </div>
+    );
+  }
+
+  // Main content (only shown if URL is valid)
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
+
       {/* Background elements */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[#0A0A0B]" />
@@ -51,11 +114,6 @@ export default function CancelAppointment() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0B] via-transparent to-[#0A0A0B]" />
         <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-blue-500/5" />
-        {/* Decorative elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 translate-y-1/2" />
-        </div>
       </div>
 
       {/* Content */}
@@ -74,7 +132,7 @@ export default function CancelAppointment() {
           {success && (
             <div className="mb-4 bg-black/20 backdrop-blur border border-green-500/20 rounded-lg overflow-hidden">
               <div className="px-4 py-3 text-sm text-green-500">
-                {translations.appointments.cancelSuccess}
+                {translations.home.appointments.cancelSuccess}
               </div>
             </div>
           )}
@@ -88,12 +146,12 @@ export default function CancelAppointment() {
 
             {/* Title */}
             <h2 className="text-2xl font-bold text-white mb-4 tracking-tight">
-              {translations.appointments.cancelTitle}
+              {translations.home.appointments.cancelTitle}
             </h2>
 
             {/* Description */}
             <p className="text-zinc-400 mb-8">
-              {translations.appointments.cancelConfirmation}
+              {translations.home.appointments.cancelConfirmation}
             </p>
 
             {/* Buttons */}
@@ -101,13 +159,13 @@ export default function CancelAppointment() {
               <Button
                 onClick={handleCancel}
                 isLoading={isLoading}
-                loadingText={translations.appointments.cancelling}
+                loadingText={translations.home.appointments.cancelling}
                 className="w-full py-2.5 text-sm font-medium transition-all duration-200
                          bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700
                          focus:ring-2 focus:ring-rose-500/20 focus:ring-offset-2 focus:ring-offset-zinc-900"
                 disabled={isLoading || success}
               >
-                {translations.appointments.confirmCancel}
+                {translations.home.appointments.confirmCancel}
               </Button>
 
               <button

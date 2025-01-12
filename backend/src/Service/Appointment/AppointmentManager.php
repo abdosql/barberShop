@@ -7,8 +7,13 @@
 namespace App\Service\Appointment;
 
 use App\Entity\Appointment;
+use App\Generator\Url\CancellationUrlGenerator;
 use App\Notification\NotificationFacade;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -18,7 +23,9 @@ readonly class AppointmentManager
     public function __construct(
         private Security $security,
         private TimeSlotManager $timeSlotManager,
-        private NotificationFacade $notificationFacade
+        private NotificationFacade $notificationFacade,
+        private CancellationUrlGenerator $urlGenerator,
+        private EntityManagerInterface $entityManager
     ) {}
 
     /**
@@ -59,6 +66,32 @@ readonly class AppointmentManager
         return $appointment;
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function handleCancellation($url): void
+    {
+        try {
+            $cancellationUrl = $this->urlGenerator->checkUrl($url);
+            $appointment = $cancellationUrl->getAppointment();
+
+            if (!$appointment) {
+                throw new EntityNotFoundException('No appointment linked to this cancellation URL.');
+            }
+
+            $appointment->setStatus("cancelled");
+            $this->timeSlotManager->handleTimeSlots($appointment, "cancelled");
+
+            $this->entityManager->remove($cancellationUrl);
+            $this->entityManager->flush();
+        } catch (AccessDeniedHttpException | BadRequestException | EntityNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            error_log(sprintf('Failed to handle cancellation: %s', $e->getMessage()));
+            throw new \RuntimeException('An unexpected error occurred during cancellation.');
+        }
+    }
+
     private function sendCancellation(Appointment $appointment): void
     {
         $user = $appointment->getUser();
@@ -67,7 +100,6 @@ readonly class AppointmentManager
         }
 
         $phoneNumber = '212' . ltrim($user->getPhoneNumber(), '0');
-        
         try {
              $this->notificationFacade->send(
                 'whatsapp',
@@ -94,7 +126,6 @@ readonly class AppointmentManager
         }
 
         $phoneNumber = '212' . ltrim($user->getPhoneNumber(), '0');
-
         try {
             $this->notificationFacade->send(
                 'whatsapp',
@@ -105,7 +136,7 @@ readonly class AppointmentManager
                     'param2' => $appointment->getStartTime()->format('Y-m-d'),
                     'param3' => $appointment->getStartTime()->format('H:i'),
                     'param4' => 'Your appointment has been confirmed',
-                    'appointment_id' => $appointment->getId()
+                    'url' => $this->urlGenerator->generateUrl($appointment, $appointment->getEndTime(), "appointment/Cancel")
                 ],
                 ['template' => "barbershop_jalal"]
             );
@@ -140,5 +171,6 @@ readonly class AppointmentManager
             error_log(sprintf('Failed to send WhatsApp notification: %s', $e->getMessage()));
         }
     }
+
 
 }

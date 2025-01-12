@@ -11,7 +11,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\DTO\Input\CancelAppointment;
 use App\Processor\AppointmentProcessor;
+use App\Processor\CancelAppointmentProcessor;
 use App\Repository\AppointmentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -33,6 +35,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             securityMessage: "Only admins can create appointments.",
             processor: AppointmentProcessor::class
         ),
+
         new Get(
             normalizationContext: ['groups' => ['appointment:read']],
             security: "is_granted('ROLE_USER')"
@@ -48,10 +51,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
             securityMessage: "Only admins can edit appointments.",
             processor: AppointmentProcessor::class
         ),
+
+        new Patch(
+            uriTemplate: '/appointment/cancel',
+            description: "Cancel appointment",
+            denormalizationContext: ['groups' => ['appointment:cancel']],
+            input: CancelAppointment::class,
+            name: 'appointment_cancel',
+            processor: CancelAppointmentProcessor::class
+        ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')",
             securityMessage: "Only admins can delete appointments."
         )
+
     ],
     normalizationContext: ['groups' => ['appointment:read']],
     denormalizationContext: ['groups' => ['appointment:create', 'appointment:update', 'appointment:patch']]
@@ -109,6 +122,9 @@ class Appointment
     #[Groups(['appointment:read', 'appointment:create'])]
     #[ORM\ManyToMany(targetEntity: Service::class, mappedBy: 'appointment')]
     private Collection $services;
+
+    #[ORM\OneToOne(mappedBy: 'appointment', cascade: ['persist', 'remove'])]
+    private ?CancellationUrl $cancellationUrl = null;
 
     public function __construct()
     {
@@ -270,6 +286,28 @@ class Appointment
         if ($this->services->removeElement($service)) {
             $service->removeAppointment($this);
         }
+
+        return $this;
+    }
+
+    public function getCancellationUrl(): ?CancellationUrl
+    {
+        return $this->cancellationUrl;
+    }
+
+    public function setCancellationUrl(?CancellationUrl $cancellationUrl): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($cancellationUrl === null && $this->cancellationUrl !== null) {
+            $this->cancellationUrl->setAppointment(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($cancellationUrl !== null && $cancellationUrl->getAppointment() !== $this) {
+            $cancellationUrl->setAppointment($this);
+        }
+
+        $this->cancellationUrl = $cancellationUrl;
 
         return $this;
     }

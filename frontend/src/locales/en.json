@@ -88,6 +88,30 @@
       "noTimeSlots": "No time slots available",
       "loadingError": "Failed to load time slots",
       "next": "Next"
+    },
+    "appointments": {
+      "title": "Appointments",
+      "noAppointments": "No appointments",
+      "loadMore": "Load more",
+      "client": "Client",
+      "date": "Date",
+      "time": "Time",
+      "services": "Services",
+      "duration": "Duration",
+      "price": "Price",
+      "cancelTitle": "Cancel Appointment",
+      "cancelConfirmation": "Are you sure you want to cancel this appointment? This action cannot be undone.",
+      "confirmCancel": "Confirm Cancellation",
+      "cancelling": "Cancelling...",
+      "cancelSuccess": "Your appointment has been successfully cancelled. You will be redirected to the home page.",
+      "cancelError": "An error occurred while trying to cancel the appointment. Please try again.",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      }
     }
   },
   "admin": {

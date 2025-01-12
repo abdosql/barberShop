@@ -52,7 +52,7 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/appointment/:id/cancel" element={<CancelAppointment />} />
+        <Route path="/appointment/Cancel" element={<CancelAppointment />} />
         
         {/* Protected verification route */}
         <Route path="/verify" element={

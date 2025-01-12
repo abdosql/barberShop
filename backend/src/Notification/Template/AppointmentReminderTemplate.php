@@ -79,7 +79,7 @@ class AppointmentReminderTemplate implements WhatsAppTemplateInterface
                         'parameters' => [
                             [
                                 'type' => 'text',
-                                'text' => $parameters['appointment_id'] ?? ''
+                                'text' => $parameters['url'] ?? ''
                             ]
                         ]
                     ]
