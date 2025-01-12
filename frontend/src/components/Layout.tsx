@@ -14,7 +14,7 @@ export default function Layout() {
   const images = [
     "/images/b1.webp",
     "/images/b2.webp",
-    "/images/b3.webpgit stt",
+    "/images/b3.webp",
   ];
 
   // Auto switch images every 3 seconds
