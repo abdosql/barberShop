@@ -23,7 +23,7 @@ class AppointmentRepository extends ServiceEntityRepository
             ->where('A.createdAt < :date')
             ->andWhere('A.status = :status')
             ->setParameter('date', new \DateTimeImmutable())
-            ->setParameter('status', "accepted")
+            ->setParameter('status', "pending")
             ->getQuery()
             ->execute();
     }
