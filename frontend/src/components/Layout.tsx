@@ -12,9 +12,9 @@ export default function Layout() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const images = [
-    "/images/barber1.jpg",
-    "/images/barber2.jpg",
-    "/images/barber3.jpg",
+    "/images/b1.webp",
+    "/images/b2.webp",
+    "/images/b3.webpgit stt",
   ];
 
   // Auto switch images every 3 seconds

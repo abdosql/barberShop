@@ -22,5 +22,5 @@ while true; do
     
     echo "[$(date)] Sleeping for 1 week..."
     echo "----------------------------------------"
-    sleep 604800
+    sleep 2592000
 done 
