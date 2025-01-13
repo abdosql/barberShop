@@ -297,8 +297,8 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
   // Format time from ISO string to display time (HH:mm)
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   };
 
@@ -488,31 +488,53 @@ export default function BookingForm({ readOnly = false }: BookingFormProps) {
           <div className="relative">
             <FaClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <select
-              value={formState.time}
-              onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))} // Reset time selection when date changes
-              disabled={loading.timeSlots}
-              className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">{translations.home.booking.chooseTime}</option>
-              {timeSlots.map((slot, index) => {
-                const isAvailable = !slot.dailyTimeSlots.some(
-                  dailySlot => 
-                    new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && 
-                    !dailySlot.is_available
-                );
-                
-                return (
-                  <option 
-                    key={slot.id} 
-                    value={formatTime(slot.startTime)}
-                    disabled={!isAvailable || isSlotDisabled(slot, index)}
-                  >
-                    {formatTime(slot.startTime)}
-                    {!isAvailable ? ` (${translations.home.booking.notAvailable})` : ''}
-                  </option>
-                );
-              })}
-            </select>
+  value={formState.time}
+  onChange={(e) => setFormState(prev => ({ ...prev, time: e.target.value }))}
+  disabled={loading.timeSlots}
+  className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  <option value="">{translations.home.booking.chooseTime}</option>
+  {timeSlots.map((slot, index) => {
+    // Check if the slot is in the past (for today)
+    const isPastSlot = formState.date === new Date().toLocaleDateString('en-CA') && (() => {
+      const now = new Date();
+      // Create a date object for the slot time using the selected date
+      const [slotHours, slotMinutes] = formatTime(slot.startTime).split(':');
+      const slotDate = new Date(formState.date);
+      slotDate.setHours(parseInt(slotHours), parseInt(slotMinutes), 0, 0);
+      
+      // Add 15 minutes buffer to current time
+      const bookingBuffer = new Date(now.getTime() + 15 * 60000);
+      
+      console.log('Time comparison:', {
+        currentTime: now.toLocaleTimeString(),
+        bufferTime: bookingBuffer.toLocaleTimeString(),
+        slotTime: slotDate.toLocaleTimeString(),
+        isPast: slotDate.getTime() <= bookingBuffer.getTime()
+      });
+
+      return slotDate.getTime() <= bookingBuffer.getTime();
+    })();
+
+    const isAvailable = !slot.dailyTimeSlots.some(
+      dailySlot => 
+        new Date(dailySlot.date).toISOString().split('T')[0] === formState.date && 
+        !dailySlot.is_available
+    );
+    
+    return (
+      <option 
+        key={slot.id} 
+        value={formatTime(slot.startTime)}
+        disabled={!isAvailable || isSlotDisabled(slot, index) || isPastSlot}
+      >
+        {formatTime(slot.startTime)}
+        {!isAvailable ? ` (${translations.home.booking.notAvailable})` : ''}
+        {isPastSlot ? ` (${translations.home.booking.pastTime})` : ''}
+      </option>
+    );
+  })}
+</select>
           </div>
           {totalDuration > 0 && (
             <p className="mt-2 text-sm text-zinc-400">

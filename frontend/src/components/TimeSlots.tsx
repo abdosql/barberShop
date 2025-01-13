@@ -53,32 +53,52 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   // Function to check if a time slot is available
   const isTimeSlotAvailable = (timeSlot: TimeSlot, selectedDate: string) => {
     const formattedSelectedDate = formatDateForComparison(selectedDate);
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Extract time from the slot
-    const slotDateTime = new Date(timeSlot.startTime);
+    const today = new Date().toLocaleDateString('en-CA');
     
     // For today's slots, check if they're in the past
     if (formattedSelectedDate === today) {
-        const now = new Date();
-        
-        // Add 15 minutes buffer for immediate bookings
-        const bookingBuffer = new Date(now.getTime() + 15 * 60000);
-        
-        // Compare full datetime to handle timezone correctly
-        const slotTime = new Date(timeSlot.startTime); // Use the original slot time
-        
-        if (slotTime.getTime() <= bookingBuffer.getTime()) {
-            return false;
-        }
-    } else if (formattedSelectedDate > today) {
-        // If the date is in the future, the slot is available (subject to dailyTimeSlots check)
-        return true;
+      const now = new Date();
+      const currentTime = now.getTime();
+      
+      // Add 15 minutes buffer to current time
+      const bufferTime = currentTime + (15 * 60 * 1000);
+      
+      // Parse the UTC time from the slot
+      const slotUTCDate = new Date(timeSlot.startTime);
+      
+      // Convert UTC to local time for comparison
+      const slotLocalTime = new Date(
+        slotUTCDate.getUTCFullYear(),
+        slotUTCDate.getUTCMonth(),
+        slotUTCDate.getUTCDate(),
+        slotUTCDate.getUTCHours(),
+        slotUTCDate.getUTCMinutes(),
+        0,
+        0
+      );
+      
+      console.log('Time comparison (local time):', {
+        currentTime: now.toLocaleTimeString(),
+        bufferTime: new Date(bufferTime).toLocaleTimeString(),
+        slotTime: slotLocalTime.toLocaleTimeString(),
+        isDisabled: slotLocalTime.getTime() <= bufferTime,
+        slotUTC: slotUTCDate.toISOString(),
+        slotLocal: slotLocalTime.toLocaleTimeString()
+      });
+      
+      // If slot time is less than or equal to current time + buffer, it's not available
+      if (slotLocalTime.getTime() <= bufferTime) {
+        console.log(`Slot ${slotLocalTime.toLocaleTimeString()} is disabled - Current time: ${now.toLocaleTimeString()}`);
+        return false;
+      }
+    } else if (formattedSelectedDate < today) {
+      // If the date is in the past, the slot is not available
+      return false;
     }
     
     // Check daily time slots
     const dailySlot = timeSlot.dailyTimeSlots.find(
-        slot => formatDateForComparison(slot.date) === formattedSelectedDate
+      slot => formatDateForComparison(slot.date) === formattedSelectedDate
     );
 
     return !(dailySlot && !dailySlot.is_available);

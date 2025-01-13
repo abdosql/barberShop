@@ -20,6 +20,7 @@ export default function BookingSection() {
   const { translations } = useLanguage();
   const [step, setStep] = useState(1);
   const [refreshTimeSlots, setRefreshTimeSlots] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [booking, setBooking] = useState<BookingState>({
     services: [],
     time: '',
@@ -48,6 +49,13 @@ export default function BookingSection() {
       console.log('Services changed, triggering time slot refresh');
       setRefreshTimeSlots(prev => prev + 1);
       // Don't advance step automatically when services change
+    } else if (field === 'date') {
+      setSelectedDate(value);
+      setBooking(prev => ({
+        ...prev,
+        time: '', // Clear time when date changes
+        selectedTimeSlot: undefined
+      }));
     } else {
       setBooking(prev => ({ ...prev, [field]: value }));
     }
@@ -132,7 +140,9 @@ export default function BookingSection() {
                   onSelect={(timeData) => updateBooking('time', timeData)}
                   selectedServices={booking.services}
                   totalDuration={booking.totalDuration}
+                  selectedDate={selectedDate}
                   refreshTrigger={refreshTimeSlots}
+                  onNext={handleNext}
                 />
               )}
               {step === 3 && <Summary booking={booking} onBack={goBack} />}

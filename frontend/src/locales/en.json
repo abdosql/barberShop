@@ -51,6 +51,7 @@
       "bookingInProgress": "Booking in progress...",
       "bookingError": "Booking failed. Please try again.",
       "timeSlotNotFound": "Time slot not found",
+      "pastTime": "Past time",
       "currency": "DH",
       "min": "min",
       "steps": {
