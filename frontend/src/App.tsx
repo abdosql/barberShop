@@ -85,6 +85,7 @@ function AppContent() {
       <SocialLinks 
         isOpen={showSocial} 
         onClose={() => setShowSocial(false)} 
+        source="navbar"
       />
     </SocialLinksContext.Provider>
   );

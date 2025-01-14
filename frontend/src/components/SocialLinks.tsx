@@ -5,9 +5,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 interface SocialLinksProps {
   isOpen: boolean;
   onClose: () => void;
+  source?: 'navbar' | 'other';
 }
 
-export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
+export default function SocialLinks({ isOpen, onClose, source = 'other' }: SocialLinksProps) {
   const { translations } = useLanguage();
 
   useEffect(() => {
@@ -86,14 +87,16 @@ export default function SocialLinks({ isOpen, onClose }: SocialLinksProps) {
               </button>
             </div>
             
-            <div className="mb-6 p-4 bg-emerald-900/30 rounded-xl border border-emerald-500/20">
-              <div className="flex flex-col gap-2 text-center">
-                <p className="text-emerald-300 font-medium">{translations.notification.trust}</p>
-                <p className="text-zinc-300 text-sm">
-                  {translations.notification.pending}
-                </p>
+            {source !== 'navbar' && (
+              <div className="mb-6 p-4 bg-emerald-900/30 rounded-xl border border-emerald-500/20">
+                <div className="flex flex-col gap-2 text-center">
+                  <p className="text-emerald-300 font-medium">{translations.notification.trust}</p>
+                  <p className="text-zinc-300 text-sm">
+                    {translations.notification.pending}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
             
             <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
               {socialLinks.map((social, index) => (

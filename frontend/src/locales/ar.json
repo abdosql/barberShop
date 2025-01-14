@@ -51,6 +51,7 @@
       "bookingInProgress": "الحجز جاري...",
       "bookingError": "ما نجحش الحجز. عاود حاول.",
       "timeSlotNotFound": "ما كاينش هاد الوقت",
+      "pastTime": "وقت فات",
       "currency": "درهم",
       "min": "دقيقة",
       "steps": {

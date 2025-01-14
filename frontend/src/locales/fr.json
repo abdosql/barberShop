@@ -51,6 +51,7 @@
       "bookingInProgress": "Réservation en cours...",
       "bookingError": "Échec de la réservation. Veuillez réessayer.",
       "timeSlotNotFound": "Créneau horaire non trouvé",
+      "pastTime": "Heure passée",
       "currency": "DH",
       "min": "min",
       "steps": {
