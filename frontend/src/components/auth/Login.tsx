@@ -116,8 +116,6 @@ export default function Login() {
     try {
       setIsLoading(true);
       setErrors({});
-      console.log('Sending resend verification request for phone:', resendPhone);
-      
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/resend_verification`, {
         method: 'POST',
         headers: {
@@ -129,7 +127,6 @@ export default function Login() {
       });
 
       const data = await response.json();
-      console.log('Resend verification response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to resend verification code');
@@ -142,7 +139,6 @@ export default function Login() {
         startedAt: Date.now(),
         expiresAt: Date.now() + 600000, // 10 minutes in milliseconds
       };
-      console.log('Setting verification session:', verificationSession);
       localStorage.setItem('verificationSession', JSON.stringify(verificationSession));
 
       // Navigate to verification page with user data
@@ -154,10 +150,8 @@ export default function Login() {
         resendSuccess: true,
         message: data.message || 'Verification code sent successfully'
       };
-      console.log('Navigating to verification with state:', navigationState);
       navigate('/verify', { state: navigationState });
     } catch (err) {
-      console.error('Resend error:', err);
       setFlashMessage({
         type: 'error',
         message: translations.auth.login.resendVerificationError
@@ -202,7 +196,6 @@ export default function Login() {
     try {
       await login(phone, password, rememberMe);
     } catch (err: any) {
-      console.log('Login error:', err);
       if (err.code === 'INACTIVE_ACCOUNT') {
         setInactiveUserPhone(phone);
         setFlashMessage({

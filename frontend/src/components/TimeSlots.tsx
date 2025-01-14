@@ -32,7 +32,6 @@ interface TimeSlotsProps {
 }
 
 export default function TimeSlots({ onSelect, selectedServices, totalDuration, selectedDate, onNext, refreshTrigger }: TimeSlotsProps) {
-  console.log('TimeSlots component rendering', { selectedDate, totalDuration });
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,18 +76,8 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         0
       );
       
-      console.log('Time comparison (local time):', {
-        currentTime: now.toLocaleTimeString(),
-        bufferTime: new Date(bufferTime).toLocaleTimeString(),
-        slotTime: slotLocalTime.toLocaleTimeString(),
-        isDisabled: slotLocalTime.getTime() <= bufferTime,
-        slotUTC: slotUTCDate.toISOString(),
-        slotLocal: slotLocalTime.toLocaleTimeString()
-      });
-      
       // If slot time is less than or equal to current time + buffer, it's not available
       if (slotLocalTime.getTime() <= bufferTime) {
-        console.log(`Slot ${slotLocalTime.toLocaleTimeString()} is disabled - Current time: ${now.toLocaleTimeString()}`);
         return false;
       }
     } else if (formattedSelectedDate < today) {
@@ -143,38 +132,25 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
   // Check if a slot should be disabled
   const isSlotDisabled = (slot: TimeSlot, index: number) => {
-    console.log('----------------------------------------');
-    console.log('Checking if slot should be disabled:', formatTime(slot.startTime));
-    console.log('Total duration:', totalDuration);
-    
     // If slot is not available (past time or marked unavailable)
     if (!isTimeSlotAvailable(slot, selectedDate)) {
-      console.log('❌ Slot not available:', formatTime(slot.startTime));
       return true;
     }
     
     // If no services selected, slot is enabled
     if (totalDuration <= 0) {
-      console.log('✅ No duration required, slot enabled:', formatTime(slot.startTime));
       return false;
     }
 
     // Calculate how many consecutive 30-minute slots we need
     const slotsNeeded = Math.ceil(totalDuration / 30);
-    console.log('Slots needed:', slotsNeeded, 'for duration:', totalDuration);
     
     // Check if we have enough consecutive available slots starting from this slot
     const hasEnough = hasEnoughConsecutiveSlots(index, slotsNeeded);
-    console.log(hasEnough ? '✅ Slot enabled:' : '❌ Slot disabled:', formatTime(slot.startTime));
     return !hasEnough;
   };
 
   useEffect(() => {
-    console.log('----------------------------------------');
-    console.log('Total duration changed:', totalDuration);
-    console.log('Selected services:', selectedServices);
-    console.log('Required slots:', Math.ceil(totalDuration / 30));
-    
     // Force re-render of time slots when duration changes
     if (timeSlots.length > 0) {
       const updatedSlots = [...timeSlots];
@@ -183,7 +159,6 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
   }, [totalDuration, selectedServices]);
 
   useEffect(() => {
-    console.log('Duration changed:', totalDuration);
     // Reset selection if the duration changes and current selection becomes invalid
     if (selectedTime && timeSlots.length > 0) {
       const selectedSlotIndex = timeSlots.findIndex(
@@ -192,7 +167,6 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
 
       if (selectedSlotIndex !== -1) {
         const isCurrentSlotDisabled = isSlotDisabled(timeSlots[selectedSlotIndex], selectedSlotIndex);
-        console.log('Current selection valid?', !isCurrentSlotDisabled);
         if (isCurrentSlotDisabled) {
           setSelectedTime(''); // Reset selection if it becomes invalid
         }
@@ -227,7 +201,6 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
         });
         setTimeSlots(sortedSlots);
       } catch (err) {
-        console.error('Error fetching time slots:', err);
         setError(translations.home.timeSlots.loadingError);
       } finally {
         setIsLoading(false);

@@ -46,7 +46,6 @@ export default function BookingSection() {
         selectedTimeSlot: undefined // Clear selected time slot
       }));
       // Refresh time slots when services change
-      console.log('Services changed, triggering time slot refresh');
       setRefreshTimeSlots(prev => prev + 1);
       // Don't advance step automatically when services change
     } else if (field === 'date') {

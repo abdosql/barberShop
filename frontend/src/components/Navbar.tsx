@@ -1,11 +1,10 @@
-import React, { useState, useContext } from 'react';
+  import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Scissors, Phone, LogOut, User, Menu, X, Settings, QrCode } from 'lucide-react';
+import { Scissors, LogOut, User, Menu, X, Settings, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import InstallQRCode from './InstallQRCode';
-import { SocialLinksContext } from '../App';
 import styled from '@emotion/styled';
 
 const BrandName = styled.span`
@@ -26,9 +25,6 @@ export default function Navbar() {
   // State for controlling mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isQRVisible, setIsQRVisible] = useState(false);
-
-  // Get social links context
-  const { showSocial, setShowSocial } = useContext(SocialLinksContext);
 
   // Get authentication and language context
   const { userInfo, logout } = useAuth();
@@ -124,15 +120,6 @@ export default function Navbar() {
                       <Settings className="w-4 h-4" />
                     </Link>
                   )}
-
-                  {/* Contact button */}
-                  <button
-                    onClick={() => setShowSocial(true)}
-                    className="flex items-center gap-2 text-zinc-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-zinc-800/50"
-                    title={translations.navbar.contact}
-                  >
-                    <Phone className="w-4 h-4" />
-                  </button>
 
                   {/* Logout button */}
                   <button
@@ -244,16 +231,6 @@ export default function Navbar() {
                       <span>{translations.navbar.adminPanel}</span>
                     </Link>
                   )}
-                  <button
-                    onClick={() => {
-                      setShowSocial(true);
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800/50"
-                  >
-                    <Phone className="w-5 h-5" />
-                    <span>{translations.navbar.contact}</span>
-                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800/50"
