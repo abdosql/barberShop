@@ -246,6 +246,7 @@ export default function TimeSlots({ onSelect, selectedServices, totalDuration, s
     });
   };
 
+  // Format time from ISO string to display time (HH:mm)
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     const hours = date.getUTCHours().toString().padStart(2, '0');
