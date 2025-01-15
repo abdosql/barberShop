@@ -96,13 +96,24 @@ services:
       - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=app_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=seqqal
+      - POSTGRES_PASSWORD=77Seqqal77
       - TZ=Africa/Casablanca
     ports:
       - "5432:5432"
     networks:
       - app_network
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8888:8080"
+    networks:
+      - app_network
+    environment:
+      - ADMINER_DEFAULT_SERVER=database
 
   # notification:
   #   build:
