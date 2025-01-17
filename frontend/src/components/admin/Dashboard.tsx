@@ -143,8 +143,8 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to start of day
-      const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      today.setHours(23, 59, 59, 999);  // Set to end of day to avoid timezone issues
+      const formattedDate = today.toISOString().split('T')[0];
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/appointments?page=1&startTime[after]=${formattedDate}`,

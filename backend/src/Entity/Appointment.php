@@ -26,8 +26,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
+            paginationEnabled: false,
             normalizationContext: ['groups' => ['appointment:read']],
-            security: "is_granted('ROLE_USER') or (request.query.has('startTime') and not request.query.has('extended'))"
+            security: "is_granted('ROLE_ADMIN') or (request.query.has('startTime') and not request.query.has('extended'))"
         ),
         new Post(
             denormalizationContext: ['groups' => ['appointment:create']],
