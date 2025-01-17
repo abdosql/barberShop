@@ -15,6 +15,7 @@ use App\DTO\Input\CancelAppointment;
 use App\Processor\AppointmentProcessor;
 use App\Processor\CancelAppointmentProcessor;
 use App\Repository\AppointmentRepository;
+use App\State\Provider\AppointmentTodayProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -26,8 +27,22 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
+            paginationEnabled: true,
+            paginationItemsPerPage: 10,
+            paginationMaximumItemsPerPage: 50,
+            order: ['startTime' => 'DESC'],
             normalizationContext: ['groups' => ['appointment:read']],
             security: "is_granted('ROLE_USER') or (request.query.has('startTime') and not request.query.has('extended'))"
+        ),
+        new GetCollection(
+            uriTemplate: '/appointments/today',
+            paginationEnabled: true,
+            paginationItemsPerPage: 10,
+            paginationMaximumItemsPerPage: 50,
+            order: ['startTime' => 'DESC'],
+            normalizationContext: ['groups' => ['appointment:read']],
+            security: "is_granted('ROLE_USER')",
+            provider: AppointmentTodayProvider::class
         ),
         new Post(
             denormalizationContext: ['groups' => ['appointment:create']],

@@ -7,6 +7,7 @@ import AppointmentTabs from './AppointmentTabs';
 import StatsCards from './StatsCards';
 import AddServiceModal from './AddServiceModal';
 import ManageServicesModal from './ManageServicesModal';
+import Pagination from './Pagination';
 import { Appointment } from '../../types/appointment';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -18,9 +19,45 @@ interface NotificationMessage {
   show: boolean;
 }
 
+interface ApiResponse {
+  "@context": string;
+  "@id": string;
+  "@type": string;
+  totalItems: number;
+  member: Appointment[];
+  view?: {
+    "@id": string;
+    "@type": string;
+    first: string;
+    last: string;
+    previous?: string;
+    next?: string;
+  };
+}
+
+interface CacheData {
+  data: Appointment[];
+  totalItems: number;
+  timestamp: number;
+  currentPage: number;
+}
+
 export default function Dashboard() {
   const { token } = useAuth();
   const { translations } = useLanguage();
+  const itemsPerPage = 10;
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const cached = localStorage.getItem('appointmentsCache');
+    if (cached) {
+      const parsedCache = JSON.parse(cached);
+      if (Date.now() - parsedCache.timestamp < 24 * 60 * 60 * 1000) {
+        return parsedCache.currentPage || 1;
+      }
+    }
+    return 1;
+  });
+
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
   const [notification, setNotification] = useState<NotificationMessage>({
@@ -29,14 +66,12 @@ export default function Dashboard() {
     show: false
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [cachedAppointments, setCachedAppointments] = useState<{
-    data: Appointment[];
-    timestamp: number;
-  } | null>(() => {
+  const [cachedAppointments, setCachedAppointments] = useState<CacheData | null>(() => {
     const cached = localStorage.getItem('appointmentsCache');
     if (cached) {
       const parsedCache = JSON.parse(cached);
       if (Date.now() - parsedCache.timestamp < 24 * 60 * 60 * 1000) {
+        setTotalItems(parsedCache.totalItems);
         return parsedCache;
       }
     }
@@ -55,87 +90,7 @@ export default function Dashboard() {
     };
   }, [cachedAppointments]);
 
-  const showNotification = (message: string, type: NotificationType = 'success') => {
-    setNotification({
-      message,
-      type,
-      show: true
-    });
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }));
-    }, 3000);
-  };
-
-  const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
-    setCachedAppointments(current => {
-      if (!current) return null;
-      const newData = current.data.map(apt => 
-        apt.id === acceptedAppointment.id 
-          ? { ...apt, status: 'accepted' }
-          : apt
-      );
-      
-      const newCache = {
-        data: newData,
-        timestamp: Date.now()
-      };
-
-      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
-      
-      const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
-      showNotification(translations.admin.dashboard.notifications.appointmentConfirmed, { clientName }, 'success');
-
-      return newCache;
-    });
-  };
-
-  const handleAppointmentDeclined = (declinedAppointment: Appointment) => {
-    setCachedAppointments(current => {
-      if (!current) return null;
-      const newData = current.data.map(apt => 
-        apt.id === declinedAppointment.id 
-          ? { ...apt, status: 'declined' }
-          : apt
-      );
-      
-      const newCache = {
-        data: newData,
-        timestamp: Date.now()
-      };
-
-      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
-      
-      const clientName = `${declinedAppointment.user_.firstName} ${declinedAppointment.user_.lastName}`;
-      showNotification(translations.admin.dashboard.notifications.appointmentDeclined, { clientName }, 'error');
-
-      return newCache;
-    });
-  };
-
-  const handleAppointmentCancelled = (cancelledAppointment: Appointment) => {
-    setCachedAppointments(current => {
-      if (!current) return null;
-      const newData = current.data.map(apt => 
-        apt.id === cancelledAppointment.id 
-          ? { ...apt, status: 'cancelled' }
-          : apt
-      );
-      
-      const newCache = {
-        data: newData,
-        timestamp: Date.now()
-      };
-
-      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
-      
-      const clientName = `${cancelledAppointment.user_.firstName} ${cancelledAppointment.user_.lastName}`;
-      showNotification(translations.admin.dashboard.notifications.appointmentCancelled, { clientName }, 'error');
-
-      return newCache;
-    });
-  };
-
-  const fetchAppointments = async (force: boolean = false) => {
+  const fetchAppointments = async (force: boolean = false, page: number = currentPage) => {
     if (!force && cachedAppointments) {
       return;
     }
@@ -143,11 +98,11 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to start of day
-      const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      today.setHours(23, 59, 59, 999);
+      const formattedDate = today.toISOString().split('T')[0];
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/appointments?page=1&startTime[after]=${formattedDate}`,
+        `${import.meta.env.VITE_API_URL}/api/appointments?page=${page}&startTime[after]=${formattedDate}`,
         {
           headers: {
             'Accept': 'application/ld+json',
@@ -158,31 +113,39 @@ export default function Dashboard() {
 
       if (!response.ok) throw new Error('Failed to fetch appointments');
 
-      const data = await response.json();
-      const sortedAppointments = data.member.sort((a: Appointment, b: Appointment) => {
-        const dateA = new Date(a.startTime);
-        const dateB = new Date(b.startTime);
-        return dateA.getTime() - dateB.getTime();
-      });
+      const data: ApiResponse = await response.json();
       
-      const newCache = {
-        data: sortedAppointments,
-        timestamp: Date.now()
+      setTotalItems(data.totalItems);
+      
+      const newCache: CacheData = {
+        data: data.member,
+        totalItems: data.totalItems,
+        timestamp: Date.now(),
+        currentPage: page
       };
 
       localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
       setCachedAppointments(newCache);
     } catch (err) {
-      console.error('Error fetching appointments:', err);
       showNotification(translations.admin.dashboard.notifications.fetchError, 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const newCache = {
+      ...cachedAppointments,
+      currentPage: page
+    };
+    localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+    fetchAppointments(true, page);
+  };
+
   useEffect(() => {
     if (!cachedAppointments) {
-      fetchAppointments();
+      fetchAppointments(false, Math.ceil(totalItems / itemsPerPage));
     } else {
       setIsLoading(false);
     }
@@ -365,6 +328,86 @@ export default function Dashboard() {
     });
   };
 
+  const showNotification = (message: string, type: NotificationType = 'success') => {
+    setNotification({
+      message,
+      type,
+      show: true
+    });
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
+
+  const handleAppointmentAccepted = (acceptedAppointment: Appointment) => {
+    setCachedAppointments(current => {
+      if (!current) return null;
+      const newData = current.data.map(apt => 
+        apt.id === acceptedAppointment.id 
+          ? { ...apt, status: 'accepted' }
+          : apt
+      );
+      
+      const newCache = {
+        data: newData,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      
+      const clientName = `${acceptedAppointment.user_.firstName} ${acceptedAppointment.user_.lastName}`;
+      showNotification(translations.admin.dashboard.notifications.appointmentConfirmed, 'success');
+
+      return newCache;
+    });
+  };
+
+  const handleAppointmentDeclined = (declinedAppointment: Appointment) => {
+    setCachedAppointments(current => {
+      if (!current) return null;
+      const newData = current.data.map(apt => 
+        apt.id === declinedAppointment.id 
+          ? { ...apt, status: 'declined' }
+          : apt
+      );
+      
+      const newCache = {
+        data: newData,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      
+      const clientName = `${declinedAppointment.user_.firstName} ${declinedAppointment.user_.lastName}`;
+      showNotification(translations.admin.dashboard.notifications.appointmentDeclined, 'error');
+
+      return newCache;
+    });
+  };
+
+  const handleAppointmentCancelled = (cancelledAppointment: Appointment) => {
+    setCachedAppointments(current => {
+      if (!current) return null;
+      const newData = current.data.map(apt => 
+        apt.id === cancelledAppointment.id 
+          ? { ...apt, status: 'cancelled' }
+          : apt
+      );
+      
+      const newCache = {
+        data: newData,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('appointmentsCache', JSON.stringify(newCache));
+      
+      const clientName = `${cancelledAppointment.user_.firstName} ${cancelledAppointment.user_.lastName}`;
+      showNotification(translations.admin.dashboard.notifications.appointmentCancelled, 'error');
+
+      return newCache;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-zinc-900">
       {notification.show && (
@@ -399,23 +442,64 @@ export default function Dashboard() {
         />
         
         <div className="space-y-8 mb-12">
-          <PendingAppointments
-            appointments={pendingAppointments}
-            onAppointmentUpdated={handleAppointmentUpdated}
-            onRefresh={() => fetchAppointments(true)}
-            isLoading={isLoading}
-          />
+          <div>
+            <PendingAppointments
+              appointments={pendingAppointments}
+              onAppointmentUpdated={handleAppointmentUpdated}
+              onRefresh={() => fetchAppointments(true, currentPage)}
+              isLoading={isLoading}
+            />
+            {totalItems > itemsPerPage && (
+              <div className="mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalItems / itemsPerPage)}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </div>
           
-          <AppointmentTabs
-            confirmedViewMode={confirmedViewMode}
-            setConfirmedViewMode={setConfirmedViewMode}
-            confirmedAppointments={confirmedAppointments}
-            declinedAppointments={declinedAppointments}
-            cancelledAppointments={cancelledAppointments}
-            completedAppointments={completedAppointments}
-            onAppointmentUpdated={handleAppointmentUpdated}
-            isLoading={isLoading}
-          />
+          <div>
+            <AppointmentTabs
+              confirmedViewMode={confirmedViewMode}
+              setConfirmedViewMode={setConfirmedViewMode}
+              confirmedAppointments={confirmedAppointments}
+              declinedAppointments={declinedAppointments}
+              cancelledAppointments={cancelledAppointments}
+              completedAppointments={completedAppointments}
+              onAppointmentUpdated={handleAppointmentUpdated}
+              isLoading={isLoading}
+            />
+            {(confirmedViewMode === 'accepted' && confirmedAppointments.length > itemsPerPage) && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalItems / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            )}
+            {(confirmedViewMode === 'declined' && declinedAppointments.length > itemsPerPage) && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalItems / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            )}
+            {(confirmedViewMode === 'cancelled' && cancelledAppointments.length > itemsPerPage) && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalItems / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            )}
+            {(confirmedViewMode === 'completed' && completedAppointments.length > itemsPerPage) && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalItems / itemsPerPage)}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </div>
         </div>
 
         <div>
