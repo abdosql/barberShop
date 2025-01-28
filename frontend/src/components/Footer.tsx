@@ -15,7 +15,7 @@ export default function Footer() {
             {language === 'ar' ? (
               <>
                 <a
-                  href="https://mharziabdelilah.com/"
+                  href="http://mharziabdelilah.com/?utm_source=jalal&utm_medium=ba&utm_campaign=footer"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`group text-blue-400 hover:text-blue-300 transition-all duration-300 inline-flex items-center gap-1 font-medium ${directionClass}`}
