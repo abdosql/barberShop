@@ -17,8 +17,8 @@ services:
       - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
       - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
       - JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3
-      - DATABASE_URL=postgresql://user:password@database:5432/app_db
-      - MERCURE_URL=http://caddy:9999/.well-known/mercure
+      - DATABASE_URL=postgresql://user:password@database:${DB_PORT:-5432}/app_db
+      - MERCURE_URL=http://caddy:${MERCURE_PORT:-9999}/.well-known/mercure
       - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
       - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       - TZ=Africa/Casablanca
@@ -33,9 +33,9 @@ services:
       dockerfile: Dockerfile
     container_name: caddy_server
     ports:
-      - "80:80"
-      - "443:443"
-      - "9999:9999"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${MERCURE_PORT:-9999}:${MERCURE_PORT:-9999}"
     volumes:
       - ./backend:/var/www/html
       - ./frontend:/var/www/frontend
@@ -100,7 +100,7 @@ services:
       - POSTGRES_PASSWORD=77Seqqal77
       - TZ=Africa/Casablanca
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:${DB_PORT:-5432}"
     networks:
       - app_network
 
@@ -109,7 +109,7 @@ services:
     container_name: adminer
     restart: always
     ports:
-      - "8888:8080"
+      - "${ADMINER_PORT:-8888}:8080"
     networks:
       - app_network
     environment:

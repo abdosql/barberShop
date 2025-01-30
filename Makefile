@@ -1,4 +1,4 @@
-.PHONY: dev prod down build setup-db enter-backend enter-frontend help clean
+.PHONY: dev prod prod2 down build setup-db enter-backend enter-frontend help clean
 
 # Development environment (Windows)
 dev:
@@ -40,6 +40,33 @@ prod-nodb:
 	               --env-file ./backend/.env.production \
 	               --env-file ./notification/.env \
 	               up --build -d
+
+# Production environment for second server
+prod2:
+	@echo "Starting production environment for second server..."
+	ENV_MODE=production \
+	APP_ENV=prod \
+	FRONTEND_TARGET=production \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.production2.ssl \
+	docker compose --env-file ./frontend/.env.production2 \
+	               --env-file ./backend/.env.production2 \
+	               --env-file ./notification/.env \
+	               up --build -d
+	@echo "Waiting for containers to be ready..."
+	@sleep 10s
+	@make setup-db
+
+prod2-nodb:
+	@echo "Starting production environment for second server..."
+	ENV_MODE=production \
+	APP_ENV=prod \
+	FRONTEND_TARGET=production \
+	CADDY_CONFIG_PATH=./caddy/Caddyfile.production2.ssl \
+	docker compose --env-file ./frontend/.env.production2 \
+	               --env-file ./backend/.env.production2 \
+	               --env-file ./notification/.env \
+	               up --build -d
+
 # Stop all containers
 down-clean:
 	@echo "🔽 Stopping and cleaning up..."
@@ -100,6 +127,7 @@ help:
 	@echo "Available commands:"
 	@echo "  make dev      - Start development environment (frontend: localhost:80, backend: localhost/api)"
 	@echo "  make prod     - Start production environment (frontend: 54.37.66.72, backend: 54.37.66.72/api)"
+	@echo "  make prod2    - Start second production environment (frontend: barber2.jalalbarber.com, backend: barber2.jalalbarber.com/api)"
 	@echo "  make down     - Stop all containers and clean up (Linux/Mac)"
 	@echo "  make down-win - Stop all containers and clean up (Windows PowerShell)"
 	@echo "  make build    - Build containers without starting"
