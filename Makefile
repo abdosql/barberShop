@@ -41,28 +41,28 @@ prod-nodb:
 	               --env-file ./notification/.env \
 	               up --build -d
 
-# Production environment for second server
-prod2:
-	@echo "Starting production environment for second server..."
+# Production environment for Reservini
+prod-reservini:
+	@echo "Starting production environment for Reservini..."
 	ENV_MODE=production \
 	APP_ENV=prod \
 	FRONTEND_TARGET=production \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.production2.ssl \
-	docker compose --env-file ./frontend/.env.production2 \
+	docker compose -f docker-compose.reservini.yml --env-file ./frontend/.env.production2 \
 	               --env-file ./backend/.env.production2 \
 	               --env-file ./notification/.env \
 	               up --build -d
 	@echo "Waiting for containers to be ready..."
 	@sleep 10s
-	@make setup-db
+	@make setup-db-reservini
 
-prod2-nodb:
-	@echo "Starting production environment for second server..."
+prod-reservini-nodb:
+	@echo "Starting production environment for Reservini..."
 	ENV_MODE=production \
 	APP_ENV=prod \
 	FRONTEND_TARGET=production \
 	CADDY_CONFIG_PATH=./caddy/Caddyfile.production2.ssl \
-	docker compose --env-file ./frontend/.env.production2 \
+	docker compose -f docker-compose.reservini.yml --env-file ./frontend/.env.production2 \
 	               --env-file ./backend/.env.production2 \
 	               --env-file ./notification/.env \
 	               up --build -d
@@ -108,11 +108,27 @@ setup-db:
 	@echo "Resetting environment back to production..."
 	@docker compose exec -e APP_ENV=prod backend php bin/console cache:clear
 
+setup-db-reservini:
+	@echo "Setting up database for Reservini..."
+	@docker compose -f docker-compose.reservini.yml exec backend_reservini php bin/console d:d:d --force
+	@docker compose -f docker-compose.reservini.yml exec backend_reservini php bin/console d:d:c
+	@docker compose -f docker-compose.reservini.yml exec backend_reservini php bin/console d:m:m
+	@echo "Loading fixtures in dev environment..."
+	@docker compose -f docker-compose.reservini.yml exec -e APP_ENV=dev backend_reservini php bin/console d:f:l
+	@echo "Resetting environment back to production..."
+	@docker compose -f docker-compose.reservini.yml exec -e APP_ENV=prod backend_reservini php bin/console cache:clear
+
 enter-backend:
 	@docker compose exec backend bash
 
 enter-frontend:
 	@docker compose exec frontend sh
+
+enter-backend-reservini:
+	@docker compose -f docker-compose.reservini.yml exec backend_reservini bash
+
+enter-frontend-reservini:
+	@docker compose -f docker-compose.reservini.yml exec frontend_reservini sh
 
 # Deep clean everything
 clean:
@@ -128,9 +144,13 @@ help:
 	@echo "  make dev      - Start development environment (frontend: localhost:80, backend: localhost/api)"
 	@echo "  make prod     - Start production environment (frontend: 54.37.66.72, backend: 54.37.66.72/api)"
 	@echo "  make prod2    - Start second production environment (frontend: barber2.jalalbarber.com, backend: barber2.jalalbarber.com/api)"
+	@echo "  make prod-reservini - Start production environment for second instance (reservini.ma)"
 	@echo "  make down     - Stop all containers and clean up (Linux/Mac)"
 	@echo "  make down-win - Stop all containers and clean up (Windows PowerShell)"
 	@echo "  make build    - Build containers without starting"
 	@echo "  make clean    - Remove all Docker containers, images, volumes, and cached data"
 	@echo "  make shop-status       - Get current shop status"
 	@echo "  make shop-status-update - Update shop status (set to open)"
+	@echo "  make down-reservini - Stop second instance containers"
+	@echo "  make enter-backend-reservini - Enter backend shell of second instance"
+	@echo "  make enter-frontend-reservini - Enter frontend shell of second instance"

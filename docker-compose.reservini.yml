@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+  backend_reservini:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: symfony_api_reservini
+    volumes:
+      - ./backend:/var/www/html
+      - /var/www/html/docker
+    env_file:
+      - ./backend/.env.${ENV_MODE:-development}
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+      - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+      - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+      - JWT_PASSPHRASE=80e75e1ceea2218d7be4a9d66df9d5b9752a069f337bbdcd97187991132d1ff3
+      - DATABASE_URL=postgresql://user:password@database_reservini:${DB_PORT:-5432}/app_db
+      - MERCURE_URL=http://caddy_reservini:${MERCURE_PORT:-9999}/.well-known/mercure
+      - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
+      - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - TZ=Africa/Casablanca
+    depends_on:
+      - database_reservini
+    networks:
+      - app_network_reservini
+
+  caddy_reservini:
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
+    container_name: caddy_server_reservini
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${MERCURE_PORT:-9999}:${MERCURE_PORT:-9999}"
+    volumes:
+      - ./backend:/var/www/html
+      - ./frontend:/var/www/frontend
+      - ${CADDY_CONFIG_PATH:-./caddy/Caddyfile.development}:/etc/caddy/Caddyfile
+      - caddy_data_reservini:/data
+      - caddy_config_reservini:/config
+    env_file:
+      - ./frontend/.env.${ENV_MODE:-development}
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+      - MERCURE_PUBLISHER_JWT_KEY=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_SUBSCRIBER_JWT_KEY=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_JWT_SECRET=${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
+      - VITE_MERCURE_HOST=${VITE_MERCURE_HOST}
+      - TZ=Africa/Casablanca
+    depends_on:
+      - backend_reservini
+      - frontend_reservini
+    networks:
+      - app_network_reservini
+
+  frontend_reservini:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: ${FRONTEND_TARGET:-development}
+      args:
+        - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
+    container_name: frontend_reservini
+    env_file:
+      - ./frontend/.env.${ENV_MODE:-development}
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_MERCURE_PUBLIC_URL=${VITE_MERCURE_PUBLIC_URL}
+      - FRONTEND_TARGET=${FRONTEND_TARGET:-development}
+      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
+      - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+      - MERCURE_PUBLIC_URL=${MERCURE_PUBLIC_URL}
+      - VITE_MERCURE_HOST=${VITE_MERCURE_HOST}
+      - TZ=Africa/Casablanca
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
+    networks:
+      - app_network_reservini
+
+  database_reservini:
+    image: postgres:15-alpine
+    container_name: postgres_db_reservini
+    volumes:
+      - postgres_data_reservini:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=app_db
+      - POSTGRES_USER=seqqal
+      - POSTGRES_PASSWORD=77Seqqal77
+      - TZ=Africa/Casablanca
+    ports:
+      - "${DB_PORT:-5432}:${DB_PORT:-5432}"
+    networks:
+      - app_network_reservini
+
+  adminer_reservini:
+    image: adminer
+    container_name: adminer_reservini
+    restart: always
+    ports:
+      - "${ADMINER_PORT:-8888}:8080"
+    networks:
+      - app_network_reservini
+    environment:
+      - ADMINER_DEFAULT_SERVER=database_reservini
+
+  supervisor_reservini:
+    build:
+      context: ./supervisor
+      dockerfile: Dockerfile
+    container_name: symfony_supervisor_reservini
+    volumes:
+      - ./backend:/var/www/html
+    env_file:
+      - ./backend/.env.${ENV_MODE:-development}
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
+      - DATABASE_URL=postgresql://user:password@database_reservini:${DB_PORT:-5432}/app_db
+      - TZ=Africa/Casablanca
+    depends_on:
+      - backend_reservini
+      - database_reservini
+    networks:
+      - app_network_reservini
+
+volumes:
+  postgres_data_reservini:
+  caddy_data_reservini:
+  caddy_config_reservini:
+
+networks:
+  app_network_reservini:
+    driver: bridge 
