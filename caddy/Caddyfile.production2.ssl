@@ -2,13 +2,9 @@
     admin 0.0.0.0:2020
     debug
     
-    # Explicitly configure ACME
+    # ACME configuration
+    email admin@reservini.ma
     acme_ca https://acme-v02.api.letsencrypt.org/directory
-    
-    # Force HTTP challenge only
-    acme_http {
-        disable_tlsalpn_challenge true
-    }
 }
 
 # Global options
@@ -23,6 +19,8 @@
 
 # Handle HTTP traffic
 :80 {
+    import common
+    
     # ACME HTTP-01 challenge handler
     @acme {
         path /.well-known/acme-challenge/*
@@ -41,12 +39,16 @@
 
 # Main domain configuration
 :443 {
-    tls {
-        issuer acme
-    }
+    import common
     
     @reservini host reservini.ma
     handle @reservini {
+        tls {
+            issuer acme {
+                disable_tlsalpn_challenge
+            }
+        }
+        
         header {
             Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -84,6 +86,12 @@
     
     @mercure host mercure.reservini.ma
     handle @mercure {
+        tls {
+            issuer acme {
+                disable_tlsalpn_challenge
+            }
+        }
+        
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
