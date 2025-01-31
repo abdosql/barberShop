@@ -21,10 +21,9 @@
     encode gzip
 }
 
-# Handle HTTP for ACME challenges
-http:// {
-    import common
-    
+# Handle HTTP traffic
+:80 {
+    # ACME HTTP-01 challenge handler
     @acme {
         path /.well-known/acme-challenge/*
     }
@@ -34,95 +33,93 @@ http:// {
         }
     }
     
+    # Redirect everything else to HTTPS
     handle {
         redir https://{host}{uri} permanent
     }
 }
 
 # Main domain configuration
-https://reservini.ma {
-    import common
+:443 {
     tls {
         issuer acme
     }
     
-    header {
-        Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
-        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
-        Access-Control-Allow-Credentials "true"
-        Access-Control-Max-Age "3600"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        Referrer-Policy "no-referrer-when-downgrade"
-        X-Frame-Options "DENY"
-        X-XSS-Protection "1; mode=block"
-        defer
-    }
+    @reservini host reservini.ma
+    handle @reservini {
+        header {
+            Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
+            Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
+            Access-Control-Allow-Credentials "true"
+            Access-Control-Max-Age "3600"
+            Strict-Transport-Security "max-age=31536000; includeSubDomains"
+            X-Content-Type-Options "nosniff"
+            Referrer-Policy "no-referrer-when-downgrade"
+            X-Frame-Options "DENY"
+            X-XSS-Protection "1; mode=block"
+            defer
+        }
 
-    @options {
-        method OPTIONS
-    }
-    handle @options {
-        respond 204
-    }
+        @options {
+            method OPTIONS
+        }
+        handle @options {
+            respond 204
+        }
 
-    handle /api/* {
-        root * /var/www/html/public
-        php_fastcgi backend_reservini:9001
-        file_server
-    }
+        handle /api/* {
+            root * /var/www/html/public
+            php_fastcgi backend_reservini:9001
+            file_server
+        }
 
-    handle {
-        reverse_proxy frontend_reservini:{$FRONTEND_PORT} {
-            header_up Host {host}
-            header_up X-Real-IP {remote}
+        handle {
+            reverse_proxy frontend_reservini:{$FRONTEND_PORT} {
+                header_up Host {host}
+                header_up X-Real-IP {remote}
+            }
         }
     }
-}
-
-# Mercure subdomain configuration
-https://mercure.reservini.ma {
-    import common
-    tls {
-        issuer acme
-    }
     
-    header {
-        Access-Control-Allow-Origin {http.request.header.Origin}
-        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "*"
-        Access-Control-Allow-Credentials true
-        Access-Control-Expose-Headers "*"
-        Access-Control-Max-Age "3600"
-        Cache-Control "no-cache"
-        Content-Type "text/event-stream"
-        Connection "keep-alive"
-        X-Accel-Buffering "no"
-        defer
-    }
-
-    @options {
-        method OPTIONS
-    }
-    handle @options {
+    @mercure host mercure.reservini.ma
+    handle @mercure {
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
             Access-Control-Allow-Headers "*"
             Access-Control-Allow-Credentials true
+            Access-Control-Expose-Headers "*"
             Access-Control-Max-Age "3600"
+            Cache-Control "no-cache"
+            Content-Type "text/event-stream"
+            Connection "keep-alive"
+            X-Accel-Buffering "no"
             defer
         }
-        respond 204
-    }
 
-    mercure {
-        publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
-        subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-        cors_origins {$CORS_ALLOW_ORIGIN}
-        anonymous
-        subscriptions
-        transport_url bolt:///data/mercure.db
+        @options {
+            method OPTIONS
+        }
+        handle @options {
+            header {
+                Access-Control-Allow-Origin {http.request.header.Origin}
+                Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                Access-Control-Allow-Headers "*"
+                Access-Control-Allow-Credentials true
+                Access-Control-Max-Age "3600"
+                defer
+            }
+            respond 204
+        }
+
+        mercure {
+            publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+            subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+            cors_origins {$CORS_ALLOW_ORIGIN}
+            anonymous
+            subscriptions
+            transport_url bolt:///data/mercure.db
+        }
     }
 }
