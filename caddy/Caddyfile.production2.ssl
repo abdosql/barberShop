@@ -1,18 +1,40 @@
 {
     admin 0.0.0.0:2020
     debug
-    # Remove auto_https ignore_loaded_certs
-    
-    # Add ACME HTTP configuration
-    acme_http {
-        disable_http_challenge false
-        disable_tlsalpn_challenge true
+    auto_https disable_redirects
+}
+
+# Global options for all sites
+(common) {
+    encode gzip
+    log {
+        output stdout
+        format console
+        level INFO
     }
 }
 
-# Main domain configuration
-reservini.ma {
-    # Common headers for security
+# Handle both domains on HTTP
+http://reservini.ma, http://mercure.reservini.ma {
+    # ACME HTTP-01 challenge
+    @acme {
+        path /.well-known/acme-challenge/*
+    }
+    handle @acme {
+        root * /data/caddy/acme-challenges
+        file_server
+    }
+
+    # All other requests redirect to HTTPS
+    handle {
+        redir https://{host}{uri} permanent
+    }
+}
+
+# HTTPS configuration for main domain
+https://reservini.ma {
+    import common
+    
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -22,13 +44,11 @@ reservini.ma {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
-        # Security headers
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
         defer
     }
 
-    # Handle OPTIONS requests
     @options {
         method OPTIONS
     }
@@ -36,38 +56,24 @@ reservini.ma {
         respond 204
     }
 
-    # Backend API routes
     handle /api/* {
         root * /var/www/html/public
         php_fastcgi backend:9001
         file_server
     }
 
-    # Frontend routes - reverse proxy to production frontend
     handle {
         reverse_proxy frontend:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}
         }
     }
-
-    # Error handling
-    handle_errors {
-        respond "{http.error.status_code} {http.error.status_text}"
-    }
-
-    log {
-        output stdout
-        format console
-        level INFO
-    }
-
-    # Enable compression
-    encode gzip
 }
 
-# Mercure Hub subdomain configuration
-mercure.reservini.ma {
+# HTTPS configuration for Mercure subdomain
+https://mercure.reservini.ma {
+    import common
+    
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -75,7 +81,6 @@ mercure.reservini.ma {
         Access-Control-Allow-Credentials true
         Access-Control-Expose-Headers "*"
         Access-Control-Max-Age "3600"
-        # Required for EventSource connections
         Cache-Control "no-cache"
         Content-Type "text/event-stream"
         Connection "keep-alive"
@@ -83,7 +88,6 @@ mercure.reservini.ma {
         defer
     }
 
-    # Handle OPTIONS requests for Mercure
     @options {
         method OPTIONS
     }
@@ -107,7 +111,4 @@ mercure.reservini.ma {
         subscriptions
         transport_url bolt:///data/mercure.db
     }
-
-    # Enable compression for Mercure
-    encode gzip
-} 
+}
