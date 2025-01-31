@@ -1,10 +1,13 @@
 {
-    # Enable admin API for SSL management
     admin 0.0.0.0:2020
-    # Enable automatic HTTPS
-    auto_https ignore_loaded_certs
-    # Enable debug for troubleshooting
     debug
+    # Remove auto_https ignore_loaded_certs
+    
+    # Add ACME HTTP configuration
+    acme_http {
+        disable_http_challenge false
+        disable_tlsalpn_challenge true
+    }
 }
 
 # Main domain configuration
