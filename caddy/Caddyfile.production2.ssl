@@ -41,14 +41,20 @@
 :443 {
     import common
     
+    # Main site configuration
     @reservini host reservini.ma
     handle @reservini {
-        tls {
-            issuer acme {
-                disable_tlsalpn_challenge
+        reverse_proxy /api/* backend_reservini:9001 {
+            transport fastcgi {
+                root /var/www/html/public
             }
         }
-        
+
+        reverse_proxy frontend_reservini:{$FRONTEND_PORT} {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+        }
+
         header {
             Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -69,29 +75,20 @@
         handle @options {
             respond 204
         }
-
-        handle /api/* {
-            root * /var/www/html/public
-            php_fastcgi backend_reservini:9001
-            file_server
-        }
-
-        handle {
-            reverse_proxy frontend_reservini:{$FRONTEND_PORT} {
-                header_up Host {host}
-                header_up X-Real-IP {remote}
-            }
-        }
     }
     
+    # Mercure configuration
     @mercure host mercure.reservini.ma
     handle @mercure {
-        tls {
-            issuer acme {
-                disable_tlsalpn_challenge
-            }
+        mercure {
+            publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+            subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+            cors_origins {$CORS_ALLOW_ORIGIN}
+            anonymous
+            subscriptions
+            transport_url bolt:///data/mercure.db
         }
-        
+
         header {
             Access-Control-Allow-Origin {http.request.header.Origin}
             Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
@@ -120,14 +117,12 @@
             }
             respond 204
         }
+    }
 
-        mercure {
-            publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
-            subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
-            cors_origins {$CORS_ALLOW_ORIGIN}
-            anonymous
-            subscriptions
-            transport_url bolt:///data/mercure.db
+    # TLS configuration for both domains
+    tls {
+        issuer acme {
+            disable_tlsalpn_challenge
         }
     }
 }
