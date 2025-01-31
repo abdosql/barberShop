@@ -1,39 +1,50 @@
 {
     admin 0.0.0.0:2020
     debug
-    auto_https disable_redirects
-}
-
-# Global options for all sites
-(common) {
-    encode gzip
-    log {
-        output stdout
-        format console
-        level INFO
+    
+    # Explicitly configure ACME
+    acme_ca https://acme-v02.api.letsencrypt.org/directory
+    
+    # Force HTTP challenge only
+    acme_http {
+        disable_tlsalpn_challenge true
     }
 }
 
-# Handle both domains on HTTP
-http://reservini.ma, http://mercure.reservini.ma {
-    # ACME HTTP-01 challenge
+# Global options
+(common) {
+    log {
+        output stdout
+        format console
+        level DEBUG
+    }
+    encode gzip
+}
+
+# Handle HTTP for ACME challenges
+http:// {
+    import common
+    
     @acme {
         path /.well-known/acme-challenge/*
     }
     handle @acme {
-        root * /data/caddy/acme-challenges
-        file_server
+        file_server {
+            root /data/caddy/acme-challenges
+        }
     }
-
-    # All other requests redirect to HTTPS
+    
     handle {
         redir https://{host}{uri} permanent
     }
 }
 
-# HTTPS configuration for main domain
+# Main domain configuration
 https://reservini.ma {
     import common
+    tls {
+        issuer acme
+    }
     
     header {
         Access-Control-Allow-Origin {$CORS_ALLOW_ORIGIN}
@@ -58,21 +69,24 @@ https://reservini.ma {
 
     handle /api/* {
         root * /var/www/html/public
-        php_fastcgi backend:9001
+        php_fastcgi backend_reservini:9001
         file_server
     }
 
     handle {
-        reverse_proxy frontend:{$FRONTEND_PORT} {
+        reverse_proxy frontend_reservini:{$FRONTEND_PORT} {
             header_up Host {host}
             header_up X-Real-IP {remote}
         }
     }
 }
 
-# HTTPS configuration for Mercure subdomain
+# Mercure subdomain configuration
 https://mercure.reservini.ma {
     import common
+    tls {
+        issuer acme
+    }
     
     header {
         Access-Control-Allow-Origin {http.request.header.Origin}
